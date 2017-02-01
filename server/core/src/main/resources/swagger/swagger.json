@@ -1,0 +1,1874 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "0.0.1",
+        "title": "Thermostat Web API",
+        "license": {
+            "name": "GPL v2 with Classpath Exception",
+            "url": "http://www.gnu.org/licenses"
+        }
+    },
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json",
+        "text/html; charset=utf-8"
+    ],
+    "basePath": "/api",
+    "security": [
+        {
+            "basic": []
+        }
+    ],
+    "paths": {
+        "/schema": {
+            "get": {
+                "description": "Gets schema information for the storage",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/schema-info"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates schema information for the storage",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/schema-info"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes all schema information",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets information for an agent. Use 'all' as the agentId to query all agents",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/agent-info"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates information for the agent",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/agent-info"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes information for the agent",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/backend": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets backend information for an agent.",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/backend-info"
+                            }
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates backend information for the agent",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/backend-info"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes backend information for the agent",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets information for the host machine monitored by the agent",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/host-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates information for the host machine monitored by the agent",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/host-info"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes host information for the agent",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/network": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets network information for the host machine",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/network-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates network information for the host machine",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/network-info"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes network information for the agent",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/cpu/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent CPU statistics for the host",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/host-cpu-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates CPU statistics for the host machine",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/host-cpu-stats"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/memory/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent memory statistics for the host",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/host-memory-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates memory statistics for the host machine",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/host-memory-stats"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/numa": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets NUMA information for the host",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/host-numa-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates NUMA information for the host machine",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/host-numa-info"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/numa/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                }
+            ],
+            "get": {
+                "description": "Gets NUMA statistics for the host",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/host-numa-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds or updates NUMA statistics for the host machine",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/host-numa-stats"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets information for a jvm monitored by an agent",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/class/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent class statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-class-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent class statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-class-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds class statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-class-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/cpu/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent cpu statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-cpu-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent cpu statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-cpu-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds cpu statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-cpu-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/compiler/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent compiler statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-compiler-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent compiler statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-compiler-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds compiler statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-compiler-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/gc/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent gc statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-gc-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent gc statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-gc-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds gc statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-gc-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/io/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent io statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-io-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent io statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-io-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds io statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-io-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/memory/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent memory statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-memory-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent memory statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-memory-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds memory statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-memory-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/numa/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent NUMA statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-numa-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent NUMA statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-numa-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds NUMA statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-numa-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/heap/{vmHeapId}": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-heap-id"
+                }
+            ],
+            "get": {
+                "description": "Gets heap dump information for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-heap-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets heap dump information for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-heap-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds heap dump information for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-heap-info"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/jmx": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets jmx information for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-jmx-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets jmx information for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-jmx-info"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds jmx information for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-jmx-info"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/jmx/status": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets jmx status for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-jmx-status"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets jmx status for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-jmx-status"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds jmx statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-jmx-status"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/tlab/stats": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets most recent tlab statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-tlab-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets most recent tlab statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-tlab-stats"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds tlab statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-tlab-stats"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        },
+        "/agents/{agentId}/host/vms/{vmId}/profiler/status": {
+            "parameters": [
+                {
+                    "$ref": "#/parameters/agent-id"
+                },
+                {
+                    "$ref": "#/parameters/vm-id"
+                }
+            ],
+            "get": {
+                "description": "Gets profiler  status for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/maxTimestamp"
+                    },
+                    {
+                        "$ref": "#/parameters/minTimestamp"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-profiler-status"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "post": {
+                "description": "Gets profiler status for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/filters"
+                    },
+                    {
+                        "$ref": "#/parameters/count"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/vm-profiler-status"
+                        }
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            },
+            "put": {
+                "description": "Adds jmx statistics for the jvm",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/vm-profiler-status"
+                    },
+                    {
+                        "$ref": "#/parameters/tags"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "$ref": "#/responses/unauthorized"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "filters": {
+            "type": "array",
+            "items": {
+                "$ref": "#/definitions/filter"
+            }
+        },
+        "filter": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "comparator": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "key",
+                "comparator",
+                "value"
+            ]
+        },
+        "schema-info": {
+            "type": "object"
+        },
+        "agent-info": {
+            "type": "object"
+        },
+        "backend-info": {
+            "type": "object"
+        },
+        "host-info": {
+            "type": "object"
+        },
+        "network-info": {
+            "type": "object"
+        },
+        "host-cpu-stats": {
+            "type": "object"
+        },
+        "host-memory-stats": {
+            "type": "object"
+        },
+        "host-numa-info": {
+            "type": "object"
+        },
+        "host-numa-stats": {
+            "type": "object"
+        },
+        "vm-info": {
+            "type": "object"
+        },
+        "vm-cpu-stats": {
+            "type": "object"
+        },
+        "vm-class-stats": {
+            "type": "object"
+        },
+        "vm-compiler-stats": {
+            "type": "object"
+        },
+        "vm-gc-stats": {
+            "type": "object"
+        },
+        "vm-io-stats": {
+            "type": "object"
+        },
+        "vm-memory-stats": {
+            "type": "object"
+        },
+        "vm-numa-stats": {
+            "type": "object"
+        },
+        "vm-heap-info": {
+            "type": "object"
+        },
+        "vm-jmx-info": {
+            "type": "object"
+        },
+        "vm-jmx-status": {
+            "type": "object"
+        },
+        "vm-tlab-stats": {
+            "type": "object"
+        },
+        "vm-profiler-status": {
+            "type": "object"
+        }
+    },
+    "parameters": {
+        "agent-id": {
+            "name": "agentId",
+            "in": "path",
+            "description": "The agent identification number",
+            "type": "number",
+            "required": true
+        },
+        "vm-id": {
+            "name": "vmId",
+            "in": "path",
+            "description": "The jvm identification number",
+            "type": "number",
+            "required": true
+        },
+        "schema-info": {
+            "name": "schemaInfo",
+            "in": "body",
+            "description": "The agent's schema information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/schema-info"
+            }
+        },
+        "agent-info": {
+            "name": "agentInfo",
+            "in": "body",
+            "description": "The agent information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/agent-info"
+            }
+        },
+        "backend-info": {
+            "name": "backendInfo",
+            "in": "body",
+            "description": "The backends registered for an agent",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/backend-info"
+            }
+        },
+        "host-info": {
+            "name": "hostInfo",
+            "in": "body",
+            "description": "The host information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/host-info"
+            }
+        },
+        "network-info": {
+            "name": "networkInfo",
+            "in": "body",
+            "description": "The host's network information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/network-info"
+            }
+        },
+        "host-cpu-stats": {
+            "name": "hostCpuStats",
+            "in": "body",
+            "description": "The host cpu statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/host-cpu-stats"
+            }
+        },
+        "host-memory-stats": {
+            "name": "hostMemoryStats",
+            "in": "body",
+            "description": "The host memory statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/host-memory-stats"
+            }
+        },
+        "host-numa-info": {
+            "name": "hostNumaInfo",
+            "in": "body",
+            "description": "The host NUMA information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/host-numa-info"
+            }
+        },
+        "host-numa-stats": {
+            "name": "hostNumaStats",
+            "in": "body",
+            "description": "The host NUMA statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/host-numa-stats"
+            }
+        },
+        "vm-cpu-stats": {
+            "name": "vmCpuStats",
+            "in": "body",
+            "description": "The jvm CPU statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-cpu-stats"
+            }
+        },
+        "vm-class-stats": {
+            "name": "vmClassStats",
+            "in": "body",
+            "description": "The jvm class statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-class-stats"
+            }
+        },
+        "vm-compiler-stats": {
+            "name": "vmCompilerStats",
+            "in": "body",
+            "description": "The jvm compiler statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-compiler-stats"
+            }
+        },
+        "vm-gc-stats": {
+            "name": "vmGcStats",
+            "in": "body",
+            "description": "The jvm gc statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-gc-stats"
+            }
+        },
+        "vm-io-stats": {
+            "name": "vmIoStats",
+            "in": "body",
+            "description": "The jvm io statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-io-stats"
+            }
+        },
+        "vm-memory-stats": {
+            "name": "vmMemoryStats",
+            "in": "body",
+            "description": "The jvm memory statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-memory-stats"
+            }
+        },
+        "vm-numa-stats": {
+            "name": "vmNumaStats",
+            "in": "body",
+            "description": "The jvm NUMA statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-numa-stats"
+            }
+        },
+        "vm-heap-id": {
+            "name": "vmHeapId",
+            "in": "path",
+            "description": "The heap dump identification number",
+            "type": "number",
+            "required": true
+        },
+        "vm-heap-info": {
+            "name": "vmHeapInfo",
+            "in": "body",
+            "description": "The heap dump information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-heap-info"
+            }
+        },
+        "vm-jmx-info": {
+            "name": "vmJmxInfo",
+            "in": "body",
+            "description": "The jvm jmx information",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-jmx-info"
+            }
+        },
+        "vm-jmx-status": {
+            "name": "vmJmxStatus",
+            "in": "body",
+            "description": "The jvm jmx status",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-jmx-status"
+            }
+        },
+        "vm-tlab-stats": {
+            "name": "vmTlabStats",
+            "in": "body",
+            "description": "The jvm tlab statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-tlab-stats"
+            }
+        },
+        "vm-profiler-status": {
+            "name": "vmProfilerStatus",
+            "in": "body",
+            "description": "The jvm profiler status",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/vm-profiler-status"
+            }
+        },
+        "tags": {
+            "name": "tags",
+            "in": "query",
+            "description": "CSV of tags",
+            "type": "string"
+        },
+        "count": {
+            "name": "count",
+            "in": "query",
+            "description": "Count of media to return.",
+            "type": "integer"
+        },
+        "filters": {
+            "name": "filters",
+            "in": "body",
+            "description": "Key, Comparator, Value trios to filter the data",
+            "schema": {
+                "$ref": "#/definitions/filters"
+            }
+        },
+        "sort": {
+            "name": "sort",
+            "in": "query",
+            "description": "Order to sort by (1 or -1).",
+            "type": "integer"
+        },
+        "maxTimestamp": {
+            "name": "max_timestamp",
+            "in": "query",
+            "description": "Return media before this timestamp.",
+            "type": "integer"
+        },
+        "minTimestamp": {
+            "name": "min_timestamp",
+            "in": "query",
+            "description": "Return media after this timestamp.",
+            "type": "integer"
+        }
+    },
+    "responses": {
+        "unauthorized": {
+            "description": "Access prohibited."
+        }
+    },
+    "securityDefinitions": {
+        "basic": {
+            "type": "basic"
+        }
+    }
+}
