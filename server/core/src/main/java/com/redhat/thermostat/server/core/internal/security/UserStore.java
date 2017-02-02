@@ -41,13 +41,29 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicWebUser;
+import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyWebUser;
+
 public class UserStore {
-    private final Map<String, WebUser> userStore;
+    private final Map<String, WebUser> userStore = new HashMap<>();
 
     public UserStore() {
-        userStore = new HashMap<>();
-        userStore.put("admin@EXAMPLE.COM", new BasicWebUser("admin@EXAMPLE.COM", new ArrayList<>(Arrays.asList("admin@EXAMPLE.COM", "user"))));
-        userStore.put("user@EXAMPLE.COM", new BasicWebUser("user@EXAMPLE.COM", new ArrayList<>(Arrays.asList("user@EXAMPLE.COM", "user"))));
+        userStore.put("admin@EXAMPLE.COM", new ProxyWebUser("admin@EXAMPLE.COM", new ArrayList<>(Arrays.asList("admin@EXAMPLE.COM", "user"))));
+        userStore.put("user@EXAMPLE.COM", new ProxyWebUser("user@EXAMPLE.COM", new ArrayList<>(Arrays.asList("user@EXAMPLE.COM", "user"))));
+    }
+
+    public UserStore(Map<String, String> users) {
+        for (Map.Entry<String, String> entry : users.entrySet()) {
+            String username = entry.getKey();
+            ArrayList<String> items = new ArrayList<>(Arrays.asList(entry.getValue().split(",")));
+            WebUser user;
+            if (items.get(0).equals("proxy")) {
+                user = new ProxyWebUser(username, new ArrayList<>(items.subList(1, items.size())));
+            } else {
+                user = new BasicWebUser(username, items.get(1).toCharArray(), items.subList(2, items.size()));
+            }
+            userStore.put(username, user);
+        }
     }
 
     public WebUser getUser(String userName) {

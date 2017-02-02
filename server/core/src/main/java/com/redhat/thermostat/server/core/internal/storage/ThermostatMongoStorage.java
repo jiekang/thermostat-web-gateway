@@ -44,15 +44,14 @@ import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
 
-public class MongoStorage {
+public class ThermostatMongoStorage {
     private static MongoClient mongoClient;
 
     private static final String username = "mongodevuser";
     private static final char[] password = "mongodevpassword".toCharArray();
-    private static String dbName;
+    private static final String dbName = "thermostat";
 
-    public static void start(final String dbName, int port) {
-        MongoStorage.dbName = dbName;
+    public static void start(int port) {
         MongoCredential credential = MongoCredential.createCredential(username, dbName, password);
         ServerAddress address = new ServerAddress("127.0.0.1", port);
         mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(0).build());
@@ -72,6 +71,6 @@ public class MongoStorage {
     }
 
     public static MongoDatabase getDatabase() {
-        return MongoStorage.mongoClient.getDatabase(MongoStorage.dbName);
+        return ThermostatMongoStorage.mongoClient.getDatabase(ThermostatMongoStorage.dbName);
     }
 }

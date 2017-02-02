@@ -34,32 +34,26 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.security;
+package com.redhat.thermostat.server.core.internal.security.auth.proxy;
 
 import java.util.List;
 
-public class AuthWebUser implements WebUser {
+import com.redhat.thermostat.server.core.internal.security.WebUser;
+
+public class ProxyWebUser implements WebUser {
     private final String username;
     private final List<String> roles;
-    private final char[] password;
 
-    public AuthWebUser(String username, char[] password, List<String> roles) {
+    public ProxyWebUser(String username, List<String> roles) {
         this.username = username;
         this.roles = roles;
-        this.password = password;
     }
 
-    @Override
     public String getUsername() {
         return this.username;
     }
 
-    @Override
     public boolean isUserInRole(String role) {
         return this.roles.contains(role);
-    }
-
-    public String getPassword() {
-        return new String(password);
     }
 }

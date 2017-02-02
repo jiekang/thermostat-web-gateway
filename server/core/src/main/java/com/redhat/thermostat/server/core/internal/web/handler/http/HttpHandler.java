@@ -69,10 +69,10 @@ public class HttpHandler {
     @Path("agents/{agentId}")
     @Produces(MediaType.APPLICATION_JSON)
     public void getAgent(@Context SecurityContext securityContext,
-                             @Suspended final AsyncResponse asyncResponse,
-                             @PathParam("agentId") String agentId,
-                             @QueryParam("size") @DefaultValue("1") String count,
-                             @QueryParam("sort") @DefaultValue("-1") String sort) {
+                         @Suspended final AsyncResponse asyncResponse,
+                         @PathParam("agentId") String agentId,
+                         @QueryParam("size") @DefaultValue("1") String count,
+                         @QueryParam("sort") @DefaultValue("-1") String sort) {
         handler.getAgent(securityContext, asyncResponse, agentId, count, sort);
     }
 
@@ -88,11 +88,11 @@ public class HttpHandler {
     @Path("agents/{agentId}/host/cpu")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getHostCpuInfo(@Context SecurityContext securityContext,
-                               @PathParam("agentId") String agentId,
-                               @QueryParam("size") @DefaultValue("1") String count,
-                               @QueryParam("sort") @DefaultValue("-1") String sort,
-                               @QueryParam("maxTimestamp") String maxTimestamp,
-                               @QueryParam("minTimestamp") String minTimestamp) {
+                                   @PathParam("agentId") String agentId,
+                                   @QueryParam("size") @DefaultValue("1") String count,
+                                   @QueryParam("sort") @DefaultValue("-1") String sort,
+                                   @QueryParam("maxTimestamp") String maxTimestamp,
+                                   @QueryParam("minTimestamp") String minTimestamp) {
         return handler.getHostCpuInfo(securityContext, agentId, count, sort, maxTimestamp, minTimestamp);
     }
 
@@ -100,7 +100,7 @@ public class HttpHandler {
     @Path("stream/agents/{agentId}/host/cpu")
     @Produces(MediaType.APPLICATION_JSON)
     public ChunkedOutput<String> streamHostCpuInfo(@Context SecurityContext securityContext,
-                                         @PathParam("agentId") String agentId) {
+                                                   @PathParam("agentId") String agentId) {
         return handler.streamHostCpuInfo(securityContext, agentId);
     }
 }

@@ -52,7 +52,11 @@ import com.redhat.thermostat.server.core.internal.security.WebUser;
 @Priority(Priorities.AUTHENTICATION)
 public class ProxyAuthFilter implements ContainerRequestFilter{
 
-    private final UserStore userStore = new UserStore();
+    private final UserStore userStore;
+
+    public ProxyAuthFilter(UserStore userStore) {
+        this.userStore = userStore;
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {

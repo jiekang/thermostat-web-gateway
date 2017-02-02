@@ -42,7 +42,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import com.redhat.thermostat.server.core.internal.security.WebUser;
 
-public class ProxySecurityContext implements SecurityContext{
+class ProxySecurityContext implements SecurityContext{
     private final WebUser user;
 
     public ProxySecurityContext(WebUser user) {

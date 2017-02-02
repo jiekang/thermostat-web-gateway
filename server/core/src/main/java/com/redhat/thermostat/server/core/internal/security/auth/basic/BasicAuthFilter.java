@@ -49,7 +49,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.DatatypeConverter;
 
-import com.redhat.thermostat.server.core.internal.security.AuthWebUser;
 import com.redhat.thermostat.server.core.internal.security.UserStore;
 
 @Provider
@@ -57,10 +56,6 @@ import com.redhat.thermostat.server.core.internal.security.UserStore;
 public class BasicAuthFilter implements ContainerRequestFilter {
 
     private final UserStore userStore;
-
-    public BasicAuthFilter() {
-        this(new UserStore());
-    }
 
     public BasicAuthFilter(UserStore userStore) {
         this.userStore = userStore;
@@ -87,12 +82,12 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             String username = values[0];
             String password = values[1];
 
-            AuthWebUser user = (AuthWebUser) userStore.getUser(username);
+            BasicWebUser user = (BasicWebUser) userStore.getUser(username);
             if (user == null) {
                 throw new NotAuthorizedException("Authentication credentials are required");
             }
 
-            if (!new String(user.getPassword()).equals(password)) {
+            if (!user.getPassword().equals(password)) {
                 throw new NotAuthorizedException("Authentication credentials are required");
             }
 

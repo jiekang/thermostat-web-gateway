@@ -50,7 +50,7 @@ import org.glassfish.jersey.server.ChunkedOutput;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
-import com.redhat.thermostat.server.core.internal.storage.MongoStorage;
+import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.filters.RequestFilters;
 import com.redhat.thermostat.server.core.internal.web.json.DocumentBuilder;
 import com.redhat.thermostat.server.core.internal.web.request.TimedRequest;
@@ -69,7 +69,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                if (!MongoStorage.isConnected()) {
+                if (!ThermostatMongoStorage.isConnected()) {
                     asyncResponse.resume(Response.status(Response.Status.OK).entity("GET " + agentId + " " + count + " " + sort + " " + securityContext.getUserPrincipal().getName()).build());
                     return;
                 }
@@ -84,7 +84,7 @@ public class MongoStorageHandler implements StorageHandler {
                 FindIterable<Document> documents = timedRequest.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
                     @Override
                     public FindIterable<Document> run() {
-                        return MongoStorage.getDatabase().getCollection("agents").find(filter).sort(new BasicDBObject("_id", sortOrder)).limit(limit);
+                        return ThermostatMongoStorage.getDatabase().getCollection("agents").find(filter).sort(new BasicDBObject("_id", sortOrder)).limit(limit);
                     }
                 });
 
@@ -96,7 +96,7 @@ public class MongoStorageHandler implements StorageHandler {
     @Override
     public Response putAgent(String body,
                              @Context SecurityContext context) {
-        if (!MongoStorage.isConnected()) {
+        if (!ThermostatMongoStorage.isConnected()) {
             return Response.status(Response.Status.OK).entity("PUT " + context.getUserPrincipal().getName() + "\n\n" + body).build();
         }
 
@@ -111,7 +111,7 @@ public class MongoStorageHandler implements StorageHandler {
         timedRequest.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
             @Override
             public FindIterable<Document> run() {
-                MongoStorage.getDatabase().getCollection("agents").insertOne(item);
+                ThermostatMongoStorage.getDatabase().getCollection("agents").insertOne(item);
                 return null;
             }
         });
@@ -126,7 +126,7 @@ public class MongoStorageHandler implements StorageHandler {
                                    String sort,
                                    String maxTimestamp,
                                    String minTimestamp) {
-        if (!MongoStorage.isConnected()) {
+        if (!ThermostatMongoStorage.isConnected()) {
             return Response.status(Response.Status.OK).entity(agentId + count + sort + maxTimestamp + minTimestamp).build();
         }
 
@@ -141,7 +141,7 @@ public class MongoStorageHandler implements StorageHandler {
         FindIterable<Document> documents = request.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
             @Override
             public FindIterable<Document> run() {
-                return MongoStorage.getDatabase().getCollection("cpu-stats").find(filter).sort(new BasicDBObject("_id", sortOrder)).limit(size);
+                return ThermostatMongoStorage.getDatabase().getCollection("cpu-stats").find(filter).sort(new BasicDBObject("_id", sortOrder)).limit(size);
             }
         });
 
@@ -161,7 +161,7 @@ public class MongoStorageHandler implements StorageHandler {
                         FindIterable<Document> documents = request.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
                             @Override
                             public FindIterable<Document> run() {
-                                return MongoStorage.getDatabase().getCollection("cpu-stats").find().sort(new BasicDBObject("_id", -1)).limit(1);
+                                return ThermostatMongoStorage.getDatabase().getCollection("cpu-stats").find().sort(new BasicDBObject("_id", -1)).limit(1);
                             }
                         });
                         output.write(MongoResponseBuilder.buildJsonResponse(documents, request.getElapsed()));

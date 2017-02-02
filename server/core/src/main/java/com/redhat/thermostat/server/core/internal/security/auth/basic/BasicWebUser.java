@@ -34,31 +34,34 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.handler.storage;
+package com.redhat.thermostat.server.core.internal.security.auth.basic;
 
-import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
+import java.util.List;
 
-import org.glassfish.jersey.server.ChunkedOutput;
+import com.redhat.thermostat.server.core.internal.security.WebUser;
 
-public class HibernateStorageHandler implements StorageHandler {
-    @Override
-    public void getAgent(SecurityContext securityContext, AsyncResponse asyncResponse, String agentId, String count, String sort) {
+public class BasicWebUser implements WebUser {
+    private final String username;
+    private final List<String> roles;
+    private final char[] password;
+
+    public BasicWebUser(String username, char[] password, List<String> roles) {
+        this.username = username;
+        this.roles = roles;
+        this.password = password;
     }
 
     @Override
-    public Response putAgent(String body, SecurityContext context) {
-        return null;
+    public String getUsername() {
+        return this.username;
     }
 
     @Override
-    public Response getHostCpuInfo(SecurityContext securityContext, String agentId, String count, String sort, String maxTimestamp, String minTimestamp) {
-        return null;
+    public boolean isUserInRole(String role) {
+        return this.roles.contains(role);
     }
 
-    @Override
-    public ChunkedOutput<String> streamHostCpuInfo(SecurityContext securityContext, String agentId) {
-        return null;
+    public String getPassword() {
+        return new String(password);
     }
 }

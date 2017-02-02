@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.server.command;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Properties;
 
 import org.apache.felix.scr.annotations.Component;
@@ -48,6 +50,7 @@ import com.redhat.thermostat.common.cli.AbstractCommand;
 import com.redhat.thermostat.common.cli.Command;
 import com.redhat.thermostat.common.cli.CommandContext;
 import com.redhat.thermostat.common.cli.CommandException;
+import com.redhat.thermostat.common.config.experimental.ConfigurationInfoSource;
 import com.redhat.thermostat.server.core.CoreServer;
 import com.redhat.thermostat.shared.config.CommonPaths;
 
@@ -62,9 +65,17 @@ public class WebEndpointCommand extends AbstractCommand {
     @Reference
     private CommonPaths paths;
 
+    @Reference
+    private ConfigurationInfoSource config;
+
     @Override
     public void run(CommandContext ctx) throws CommandException {
-        coreServer.buildServer(new Properties());
+        try {
+            Map<String, String> serverConfig = config.getConfiguration("web-server", "server-config.properties");
+            Map<String, String> userConfig = config.getConfiguration("web-server", "user-config.properties");
+            coreServer.buildServer(serverConfig, userConfig);
+        } catch (IOException e) {
+        }
         Server server = coreServer.getServer();
         try {
             server.start();
