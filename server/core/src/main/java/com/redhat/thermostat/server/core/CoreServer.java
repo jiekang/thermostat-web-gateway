@@ -26,8 +26,8 @@ import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import com.redhat.thermostat.server.core.internal.security.UserStore;
 import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyAuthFilter;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
-import com.redhat.thermostat.server.core.internal.web.handler.http.HttpHandler;
-import com.redhat.thermostat.server.core.internal.web.handler.storage.MongoStorageHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.http.CoreHttpHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.MongoCoreStorageHandler;
 
 @Component
 @Service(CoreServer.class)
@@ -50,7 +50,7 @@ public class CoreServer {
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
-        resourceConfig.register(new HttpHandler(new MongoStorageHandler()));
+        resourceConfig.register(new CoreHttpHandler(new MongoCoreStorageHandler()));
         resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
         resourceConfig.register(new RolesAllowedDynamicFeature());
     }

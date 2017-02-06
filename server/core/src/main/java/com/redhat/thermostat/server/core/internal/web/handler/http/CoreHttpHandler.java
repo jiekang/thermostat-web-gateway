@@ -53,15 +53,15 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
 
-import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.CoreStorageHandler;
 
 @Path("/api")
 @RolesAllowed("user")
-public class HttpHandler {
+public class CoreHttpHandler {
 
-    private final StorageHandler handler;
+    private final CoreStorageHandler handler;
 
-    public HttpHandler(StorageHandler handler) {
+    public CoreHttpHandler(CoreStorageHandler handler) {
         this.handler = handler;
     }
 

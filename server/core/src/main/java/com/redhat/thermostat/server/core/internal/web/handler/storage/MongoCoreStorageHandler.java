@@ -56,7 +56,7 @@ import com.redhat.thermostat.server.core.internal.web.json.DocumentBuilder;
 import com.redhat.thermostat.server.core.internal.web.request.TimedRequest;
 import com.redhat.thermostat.server.core.internal.web.response.MongoResponseBuilder;
 
-public class MongoStorageHandler implements StorageHandler {
+public class MongoCoreStorageHandler implements CoreStorageHandler {
 
     private final int MAX_MONGO_DOCUMENTS = 5000;
 
