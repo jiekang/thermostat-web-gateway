@@ -69,7 +69,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             }
 
             if (!authentication.startsWith("Basic ")) {
-                return;
+                throw new NotAuthorizedException("Authentication credentials are required");
             }
 
             authentication = authentication.substring("Basic ".length());

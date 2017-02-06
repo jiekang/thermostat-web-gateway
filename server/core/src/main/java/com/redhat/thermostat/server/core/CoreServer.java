@@ -23,7 +23,9 @@ import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
+import com.redhat.thermostat.server.core.internal.configuration.ServerConfiguration;
 import com.redhat.thermostat.server.core.internal.security.UserStore;
+import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicAuthFilter;
 import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyAuthFilter;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.handler.http.CoreHttpHandler;
@@ -35,7 +37,8 @@ public class CoreServer {
     private Server server;
 
     public void buildServer(Map<String, String> serverConfig, Map<String, String> userConfig) {
-        ThermostatMongoStorage.start(27518);
+
+        server = new Server();
 
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8080).build();
 
@@ -47,35 +50,71 @@ public class CoreServer {
         setupConnectors(serverConfig);
 
         setupHandlers(serverConfig);
+
+        ThermostatMongoStorage.start(27518);
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
         resourceConfig.register(new CoreHttpHandler(new MongoCoreStorageHandler()));
-        resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
+        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL)) {
+            resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
+        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL)) {
+            resourceConfig.register(new BasicAuthFilter(new UserStore(userConfig)));
+        }
         resourceConfig.register(new RolesAllowedDynamicFeature());
     }
 
     private void setupConnectors(Map<String, String> serverConfig) {
-        HttpConfiguration httpConfig = new HttpConfiguration();
-        httpConfig.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
+        server.setConnectors(new Connector[]{});
+        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL)) {
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            httpConfig.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
 
-        ServerConnector httpConnector = new ServerConnector(server);
-        httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
+            ServerConnector httpConnector = new ServerConnector(server);
+            httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
-        httpConnector.setHost("localhost");
-        httpConnector.setPort(8090);
-        httpConnector.setIdleTimeout(30000);
+            try {
+                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL));
+                httpConnector.setHost(url.getHost());
+                httpConnector.setPort(url.getPort());
+            } catch (MalformedURLException e) {
 
-        server.setConnectors(new Connector[]{httpConnector});
+                httpConnector.setHost("localhost");
+                httpConnector.setPort(8090);
+            }
+            httpConnector.setIdleTimeout(30000);
+
+            server.addConnector(httpConnector);
+        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL)) {
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            ServerConnector httpConnector = new ServerConnector(server);
+            httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
+
+            try {
+                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL));
+                httpConnector.setHost(url.getHost());
+                httpConnector.setPort(url.getPort());
+            } catch (MalformedURLException e) {
+
+                httpConnector.setHost("localhost");
+                httpConnector.setPort(8091);
+            }
+            httpConnector.setIdleTimeout(30000);
+
+            server.addConnector(httpConnector);
+        }
     }
 
     private void setupHandlers(Map<String, String> serverConfig) {
-        Handler originalHandler = server.getHandler();
+        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_ENABLED) &&
+                serverConfig.get(ServerConfiguration.SWAGGER_ENABLED).equals("true")) {
+            Handler originalHandler = server.getHandler();
 
-        HandlerList handlers = new HandlerList();
-        handlers.setHandlers(new Handler[] { createSwaggerResource(), originalHandler});
+            HandlerList handlers = new HandlerList();
+            handlers.setHandlers(new Handler[]{createSwaggerResource(), originalHandler});
 
-        server.setHandler(handlers);
+            server.setHandler(handlers);
+        }
     }
 
     private Handler createSwaggerResource() {

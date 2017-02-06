@@ -72,7 +72,7 @@ public class WebEndpointCommand extends AbstractCommand {
     public void run(CommandContext ctx) throws CommandException {
         try {
             Map<String, String> serverConfig = config.getConfiguration("web-server", "server-config.properties");
-            Map<String, String> userConfig = config.getConfiguration("web-server", "user-config.properties");
+            Map<String, String> userConfig = config.getConfiguration("web-server", "authorization-config.properties");
             coreServer.buildServer(serverConfig, userConfig);
         } catch (IOException e) {
         }
