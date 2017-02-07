@@ -39,6 +39,7 @@
 <plugin xmlns="http://icedtea.classpath.org/thermostat/plugins/v1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://icedtea.classpath.org/thermostat/plugins/v1.0 thermostat-plugin.xsd">
+    <id>server</id>
     <commands>
         <command>
             <name>web-server</name>

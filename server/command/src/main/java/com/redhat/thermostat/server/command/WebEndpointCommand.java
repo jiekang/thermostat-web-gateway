@@ -63,16 +63,13 @@ public class WebEndpointCommand extends AbstractCommand {
     private CoreServer coreServer;
 
     @Reference
-    private CommonPaths paths;
-
-    @Reference
     private ConfigurationInfoSource config;
 
     @Override
     public void run(CommandContext ctx) throws CommandException {
         try {
-            Map<String, String> serverConfig = config.getConfiguration("web-server", "server-config.properties");
-            Map<String, String> userConfig = config.getConfiguration("web-server", "authorization-config.properties");
+            Map<String, String> serverConfig = config.getConfiguration("server", "server-config.properties");
+            Map<String, String> userConfig = config.getConfiguration("server", "authorization-config.properties");
             coreServer.buildServer(serverConfig, userConfig);
         } catch (IOException e) {
         }

@@ -61,11 +61,11 @@
             <filtered>true</filtered>
         </file>
         <file>
-            <source>server-config.properties</source>
+            <source>src/config/server-config.properties</source>
             <outputDirectory>/etc/plugins.d/${thermostat.plugin}</outputDirectory>
         </file>
         <file>
-            <source>authorization-config.properties</source>
+            <source>src/config/authorization-config.properties</source>
             <outputDirectory>/etc/plugins.d/${thermostat.plugin}</outputDirectory>
         </file>
     </files>

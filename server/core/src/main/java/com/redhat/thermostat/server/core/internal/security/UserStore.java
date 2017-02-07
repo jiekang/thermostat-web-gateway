@@ -47,11 +47,18 @@ import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyWebUs
 public class UserStore {
     private final Map<String, WebUser> userStore = new HashMap<>();
 
-    public UserStore() {
-        userStore.put("admin@EXAMPLE.COM", new ProxyWebUser("admin@EXAMPLE.COM", new ArrayList<>(Arrays.asList("admin@EXAMPLE.COM", "user"))));
-        userStore.put("user@EXAMPLE.COM", new ProxyWebUser("user@EXAMPLE.COM", new ArrayList<>(Arrays.asList("user@EXAMPLE.COM", "user"))));
-    }
-
+    /**
+     * Proxy user:
+     * <username> = proxy,<roles>
+     *
+     * Basic user :
+     * <username> = basic,<password>,<roles>
+     *
+     * <roles> = <roles><role>
+     * <role> = STRING
+     * <password> = STRING
+     *
+     */
     public UserStore(Map<String, String> users) {
         for (Map.Entry<String, String> entry : users.entrySet()) {
             String username = entry.getKey();

@@ -56,9 +56,9 @@ public class CoreServer {
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
         resourceConfig.register(new CoreHttpHandler(new MongoCoreStorageHandler()));
-        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL)) {
+        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
             resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
-        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL)) {
+        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
             resourceConfig.register(new BasicAuthFilter(new UserStore(userConfig)));
         }
         resourceConfig.register(new RolesAllowedDynamicFeature());
@@ -66,7 +66,7 @@ public class CoreServer {
 
     private void setupConnectors(Map<String, String> serverConfig) {
         server.setConnectors(new Connector[]{});
-        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL)) {
+        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
             HttpConfiguration httpConfig = new HttpConfiguration();
             httpConfig.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
 
@@ -74,7 +74,7 @@ public class CoreServer {
             httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
             try {
-                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL));
+                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL.toString()));
                 httpConnector.setHost(url.getHost());
                 httpConnector.setPort(url.getPort());
             } catch (MalformedURLException e) {
@@ -85,17 +85,16 @@ public class CoreServer {
             httpConnector.setIdleTimeout(30000);
 
             server.addConnector(httpConnector);
-        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL)) {
+        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
             HttpConfiguration httpConfig = new HttpConfiguration();
             ServerConnector httpConnector = new ServerConnector(server);
             httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
             try {
-                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL));
+                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_BASIC_URL.toString()));
                 httpConnector.setHost(url.getHost());
                 httpConnector.setPort(url.getPort());
             } catch (MalformedURLException e) {
-
                 httpConnector.setHost("localhost");
                 httpConnector.setPort(8091);
             }
@@ -106,8 +105,8 @@ public class CoreServer {
     }
 
     private void setupHandlers(Map<String, String> serverConfig) {
-        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_ENABLED) &&
-                serverConfig.get(ServerConfiguration.SWAGGER_ENABLED).equals("true")) {
+        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_ENABLED.toString()) &&
+                serverConfig.get(ServerConfiguration.SWAGGER_ENABLED.toString()).equals("true")) {
             Handler originalHandler = server.getHandler();
 
             HandlerList handlers = new HandlerList();
