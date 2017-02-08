@@ -60,10 +60,10 @@ public class ThermostatMongoStorage {
     public static boolean isConnected() {
         try {
             mongoClient.getAddress();
-            return true;
         } catch (Exception e) {
             return false;
         }
+        return true;
     }
 
     public static void finish() {

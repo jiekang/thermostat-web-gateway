@@ -38,7 +38,6 @@ package com.redhat.thermostat.server.command;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.felix.scr.annotations.Component;
 import org.apache.felix.scr.annotations.Property;
@@ -52,7 +51,6 @@ import com.redhat.thermostat.common.cli.CommandContext;
 import com.redhat.thermostat.common.cli.CommandException;
 import com.redhat.thermostat.common.config.experimental.ConfigurationInfoSource;
 import com.redhat.thermostat.server.core.CoreServer;
-import com.redhat.thermostat.shared.config.CommonPaths;
 
 @Component
 @Service(Command.class)
@@ -71,7 +69,8 @@ public class WebEndpointCommand extends AbstractCommand {
             Map<String, String> serverConfig = config.getConfiguration("server", "server-config.properties");
             Map<String, String> userConfig = config.getConfiguration("server", "authorization-config.properties");
             coreServer.buildServer(serverConfig, userConfig);
-        } catch (IOException e) {
+        } catch (IOException ignored) {
+            //Do nothing
         }
         Server server = coreServer.getServer();
         try {
