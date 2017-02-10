@@ -16,14 +16,14 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
 
-import com.redhat.thermostat.server.core.internal.web.handler.storage.PluginStorageHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.PathItemStorageHandler;
 
 @Path("/plugin")
 @RolesAllowed("user")
-public class PluginHttpHandler {
-    private final PluginStorageHandler handler;
+public class PathItemHttpHandler {
+    private final PathItemStorageHandler handler;
 
-    public PluginHttpHandler(PluginStorageHandler handler) {
+    public PathItemHttpHandler(PathItemStorageHandler handler) {
         this.handler = handler;
     }
 

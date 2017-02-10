@@ -43,22 +43,38 @@ import com.mongodb.client.FindIterable;
 public class MongoResponseBuilder {
 
     /**
-     * Responses in JSON:
+     * JSON Response format
      * {
-     * "response" : {
-     * "0" : {
-     * ...
-     * },
-     * "1" : {
-     * ...
-     * },
-     * ...
-     * },
-     * <p>
-     * "time" : elapsed
+     *   "response" : {
+     *       "0" : {
+     *           ...
+     *       },
+     *       ...
+     *   }
      * }
      */
-    public static String buildJsonResponse(FindIterable<Document> documents, long elapsed) {
+    /**
+     * Timed JSON Response format
+     * {
+     *   "response" : {
+     *       "0" : {
+     *          ...
+     *       },
+     *       "1" : {
+     *         ...
+     *       },
+     *       ...
+     *   },
+     *   "time" : elapsed
+     * }
+     */
+    public static String buildJsonResponse(FindIterable<Document> documents) {
+        return "{" +
+                buildJsonDocuments(documents) +
+                "}";
+    }
+
+    public static String buildJsonResponseWithTime(FindIterable<Document> documents, long elapsed) {
         return "{" +
                 buildJsonDocuments(documents) +
                 buildKeyAddition("time", "" + elapsed) +

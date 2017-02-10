@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.server.core.internal.web.request;
 
+import com.sun.tools.javac.util.Assert;
+
 public class TimedRequest <T> {
     private long elapsed = 0;
     private TimedRunnable<T> r;
@@ -47,8 +49,9 @@ public class TimedRequest <T> {
     }
 
     public T run() {
+        Assert.checkNonNull(r);
         long start = System.nanoTime();
-        T value = r.run();
+        T value = this.r.run();
         elapsed = System.nanoTime() - start;
         return value;
     }

@@ -5,7 +5,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
 
-public interface PluginStorageHandler {
+public interface PathItemStorageHandler {
     void getPath(SecurityContext securityContext,
                  AsyncResponse asyncResponse,
                  String path);

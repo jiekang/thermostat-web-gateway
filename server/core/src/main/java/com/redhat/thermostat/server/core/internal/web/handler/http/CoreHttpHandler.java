@@ -53,16 +53,20 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
 
+import com.redhat.thermostat.server.core.internal.web.handler.storage.BaseStorageHandler;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.CoreStorageHandler;
 
 @Path("/api")
 @RolesAllowed("user")
 public class CoreHttpHandler {
 
-    private final CoreStorageHandler handler;
+    private final String CORE = "";
+    private final BaseStorageHandler baseStorageHandler;
+    private final CoreStorageHandler coreStorageHandler;
 
-    public CoreHttpHandler(CoreStorageHandler handler) {
-        this.handler = handler;
+    public CoreHttpHandler(BaseStorageHandler baseStorageHandler, CoreStorageHandler coreStorageHandler) {
+        this.baseStorageHandler = baseStorageHandler;
+        this.coreStorageHandler = coreStorageHandler;
     }
 
     @GET
@@ -73,27 +77,43 @@ public class CoreHttpHandler {
                          @PathParam("agentId") String agentId,
                          @QueryParam("size") @DefaultValue("1") String count,
                          @QueryParam("sort") @DefaultValue("-1") String sort) {
-        handler.getAgent(securityContext, asyncResponse, agentId, count, sort);
+        baseStorageHandler.getAgent(securityContext, asyncResponse, CORE, agentId, count, sort);
     }
 
     @PUT
     @Path("agents/{agentId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response putAgent(String body,
-                             @Context SecurityContext context) {
-        return handler.putAgent(body, context);
+    public void putAgent(String body,
+                         @Context SecurityContext context,
+                         @Suspended final AsyncResponse asyncResponse) {
+        baseStorageHandler.putAgent(body, context, asyncResponse, CORE);
     }
+
+    @GET
+    @Path("agents/{agentId}/host")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getHostInfo(@Context SecurityContext securityContext,
+                            @Suspended final AsyncResponse asyncResponse,
+                            @PathParam("agentId") String agentId,
+                            @QueryParam("size") @DefaultValue("1") String count,
+                            @QueryParam("sort") @DefaultValue("-1") String sort,
+                            @QueryParam("maxTimestamp") String maxTimestamp,
+                            @QueryParam("minTimestamp") String minTimestamp) {
+        baseStorageHandler.getHostInfo(securityContext, asyncResponse, CORE, agentId, count, sort, maxTimestamp, minTimestamp);
+    }
+
 
     @GET
     @Path("agents/{agentId}/host/cpu")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getHostCpuInfo(@Context SecurityContext securityContext,
-                                   @PathParam("agentId") String agentId,
-                                   @QueryParam("size") @DefaultValue("1") String count,
-                                   @QueryParam("sort") @DefaultValue("-1") String sort,
-                                   @QueryParam("maxTimestamp") String maxTimestamp,
-                                   @QueryParam("minTimestamp") String minTimestamp) {
-        return handler.getHostCpuInfo(securityContext, agentId, count, sort, maxTimestamp, minTimestamp);
+    public void getHostCpuInfo(@Context SecurityContext securityContext,
+                               @PathParam("agentId") String agentId,
+                               @Suspended final AsyncResponse asyncResponse,
+                               @QueryParam("size") @DefaultValue("1") String count,
+                               @QueryParam("sort") @DefaultValue("-1") String sort,
+                               @QueryParam("maxTimestamp") String maxTimestamp,
+                               @QueryParam("minTimestamp") String minTimestamp) {
+        coreStorageHandler.getHostCpuInfo(securityContext, agentId, count, sort, maxTimestamp, minTimestamp);
     }
 
     @GET
@@ -101,6 +121,6 @@ public class CoreHttpHandler {
     @Produces(MediaType.APPLICATION_JSON)
     public ChunkedOutput<String> streamHostCpuInfo(@Context SecurityContext securityContext,
                                                    @PathParam("agentId") String agentId) {
-        return handler.streamHostCpuInfo(securityContext, agentId);
+        return coreStorageHandler.streamHostCpuInfo(securityContext, agentId);
     }
 }

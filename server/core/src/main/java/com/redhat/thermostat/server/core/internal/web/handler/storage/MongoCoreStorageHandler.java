@@ -88,7 +88,7 @@ public class MongoCoreStorageHandler implements CoreStorageHandler {
                     }
                 });
 
-                asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponse(documents, timedRequest.getElapsed())).build());
+                asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
             }
         }).start();
     }
@@ -100,7 +100,7 @@ public class MongoCoreStorageHandler implements CoreStorageHandler {
             return Response.status(Response.Status.OK).entity("PUT " + context.getUserPrincipal().getName() + "\n\n" + body).build();
         }
 
-        TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
+        TimedRequest<Boolean> timedRequest = new TimedRequest<>();
 
         /*
          * TODO: Verify body matches expected schema
@@ -108,15 +108,19 @@ public class MongoCoreStorageHandler implements CoreStorageHandler {
          */
         final Document item = Document.parse(DocumentBuilder.addTags(body, context.getUserPrincipal().getName()));
 
-        timedRequest.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
+        Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
             @Override
-            public FindIterable<Document> run() {
-                ThermostatMongoStorage.getDatabase().getCollection("agents").insertOne(item);
-                return null;
+            public Boolean run() {
+                try {
+                    ThermostatMongoStorage.getDatabase().getCollection("agents").insertOne(item);
+                } catch (Exception e) {
+                    return Boolean.FALSE;
+                }
+                return Boolean.TRUE;
             }
         });
 
-        return Response.status(Response.Status.OK).entity("PUT successful").build();
+        return Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build();
     }
 
     @Override
@@ -145,7 +149,7 @@ public class MongoCoreStorageHandler implements CoreStorageHandler {
             }
         });
 
-        return Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponse(documents, request.getElapsed())).build();
+        return Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, request.getElapsed())).build();
     }
 
     @Override
@@ -164,7 +168,7 @@ public class MongoCoreStorageHandler implements CoreStorageHandler {
                                 return ThermostatMongoStorage.getDatabase().getCollection("cpu-stats").find().sort(new BasicDBObject("_id", -1)).limit(1);
                             }
                         });
-                        output.write(MongoResponseBuilder.buildJsonResponse(documents, request.getElapsed()));
+                        output.write(MongoResponseBuilder.buildJsonResponseWithTime(documents, request.getElapsed()));
 
                         Thread.sleep(1000L);
                     }
