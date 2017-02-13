@@ -53,4 +53,19 @@ public class AnotherPluginHttpHandler {
                                 @QueryParam("minTimestamp") String minTimestamp) {
         handler.getHostInfo(securityContext, asyncResponse, plugin, agentId, count, sort, maxTimestamp, minTimestamp);
     }
+
+    @GET
+    @Path("agents/{agentId}/vms/{vmId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public void getVmInfo(@Context SecurityContext securityContext,
+                          @Suspended final AsyncResponse asyncResponse,
+                          @PathParam("plugin") String plugin,
+                          @PathParam("agentId") String agentId,
+                          @PathParam("vmId") String vmId,
+                          @QueryParam("size") @DefaultValue("1") String count,
+                          @QueryParam("sort") @DefaultValue("-1") String sort,
+                          @QueryParam("maxTimestamp") String maxTimestamp,
+                          @QueryParam("minTimestamp") String minTimestamp) {
+        handler.getVmInfo(securityContext, asyncResponse, plugin, agentId, vmId, count, sort, maxTimestamp, minTimestamp);
+    }
 }

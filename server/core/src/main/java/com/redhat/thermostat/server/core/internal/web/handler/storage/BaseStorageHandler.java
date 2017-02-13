@@ -10,4 +10,6 @@ public interface BaseStorageHandler {
     void putAgent(String body, SecurityContext context, AsyncResponse asyncResponse, String plugin);
 
     void getHostInfo(SecurityContext securityContext, AsyncResponse asyncResponse, String plugin, String agentId, String count, String sort, String maxTimestamp, String minTimestamp);
+
+    void getVmInfo(SecurityContext securityContext, AsyncResponse asyncResponse, String plugin, String agentId, String vmId, String count, String sort, String maxTimestamp, String minTimestamp);
 }

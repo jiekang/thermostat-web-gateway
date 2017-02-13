@@ -28,7 +28,9 @@ import com.redhat.thermostat.server.core.internal.security.UserStore;
 import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicAuthFilter;
 import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyAuthFilter;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
+import com.redhat.thermostat.server.core.internal.web.handler.http.AnotherPluginHttpHandler;
 import com.redhat.thermostat.server.core.internal.web.handler.http.CoreHttpHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.MongoBaseStorageHandler;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.MongoCoreStorageHandler;
 
 @Component
@@ -55,7 +57,9 @@ public class CoreServer {
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
-        resourceConfig.register(new CoreHttpHandler(new MongoCoreStorageHandler()));
+        MongoBaseStorageHandler baseHandler = new MongoBaseStorageHandler();
+        resourceConfig.register(new AnotherPluginHttpHandler(baseHandler));
+        resourceConfig.register(new CoreHttpHandler(baseHandler, new MongoCoreStorageHandler()));
         if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
             resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
         } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
