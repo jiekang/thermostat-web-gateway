@@ -129,7 +129,7 @@ public class MongoBaseStorageHandler implements BaseStorageHandler {
                 final int limit = Math.min(Integer.valueOf(count), MAX_MONGO_DOCUMENTS);
                 final int sortOrder = Integer.valueOf(sort);
                 final String userName = securityContext.getUserPrincipal().getName();
-                final Bson filter = RequestFilters.buildGetFilter(agentId, vmId, Collections.singletonList(userName), minTimestamp, maxTimestamp);
+                final Bson filter = RequestFilters.buildGetFilter(agentId, vmId, Collections.singletonList(userName), maxTimestamp, minTimestamp);
 
                 TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
                 final String collectionName = plugin.isEmpty() ? "vm-info" : plugin;

@@ -36,7 +36,6 @@
 
 package com.redhat.thermostat.server.core.internal.web.handler.http;
 
-import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.PUT;
@@ -48,7 +47,6 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
@@ -57,7 +55,6 @@ import com.redhat.thermostat.server.core.internal.web.handler.storage.BaseStorag
 import com.redhat.thermostat.server.core.internal.web.handler.storage.CoreStorageHandler;
 
 @Path("/api")
-@RolesAllowed("user")
 public class CoreHttpHandler {
 
     private final String CORE = "";

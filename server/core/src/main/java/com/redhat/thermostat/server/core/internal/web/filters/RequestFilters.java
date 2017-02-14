@@ -82,7 +82,7 @@ public class RequestFilters {
         }
 
         if (maxTimestamp != null) {
-            filters.add(lte("timeStamp", Long.valueOf(maxTimestamp)));
+            filters.add(lte("timeStamp.", Long.valueOf(maxTimestamp)));
         }
         if (minTimestamp != null) {
             filters.add(gte("timeStamp", Long.valueOf(minTimestamp)));

@@ -26,6 +26,7 @@ import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import com.redhat.thermostat.server.core.internal.configuration.ServerConfiguration;
 import com.redhat.thermostat.server.core.internal.security.UserStore;
 import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicAuthFilter;
+import com.redhat.thermostat.server.core.internal.security.auth.none.NoAuthFilter;
 import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyAuthFilter;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.handler.http.AnotherPluginHttpHandler;
@@ -64,6 +65,8 @@ public class CoreServer {
             resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
         } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
             resourceConfig.register(new BasicAuthFilter(new UserStore(userConfig)));
+        } else {
+            resourceConfig.register(new NoAuthFilter());
         }
         resourceConfig.register(new RolesAllowedDynamicFeature());
     }
@@ -100,8 +103,18 @@ public class CoreServer {
                 httpConnector.setPort(url.getPort());
             } catch (MalformedURLException e) {
                 httpConnector.setHost("localhost");
-                httpConnector.setPort(8091);
+                httpConnector.setPort(8090);
             }
+            httpConnector.setIdleTimeout(30000);
+
+            server.addConnector(httpConnector);
+        } else {
+            HttpConfiguration httpConfig = new HttpConfiguration();
+            ServerConnector httpConnector = new ServerConnector(server);
+            httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
+
+            httpConnector.setHost("localhost");
+            httpConnector.setPort(8090);
             httpConnector.setIdleTimeout(30000);
 
             server.addConnector(httpConnector);
