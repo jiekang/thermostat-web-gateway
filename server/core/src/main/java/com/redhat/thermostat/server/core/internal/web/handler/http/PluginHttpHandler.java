@@ -10,10 +10,10 @@ import javax.ws.rs.core.SecurityContext;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.BaseStorageHandler;
 
 @Path("/plugins/{plugin}")
-public class AnotherPluginHttpHandler {
+public class PluginHttpHandler {
     private final BaseStorageHandler handler;
 
-    public AnotherPluginHttpHandler(BaseStorageHandler handler) {
+    public PluginHttpHandler(BaseStorageHandler handler) {
         this.handler = handler;
     }
 
