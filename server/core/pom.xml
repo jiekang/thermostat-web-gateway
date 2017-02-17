@@ -123,7 +123,11 @@
             <artifactId>jetty-server</artifactId>
             <version>${jetty-version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-servlet</artifactId>
+            <version>${jetty-version}</version>
+        </dependency>
         <!-- Jersey deps -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
@@ -137,17 +141,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.containers</groupId>
-            <artifactId>jersey-container-jetty-servlet</artifactId>
-            <version>${jersey-version}</version>
-        </dependency>
-
         <!--<dependency>-->
-        <!--<groupId>org.glassfish.jersey.containers</groupId>-->
-        <!--<artifactId>jersey-container-servlet-core</artifactId>-->
-        <!--<version>${jersey-version}</version>-->
+            <!--<groupId>org.glassfish.jersey.containers</groupId>-->
+            <!--<artifactId>jersey-container-jetty-servlet</artifactId>-->
+            <!--<version>${jersey-version}</version>-->
         <!--</dependency>-->
+        <!--<dependency>-->
+            <!--<groupId>org.glassfish.jersey.containers</groupId>-->
+            <!--<artifactId>jersey-container-jetty-http</artifactId>-->
+            <!--<version>${jersey-version}</version>-->
+        <!--</dependency>-->
+        <dependency>
+        <groupId>org.glassfish.jersey.containers</groupId>
+        <artifactId>jersey-container-servlet-core</artifactId>
+        <version>${jersey-version}</version>
+        </dependency>
 
         <dependency>
             <groupId>javax.ws.rs</groupId>
@@ -161,6 +169,37 @@
             <artifactId>mongo-java-driver</artifactId>
             <version>${mongo-java-driver-version}</version>
         </dependency>
+
+        <!-- Swagger dependencies -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+            <scope>compile</scope>
+            <version>${swagger-core-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>${servlet-api-version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback-version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.brsanthu</groupId>
+            <artifactId>migbase64</artifactId>
+            <version>2.2</version>
+        </dependency>
+
 
         <!-- test scoped deps -->
         <!--<dependency>-->

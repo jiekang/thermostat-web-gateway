@@ -1,28 +1,22 @@
 package com.redhat.thermostat.server.core;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.EnumSet;
 import java.util.Map;
 
-import javax.ws.rs.core.UriBuilder;
+import javax.servlet.DispatcherType;
 
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Service;
 import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
-import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
+import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
+import org.glassfish.jersey.servlet.ServletContainer;
 
 import com.redhat.thermostat.server.core.internal.configuration.ServerConfiguration;
 import com.redhat.thermostat.server.core.internal.security.UserStore;
@@ -30,34 +24,49 @@ import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicAuthF
 import com.redhat.thermostat.server.core.internal.security.auth.none.NoAuthFilter;
 import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyAuthFilter;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
-import com.redhat.thermostat.server.core.internal.web.handler.http.HttpHandler;
-import com.redhat.thermostat.server.core.internal.web.handler.storage.MongoStorageHandler;
+import io.swagger.api.Bootstrap;
+import io.swagger.jersey.config.JerseyJaxrsConfig;
 
-@Component
-@Service(CoreServer.class)
-public class CoreServer {
-    private Server server;
+public class SwaggerServer {
+
+    Server server;
 
     public void buildServer(Map<String, String> serverConfig, Map<String, String> userConfig) {
+        ThermostatMongoStorage.start(27518);
 
         server = new Server();
 
-        URI baseUri = UriBuilder.fromUri("http://localhost").port(8080).build();
+        ServletHandler servletHandler = new ServletHandler();
+        server.setHandler(servletHandler);
 
         ResourceConfig resourceConfig = new ResourceConfig();
         setupResourceConfig(serverConfig, userConfig, resourceConfig);
 
-        server = JettyHttpContainerFactory.createServer(baseUri, resourceConfig, false);
+        ServletHolder jetty = new ServletHolder(new ServletContainer(resourceConfig));
+        jetty.setInitOrder(1);
+        jetty.setInitParameter("jersey.config.server.provider.packages", "io.swagger.jaxrs.listing, io.swagger.sample.resource, io.swagger.api");
+        jetty.setInitParameter("jersey.config.server.provider.classnames", "org.glassfish.jersey.media.multipart.MultiPartFeature");
+        jetty.setInitParameter("jersey.config.server.wadl.disableWadl", "true");
+
+        servletHandler.addServletWithMapping(jetty, "/api/v100/*");
+
+        ServletHolder jerseyConfig = new ServletHolder(new JerseyJaxrsConfig());
+        jerseyConfig.setInitOrder(2);
+        jerseyConfig.setInitParameter("api.version", "1.0.0");
+        jerseyConfig.setInitParameter("swagger.api.title", "Thermostat Web API");
+        jerseyConfig.setInitParameter("swagger.api.basepath", "https://localhost/api/v100");
+
+        servletHandler.addServlet(jerseyConfig);
+
+        ServletHolder bootstrap = new ServletHolder(new Bootstrap());
+        servletHandler.addServlet(bootstrap);
+
+        servletHandler.addFilterWithMapping(io.swagger.api.ApiOriginFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 
         setupConnectors(serverConfig);
-
-        setupHandlers(serverConfig);
-
-        ThermostatMongoStorage.start(27518);
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
-        resourceConfig.register(new HttpHandler(new MongoStorageHandler()));
         if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
             resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
         } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
@@ -116,34 +125,6 @@ public class CoreServer {
 
             server.addConnector(httpConnector);
         }
-    }
-
-    private void setupHandlers(Map<String, String> serverConfig) {
-        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_ENABLED.toString()) &&
-                serverConfig.get(ServerConfiguration.SWAGGER_ENABLED.toString()).equals("true")) {
-            Handler originalHandler = server.getHandler();
-
-            HandlerList handlers = new HandlerList();
-            handlers.setHandlers(new Handler[]{createSwaggerResource(), originalHandler});
-
-            server.setHandler(handlers);
-        }
-    }
-
-    private Handler createSwaggerResource() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(true);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        resourceHandler.setResourceBase("");
-        URL u = this.getClass().getResource("/swagger/index.html");
-        URI root;
-        try {
-            root = u.toURI().resolve("./").normalize();
-            resourceHandler.setBaseResource(Resource.newResource(root));
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }
-        return resourceHandler;
     }
 
     public Server getServer() {
