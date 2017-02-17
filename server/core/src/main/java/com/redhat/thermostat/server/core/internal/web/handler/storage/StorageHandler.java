@@ -42,7 +42,7 @@ import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
 
-public interface CoreStorageHandler {
+public interface StorageHandler {
     void getAgent(SecurityContext securityContext,
                   AsyncResponse asyncResponse,
                   String agentId,
