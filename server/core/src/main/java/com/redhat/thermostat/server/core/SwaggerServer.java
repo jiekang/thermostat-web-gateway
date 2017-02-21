@@ -1,6 +1,9 @@
 package com.redhat.thermostat.server.core;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.EnumSet;
 import java.util.Map;
@@ -8,12 +11,16 @@ import java.util.Map;
 import javax.servlet.DispatcherType;
 
 import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -60,6 +67,7 @@ public class SwaggerServer {
         servletHandler.addFilter(io.swagger.api.ApiOriginFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 
         setupConnectors(serverConfig);
+        setupHandlers(serverConfig);
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
@@ -125,6 +133,37 @@ public class SwaggerServer {
 
             server.addConnector(httpConnector);
         }
+    }
+
+    private void setupHandlers(Map<String, String> serverConfig) {
+        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_ENABLED.toString()) &&
+                serverConfig.get(ServerConfiguration.SWAGGER_ENABLED.toString()).equals("true")) {
+            Handler[] originalHandlers = server.getHandlers();
+
+            HandlerList handlers = new HandlerList();
+            handlers.addHandler(createSwaggerResource());
+            for (int i = 0; i < originalHandlers.length; i++) {
+                handlers.addHandler(originalHandlers[i]);
+            }
+
+            server.setHandler(handlers);
+        }
+    }
+
+    private Handler createSwaggerResource() {
+        ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirectoriesListed(true);
+        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
+        resourceHandler.setResourceBase("");
+        URL u = this.getClass().getResource("/swagger/index.html");
+        URI root;
+        try {
+            root = u.toURI().resolve("./").normalize();
+            resourceHandler.setBaseResource(Resource.newResource(root));
+        } catch (URISyntaxException | IOException e) {
+            e.printStackTrace();
+        }
+        return resourceHandler;
     }
 
     public Server getServer() {
