@@ -18,28 +18,8 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T16:34:48.096Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-21T16:01:56.111Z")
 public class NamespaceApiServiceImpl extends NamespaceApiService {
-    @Override
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsDelete(String namespace, String systemId, String agentId, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
-    }
-    @Override
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsGet(String namespace, String systemId, String agentId, Integer limit, Integer offset, String sort, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
-    }
-    @Override
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsPost(String namespace, String systemId, String agentId, Integer limit, Integer offset, String sort, Filters filters, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
-    }
-    @Override
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsPut(String namespace, String systemId, String agentId, JvmInfo jvmInfo, String tags, SecurityContext securityContext) throws NotFoundException {
-        // do some magic!
-        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
-    }
     @Override
     public Response namespaceSystemsDelete(String namespace, String systemIds, SecurityContext securityContext) throws NotFoundException {
         // do some magic!
@@ -71,6 +51,16 @@ public class NamespaceApiServiceImpl extends NamespaceApiService {
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
     }
     @Override
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsDelete(String namespace, String systemId, String agentId, SecurityContext securityContext) throws NotFoundException {
+        // do some magic!
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+    }
+    @Override
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsGet(String namespace, String systemId, String agentId, Integer limit, Integer offset, String sort, SecurityContext securityContext) throws NotFoundException {
+        // do some magic!
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+    }
+    @Override
     public Response namespaceSystemsSystemIdAgentsAgentIdJvmsJvmIdDelete(String namespace, String systemId, String agentId, String jvmId, SecurityContext securityContext) throws NotFoundException {
         // do some magic!
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
@@ -82,6 +72,16 @@ public class NamespaceApiServiceImpl extends NamespaceApiService {
     }
     @Override
     public Response namespaceSystemsSystemIdAgentsAgentIdJvmsJvmIdPut(String namespace, String systemId, String agentId, String jvmId, JvmInfo jvmInfo, String tags, SecurityContext securityContext) throws NotFoundException {
+        // do some magic!
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+    }
+    @Override
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsPost(String namespace, String systemId, String agentId, Integer limit, Integer offset, String sort, Filters filters, SecurityContext securityContext) throws NotFoundException {
+        // do some magic!
+        return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
+    }
+    @Override
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsPut(String namespace, String systemId, String agentId, JvmInfo jvmInfo, String tags, SecurityContext securityContext) throws NotFoundException {
         // do some magic!
         return Response.ok().entity(new ApiResponseMessage(ApiResponseMessage.OK, "magic!")).build();
     }

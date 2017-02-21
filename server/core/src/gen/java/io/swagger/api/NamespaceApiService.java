@@ -18,21 +18,21 @@ import java.io.InputStream;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T16:34:48.096Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-21T16:01:56.111Z")
 public abstract class NamespaceApiService {
-    public abstract Response namespaceSystemSystemIdAgentsAgentIdJvmsDelete(String namespace,String systemId,String agentId,SecurityContext securityContext) throws NotFoundException;
-    public abstract Response namespaceSystemSystemIdAgentsAgentIdJvmsGet(String namespace,String systemId,String agentId,Integer limit,Integer offset,String sort,SecurityContext securityContext) throws NotFoundException;
-    public abstract Response namespaceSystemSystemIdAgentsAgentIdJvmsPost(String namespace,String systemId,String agentId,Integer limit,Integer offset,String sort,Filters filters,SecurityContext securityContext) throws NotFoundException;
-    public abstract Response namespaceSystemSystemIdAgentsAgentIdJvmsPut(String namespace,String systemId,String agentId,JvmInfo jvmInfo,String tags,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsDelete(String namespace,String systemIds,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsGet(String namespace,Integer limit,Integer offset,String sort,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsPost(String namespace,Integer limit,Integer offset,String sort,Filters filters,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsPut(String namespace,SystemInfo systemInfo,String tags,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsAgentIdDelete(String namespace,String systemId,String agentId,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsAgentIdGet(String namespace,String systemId,String agentId,SecurityContext securityContext) throws NotFoundException;
+    public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsDelete(String namespace,String systemId,String agentId,SecurityContext securityContext) throws NotFoundException;
+    public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsGet(String namespace,String systemId,String agentId,Integer limit,Integer offset,String sort,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsJvmIdDelete(String namespace,String systemId,String agentId,String jvmId,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsJvmIdGet(String namespace,String systemId,String agentId,String jvmId,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsJvmIdPut(String namespace,String systemId,String agentId,String jvmId,JvmInfo jvmInfo,String tags,SecurityContext securityContext) throws NotFoundException;
+    public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsPost(String namespace,String systemId,String agentId,Integer limit,Integer offset,String sort,Filters filters,SecurityContext securityContext) throws NotFoundException;
+    public abstract Response namespaceSystemsSystemIdAgentsAgentIdJvmsPut(String namespace,String systemId,String agentId,JvmInfo jvmInfo,String tags,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsAgentIdPut(String namespace,String systemId,String agentId,AgentInfo agentInfo,String tags,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsDelete(String namespace,String systemId,SecurityContext securityContext) throws NotFoundException;
     public abstract Response namespaceSystemsSystemIdAgentsGet(String namespace,String systemId,Integer limit,Integer offset,String sort,SecurityContext securityContext) throws NotFoundException;

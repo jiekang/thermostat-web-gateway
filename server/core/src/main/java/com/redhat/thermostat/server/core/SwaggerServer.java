@@ -12,7 +12,7 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletHandler;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -36,37 +36,37 @@ public class SwaggerServer {
 
         server = new Server();
 
-        ServletHandler servletHandler = new ServletHandler();
+        ServletContextHandler servletHandler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        servletHandler.setContextPath("/");
         server.setHandler(servletHandler);
 
         ResourceConfig resourceConfig = new ResourceConfig();
         setupResourceConfig(serverConfig, userConfig, resourceConfig);
 
         ServletHolder jetty = new ServletHolder(new ServletContainer(resourceConfig));
+        servletHandler.addServlet(jetty, "/api/v100/*");
         jetty.setInitOrder(1);
-        jetty.setInitParameter("jersey.config.server.provider.packages", "io.swagger.jaxrs.listing, io.swagger.sample.resource, io.swagger.api");
-        jetty.setInitParameter("jersey.config.server.provider.classnames", "org.glassfish.jersey.media.multipart.MultiPartFeature");
-        jetty.setInitParameter("jersey.config.server.wadl.disableWadl", "true");
 
-        servletHandler.addServletWithMapping(jetty, "/api/v100/*");
-
-        ServletHolder jerseyConfig = new ServletHolder(new JerseyJaxrsConfig());
+        ServletHolder jerseyConfig = servletHandler.addServlet(JerseyJaxrsConfig.class, "/swagger-core");
         jerseyConfig.setInitOrder(2);
         jerseyConfig.setInitParameter("api.version", "1.0.0");
         jerseyConfig.setInitParameter("swagger.api.title", "Thermostat Web API");
         jerseyConfig.setInitParameter("swagger.api.basepath", "https://localhost/api/v100");
 
-        servletHandler.addServlet(jerseyConfig);
-
         ServletHolder bootstrap = new ServletHolder(new Bootstrap());
-        servletHandler.addServlet(bootstrap);
+        servletHandler.addServlet(bootstrap, "/swagger-bootstrap");
+        bootstrap.setInitOrder(2);
 
-        servletHandler.addFilterWithMapping(io.swagger.api.ApiOriginFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
+        servletHandler.addFilter(io.swagger.api.ApiOriginFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
 
         setupConnectors(serverConfig);
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
+        resourceConfig.packages("io.swagger.jaxrs.listing, io.swagger.sample.resource, io.swagger.api");
+        resourceConfig.register(org.glassfish.jersey.media.multipart.MultiPartFeature.class);
+        resourceConfig.property("jersey.config.server.wadl.disableWadl", "true");
+
         if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
             resourceConfig.register(new ProxyAuthFilter(new UserStore(userConfig)));
         } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {

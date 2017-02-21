@@ -29,77 +29,10 @@ import javax.ws.rs.*;
 @Consumes({ "application/json" })
 @Produces({ "application/json", "text/html; charset=utf-8" })
 @io.swagger.annotations.Api(description = "the {namespace} API")
-@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-17T16:34:48.096Z")
+@javax.annotation.Generated(value = "io.swagger.codegen.languages.JavaJerseyServerCodegen", date = "2017-02-21T16:01:56.111Z")
 public class NamespaceApi  {
    private final NamespaceApiService delegate = NamespaceApiServiceFactory.getNamespaceApi();
 
-    @DELETE
-    @Path("/system/{systemId}/agents/{agentId}/jvms")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json", "text/html; charset=utf-8" })
-    @io.swagger.annotations.ApiOperation(value = "", notes = "Delete JVM information", response = void.class, tags={  })
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = void.class) })
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsDelete(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
-,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
-,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
-,@Context SecurityContext securityContext)
-    throws NotFoundException {
-        return delegate.namespaceSystemSystemIdAgentsAgentIdJvmsDelete(namespace,systemId,agentId,securityContext);
-    }
-    @GET
-    @Path("/system/{systemId}/agents/{agentId}/jvms")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json", "text/html; charset=utf-8" })
-    @io.swagger.annotations.ApiOperation(value = "", notes = "Get JVM information", response = JvmInfo.class, tags={  })
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = JvmInfo.class),
-        
-        @io.swagger.annotations.ApiResponse(code = 401, message = "Access prohibited.", response = JvmInfo.class) })
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsGet(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
-,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
-,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
-,@ApiParam(value = "Limit of items to return.") @QueryParam("limit") Integer limit
-,@ApiParam(value = "Offset of items to return.") @QueryParam("offset") Integer offset
-,@ApiParam(value = "Sort string") @QueryParam("sort") String sort
-,@Context SecurityContext securityContext)
-    throws NotFoundException {
-        return delegate.namespaceSystemSystemIdAgentsAgentIdJvmsGet(namespace,systemId,agentId,limit,offset,sort,securityContext);
-    }
-    @POST
-    @Path("/system/{systemId}/agents/{agentId}/jvms")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json", "text/html; charset=utf-8" })
-    @io.swagger.annotations.ApiOperation(value = "", notes = "Query JVM information", response = JvmInfo.class, tags={  })
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = JvmInfo.class) })
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsPost(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
-,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
-,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
-,@ApiParam(value = "Limit of items to return.") @QueryParam("limit") Integer limit
-,@ApiParam(value = "Offset of items to return.") @QueryParam("offset") Integer offset
-,@ApiParam(value = "Sort string") @QueryParam("sort") String sort
-,@ApiParam(value = "Key, Comparator, Value trios to filter the data" ) Filters filters
-,@Context SecurityContext securityContext)
-    throws NotFoundException {
-        return delegate.namespaceSystemSystemIdAgentsAgentIdJvmsPost(namespace,systemId,agentId,limit,offset,sort,filters,securityContext);
-    }
-    @PUT
-    @Path("/system/{systemId}/agents/{agentId}/jvms")
-    @Consumes({ "application/json" })
-    @Produces({ "application/json", "text/html; charset=utf-8" })
-    @io.swagger.annotations.ApiOperation(value = "", notes = "Adds or updates JVM information", response = void.class, tags={  })
-    @io.swagger.annotations.ApiResponses(value = { 
-        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = void.class) })
-    public Response namespaceSystemSystemIdAgentsAgentIdJvmsPut(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
-,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
-,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
-,@ApiParam(value = "The jvm information" ,required=true) JvmInfo jvmInfo
-,@ApiParam(value = "CSV of tags") @QueryParam("tags") String tags
-,@Context SecurityContext securityContext)
-    throws NotFoundException {
-        return delegate.namespaceSystemSystemIdAgentsAgentIdJvmsPut(namespace,systemId,agentId,jvmInfo,tags,securityContext);
-    }
     @DELETE
     @Path("/systems")
     @Consumes({ "application/json" })
@@ -189,6 +122,39 @@ public class NamespaceApi  {
         return delegate.namespaceSystemsSystemIdAgentsAgentIdGet(namespace,systemId,agentId,securityContext);
     }
     @DELETE
+    @Path("/systems/{systemId}/agents/{agentId}/jvms")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json", "text/html; charset=utf-8" })
+    @io.swagger.annotations.ApiOperation(value = "", notes = "Delete JVM information", response = void.class, tags={  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = void.class) })
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsDelete(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
+,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
+,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
+,@Context SecurityContext securityContext)
+    throws NotFoundException {
+        return delegate.namespaceSystemsSystemIdAgentsAgentIdJvmsDelete(namespace,systemId,agentId,securityContext);
+    }
+    @GET
+    @Path("/systems/{systemId}/agents/{agentId}/jvms")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json", "text/html; charset=utf-8" })
+    @io.swagger.annotations.ApiOperation(value = "", notes = "Get JVM information", response = JvmInfo.class, tags={  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = JvmInfo.class),
+        
+        @io.swagger.annotations.ApiResponse(code = 401, message = "Access prohibited.", response = JvmInfo.class) })
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsGet(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
+,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
+,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
+,@ApiParam(value = "Limit of items to return.") @QueryParam("limit") Integer limit
+,@ApiParam(value = "Offset of items to return.") @QueryParam("offset") Integer offset
+,@ApiParam(value = "Sort string") @QueryParam("sort") String sort
+,@Context SecurityContext securityContext)
+    throws NotFoundException {
+        return delegate.namespaceSystemsSystemIdAgentsAgentIdJvmsGet(namespace,systemId,agentId,limit,offset,sort,securityContext);
+    }
+    @DELETE
     @Path("/systems/{systemId}/agents/{agentId}/jvms/{jvmId}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
@@ -236,6 +202,40 @@ public class NamespaceApi  {
 ,@Context SecurityContext securityContext)
     throws NotFoundException {
         return delegate.namespaceSystemsSystemIdAgentsAgentIdJvmsJvmIdPut(namespace,systemId,agentId,jvmId,jvmInfo,tags,securityContext);
+    }
+    @POST
+    @Path("/systems/{systemId}/agents/{agentId}/jvms")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json", "text/html; charset=utf-8" })
+    @io.swagger.annotations.ApiOperation(value = "", notes = "Query JVM information", response = JvmInfo.class, tags={  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = JvmInfo.class) })
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsPost(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
+,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
+,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
+,@ApiParam(value = "Limit of items to return.") @QueryParam("limit") Integer limit
+,@ApiParam(value = "Offset of items to return.") @QueryParam("offset") Integer offset
+,@ApiParam(value = "Sort string") @QueryParam("sort") String sort
+,@ApiParam(value = "Key, Comparator, Value trios to filter the data" ) Filters filters
+,@Context SecurityContext securityContext)
+    throws NotFoundException {
+        return delegate.namespaceSystemsSystemIdAgentsAgentIdJvmsPost(namespace,systemId,agentId,limit,offset,sort,filters,securityContext);
+    }
+    @PUT
+    @Path("/systems/{systemId}/agents/{agentId}/jvms")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json", "text/html; charset=utf-8" })
+    @io.swagger.annotations.ApiOperation(value = "", notes = "Adds or updates JVM information", response = void.class, tags={  })
+    @io.swagger.annotations.ApiResponses(value = { 
+        @io.swagger.annotations.ApiResponse(code = 200, message = "OK", response = void.class) })
+    public Response namespaceSystemsSystemIdAgentsAgentIdJvmsPut(@ApiParam(value = "The namespace",required=true) @PathParam("namespace") String namespace
+,@ApiParam(value = "The system identity",required=true) @PathParam("systemId") String systemId
+,@ApiParam(value = "The agent identity",required=true) @PathParam("agentId") String agentId
+,@ApiParam(value = "The jvm information" ,required=true) JvmInfo jvmInfo
+,@ApiParam(value = "CSV of tags") @QueryParam("tags") String tags
+,@Context SecurityContext securityContext)
+    throws NotFoundException {
+        return delegate.namespaceSystemsSystemIdAgentsAgentIdJvmsPut(namespace,systemId,agentId,jvmInfo,tags,securityContext);
     }
     @PUT
     @Path("/systems/{systemId}/agents/{agentId}")
