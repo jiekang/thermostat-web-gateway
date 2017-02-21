@@ -119,19 +119,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!--&lt;!&ndash; Jetty deps &ndash;&gt;-->
-        <!--<dependency>-->
-            <!--<groupId>org.eclipse.jetty</groupId>-->
-            <!--<artifactId>jetty-server</artifactId>-->
-            <!--<version>${jetty-version}</version>-->
-        <!--</dependency>-->
-
-        <!--<dependency>-->
-            <!--<groupId>org.glassfish.jersey.containers</groupId>-->
-            <!--<artifactId>jersey-container-jetty-servlet</artifactId>-->
-            <!--<version>${jersey-version}</version>-->
-        <!--</dependency>-->
-
         <!-- declarative services -->
         <dependency>
             <groupId>org.apache.felix</groupId>
