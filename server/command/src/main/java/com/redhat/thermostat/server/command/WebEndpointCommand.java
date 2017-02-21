@@ -50,7 +50,7 @@ import com.redhat.thermostat.common.cli.Command;
 import com.redhat.thermostat.common.cli.CommandContext;
 import com.redhat.thermostat.common.cli.CommandException;
 import com.redhat.thermostat.common.config.experimental.ConfigurationInfoSource;
-import com.redhat.thermostat.server.core.SwaggerServer;
+import com.redhat.thermostat.server.core.CoreServer;
 
 @Component
 @Service(Command.class)
@@ -58,7 +58,7 @@ import com.redhat.thermostat.server.core.SwaggerServer;
 public class WebEndpointCommand extends AbstractCommand {
 
     @Reference
-    private SwaggerServer coreServer;
+    private CoreServer coreServer;
 
     @Reference
     private ConfigurationInfoSource config;
