@@ -10,6 +10,8 @@ import java.util.Map;
 
 import javax.servlet.DispatcherType;
 
+import org.apache.felix.scr.annotations.Component;
+import org.apache.felix.scr.annotations.Service;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -34,6 +36,8 @@ import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage
 import io.swagger.api.Bootstrap;
 import io.swagger.jersey.config.JerseyJaxrsConfig;
 
+@Component
+@Service(SwaggerServer.class)
 public class SwaggerServer {
 
     Server server;

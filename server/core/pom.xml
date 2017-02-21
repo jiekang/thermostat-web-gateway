@@ -68,6 +68,8 @@
                             com.redhat.thermostat.server.core,
                         </Export-Package>
                         <Private-Package>
+                            io.swagger.api.*,
+                            io.swagger.model.*,
                             com.redhat.thermostat.server.core.internal.*,
                         </Private-Package>
                         <_nouses>true</_nouses>
