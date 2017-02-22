@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.handler.storage;
+package com.redhat.thermostat.server.core.internal.web.handler.storage.mongo;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -61,6 +61,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.filters.RequestFilters;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHandler;
 import com.redhat.thermostat.server.core.internal.web.json.DocumentBuilder;
 import com.redhat.thermostat.server.core.internal.web.request.TimedRequest;
 import com.redhat.thermostat.server.core.internal.web.response.MongoResponseBuilder;

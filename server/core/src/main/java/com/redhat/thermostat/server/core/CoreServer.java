@@ -31,7 +31,7 @@ import com.redhat.thermostat.server.core.internal.security.auth.none.NoAuthFilte
 import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyAuthFilter;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.handler.http.NamespaceHttpHandler;
-import com.redhat.thermostat.server.core.internal.web.handler.storage.MongoStorageHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.MongoStorageHandler;
 
 @Component
 @Service(CoreServer.class)
