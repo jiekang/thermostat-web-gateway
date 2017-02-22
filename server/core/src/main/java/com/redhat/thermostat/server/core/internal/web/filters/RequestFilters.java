@@ -112,5 +112,6 @@ public class RequestFilters {
                     break;
             }
         }
+        return and(filters);
     }
 }
