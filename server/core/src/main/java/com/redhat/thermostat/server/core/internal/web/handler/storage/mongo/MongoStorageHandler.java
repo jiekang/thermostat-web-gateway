@@ -37,17 +37,10 @@
 package com.redhat.thermostat.server.core.internal.web.handler.storage.mongo;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonObjectBuilder;
-import javax.json.JsonReader;
-import javax.json.JsonValue;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -57,8 +50,10 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.glassfish.jersey.server.ChunkedOutput;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
+import com.mongodb.util.JSON;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.filters.RequestFilters;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHandler;
@@ -98,7 +93,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace) {
+    public void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -163,7 +158,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void getAgents(final SecurityContext securityContext, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
+    public void getAgents(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -173,7 +168,7 @@ public class MongoStorageHandler implements StorageHandler {
             public void run() {
                 final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
                 final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
-                final String userName = securityContext.getUserPrincipal().getName();
+                final String userName = context.getUserPrincipal().getName();
                 final Bson filter = RequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
 
                 TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
@@ -195,16 +190,15 @@ public class MongoStorageHandler implements StorageHandler {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
+
         new Thread(new Runnable() {
             @Override
             public void run() {
-                JsonReader reader = Json.createReader(new StringReader(body));
-                JsonArray array = reader.readArray();
-                reader.close();
+                BasicDBList inputList = (BasicDBList) JSON.parse(body);
 
                 final List<Document> items = new ArrayList<>();
-                for (JsonValue value : array) {
-                    items.add(Document.parse(DocumentBuilder.addTags(value.toString(), context.getUserPrincipal().getName())));
+                for (Object item : inputList) {
+                    items.add(Document.parse(DocumentBuilder.addTags(item.toString(), context.getUserPrincipal().getName())));
                 }
 
                 TimedRequest<Boolean> timedRequest = new TimedRequest<>();
@@ -227,13 +221,31 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void postAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId) {
+    public void postAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
+                BasicDBList queries = (BasicDBList) JSON.parse(body);
+
+                final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
+                final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                final String userName = context.getUserPrincipal().getName();
+                final Bson filter = RequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
+
+                TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
+
+                FindIterable<Document> documents = timedRequest.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
+                    @Override
+                    public FindIterable<Document> run() {
+                        return ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
+                    }
+                });
+
+                asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
+
 
             }
         }).start();
@@ -253,7 +265,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void getAgent(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void getAgent(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -292,7 +304,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void getJvms(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String vmId, String offset, String limit, String sort) {
+    public void getJvms(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String vmId, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -318,7 +330,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -344,7 +356,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void getJvm(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
+    public void getJvm(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -411,7 +423,7 @@ public class MongoStorageHandler implements StorageHandler {
         return Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build();
     }
 
-    public ChunkedOutput<String> streamHostCpuInfo(SecurityContext securityContext, String agentId) {
+    public ChunkedOutput<String> streamHostCpuInfo(SecurityContext context, String agentId) {
         final ChunkedOutput<String> output = new ChunkedOutput<>(String.class, "\r\n");
 
         new Thread() {

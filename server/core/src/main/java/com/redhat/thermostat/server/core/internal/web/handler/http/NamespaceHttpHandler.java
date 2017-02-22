@@ -48,8 +48,11 @@ public class NamespaceHttpHandler {
     public void postSystems(String body,
                             @Context SecurityContext context,
                             @Suspended final AsyncResponse asyncResponse,
-                            @PathParam("namespace") String namespace) {
-        handler.postSystems(body, context, asyncResponse, namespace);
+                            @PathParam("namespace") String namespace,
+                            @QueryParam("offset") @DefaultValue(OFFSET) String offset,
+                            @QueryParam("limit") @DefaultValue(LIMIT) String limit,
+                            @QueryParam("sort") String sort) {
+        handler.postSystems(body, context, asyncResponse, namespace, offset, limit, sort);
     }
 
     @DELETE
@@ -122,8 +125,11 @@ public class NamespaceHttpHandler {
                            @Context SecurityContext context,
                            @Suspended final AsyncResponse asyncResponse,
                            @PathParam("namespace") String namespace,
-                           @PathParam("systemId") String systemId) {
-        handler.postAgents(body, context, asyncResponse, namespace, systemId);
+                           @PathParam("systemId") String systemId,
+                           @QueryParam("offset") @DefaultValue(OFFSET) String offset,
+                           @QueryParam("limit") @DefaultValue(LIMIT) String limit,
+                           @QueryParam("sort") String sort) {
+        handler.postAgents(body, context, asyncResponse, namespace, systemId, offset, limit, sort);
     }
 
     @DELETE
@@ -207,8 +213,11 @@ public class NamespaceHttpHandler {
                          @Suspended final AsyncResponse asyncResponse,
                          @PathParam("namespace") String namespace,
                          @PathParam("systemId") String systemId,
-                         @PathParam("agentId") String agentId) {
-        handler.postJvms(body, context, asyncResponse, namespace, systemId, agentId);
+                         @PathParam("agentId") String agentId,
+                         @QueryParam("offset") @DefaultValue(OFFSET) String offset,
+                         @QueryParam("limit") @DefaultValue(LIMIT) String limit,
+                         @QueryParam("sort") String sort) {
+        handler.postJvms(body, context, asyncResponse, namespace, systemId, agentId, offset, limit, sort);
     }
 
     @DELETE

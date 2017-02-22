@@ -43,6 +43,7 @@ import java.util.List;
 
 import org.bson.conversions.Bson;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.client.model.Filters;
 
 public class RequestFilters {
@@ -55,11 +56,6 @@ public class RequestFilters {
         return buildGetFilter(id, tags);
     }
 
-        /**
-         * Builds a filter suitable for get requests
-         * @param id an id to match
-         * @return the Bson filter
-         */
     public static Bson buildGetFilter(String systemId, String agentId, String jvmId, List<String> tags) {
         List<Bson> filters = new ArrayList<>();
 
@@ -84,4 +80,37 @@ public class RequestFilters {
         return and(filters);
     }
 
+    private static final String DELIM_SPLIT = "((?<=%1$s)|(?=%1$s))";
+
+    public static Bson buildPostFilter(BasicDBList queries, String systemId, List<String> tags) {
+        List<Bson> filters = new ArrayList<>();
+        for (Object filter : queries) {
+            String s[] = filter.toString().split(String.format(DELIM_SPLIT, "(>=|<=|=|>|<)"));
+
+            //TODO: Set comparator, key, value from input of:
+            // <string><comparator><string>
+            // key:comparator:value
+
+            String comparator = null;
+            String key = null;
+            String value = null;
+            switch (comparator) {
+                case "<=":
+                    filters.add(lte(key, value));
+                    break;
+                case ">=":
+                    filters.add(gte(key, value));
+                    break;
+                case "=":
+                    filters.add(eq(key, value));
+                    break;
+                case ">":
+                    filters.add(gt(key, value));
+                    break;
+                case "<":
+                    filters.add(lt(key, value));
+                    break;
+            }
+        }
+    }
 }
