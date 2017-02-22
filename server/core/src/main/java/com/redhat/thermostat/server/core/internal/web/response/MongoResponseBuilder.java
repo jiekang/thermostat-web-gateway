@@ -87,13 +87,7 @@ public class MongoResponseBuilder {
 
         s.append("\"response\" : {");
         for (Document document : documents) {
-            String response;
-            if (document.containsKey("item")) {
-                response = ((Document)document.get("item")).toJson();
-            } else {
-                response = document.toJson();
-            }
-            s.append("\"").append(i).append("\" : ").append(response).append(",");
+            s.append("\"").append(i).append("\" : ").append(document.toJson()).append(",");
             i++;
         }
 

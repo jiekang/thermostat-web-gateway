@@ -37,6 +37,7 @@
 package com.redhat.thermostat.server.core.internal.web.json;
 
 public class DocumentBuilder {
+
     public static String addTags(String content, String... tags) {
         StringBuilder tagBuilder = new StringBuilder();
         tagBuilder.append(",\"tags\":[\"agent\"");

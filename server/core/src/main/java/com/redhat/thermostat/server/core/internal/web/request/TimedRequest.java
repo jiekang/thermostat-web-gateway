@@ -47,11 +47,14 @@ public class TimedRequest <T> {
     }
 
     public T run() {
-        assert r != null;
-        long start = System.nanoTime();
-        T value = this.r.run();
-        elapsed = System.nanoTime() - start;
-        return value;
+        if (r != null) {
+            assert r != null;
+            long start = System.nanoTime();
+            T value = this.r.run();
+            elapsed = System.nanoTime() - start;
+            return value;
+        }
+        return null;
     }
 
     public T run(TimedRunnable<T> r) {

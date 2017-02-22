@@ -157,6 +157,13 @@
             <version>${mongo-java-driver-version}</version>
         </dependency>
 
+        <!-- JSON parsing dependencies -->
+        <dependency>
+            <groupId>javax.json</groupId>
+            <artifactId>javax.json-api</artifactId>
+            <version>1.0</version>
+        </dependency>
+
         <!-- test scoped deps -->
         <!--<dependency>-->
         <!--<groupId>junit</groupId>-->

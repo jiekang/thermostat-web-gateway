@@ -47,32 +47,32 @@ import com.mongodb.client.model.Filters;
 
 public class RequestFilters {
 
-    public static Bson buildGetFilter(String agentId, List<String> tags) {
-        return buildGetFilter(agentId, null, tags, null, null);
+    public static Bson buildGetFilter(List<String> tags) {
+        return buildGetFilter(null, tags);
     }
 
-    public static Bson buildGetFilter(String agentId, List<String> tags, String maxTimestamp, String minTimestamp) {
-        return buildGetFilter(agentId, null, tags, maxTimestamp, minTimestamp);
+    public static Bson buildGetFilter(String id, List<String> tags) {
+        return buildGetFilter(id, tags);
     }
 
         /**
          * Builds a filter suitable for get requests
-         * @param agentId an agentId to match
-         * @param vmId a vmId to match
-         * @param maxTimestamp a maximum timestamp
-         * @param minTimestamp a minimum timestamp
+         * @param id an id to match
          * @return the Bson filter
          */
-    public static Bson buildGetFilter(String agentId, String vmId, List<String> tags, String maxTimestamp, String minTimestamp) {
-
+    public static Bson buildGetFilter(String systemId, String agentId, String jvmId, List<String> tags) {
         List<Bson> filters = new ArrayList<>();
 
-        if (agentId != null && !agentId.equals("all")) {
+        if (systemId != null && !(systemId.equals("all"))) {
+            filters.add(eq("systemId", systemId));
+        }
+
+        if (agentId != null && !(agentId.equals("all"))) {
             filters.add(eq("agentId", agentId));
         }
 
-        if (vmId != null && !vmId.equals("all")) {
-            filters.add(eq("vmId", vmId));
+        if (jvmId != null && !(jvmId.equals("all"))) {
+            filters.add(eq("vmId", jvmId));
         }
 
         if (tags != null && !tags.isEmpty()) {
@@ -81,13 +81,7 @@ public class RequestFilters {
             }
         }
 
-        if (maxTimestamp != null) {
-            filters.add(lte("timeStamp.", Long.valueOf(maxTimestamp)));
-        }
-        if (minTimestamp != null) {
-            filters.add(gte("timeStamp", Long.valueOf(minTimestamp)));
-        }
-
         return and(filters);
     }
+
 }
