@@ -184,6 +184,7 @@ public class MongoStorageHandler implements StorageHandler {
 
                     asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
                 } catch (Exception e) {
+                    e.printStackTrace();
                     asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
                 }
             }
@@ -417,6 +418,43 @@ public class MongoStorageHandler implements StorageHandler {
         }).start();
     }
 
+    @Override
+    public void getNamespaces(final SecurityContext context, final AsyncResponse asyncResponse, final String offset, final String limit) {
+        if (!isMongoConnected(asyncResponse)) {
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
+                        final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                        final String userName = context.getUserPrincipal().getName();
+
+                        TimedRequest<String> timedRequest = new TimedRequest<>();
+
+                        try {
+                            String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
+                                @Override
+                                public String run() {
+                                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection("namespaces").find().limit(c).skip(o);
+                                    return MongoResponseBuilder.buildJsonDocuments(documents);
+                                }
+                            });
+
+                            asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
+                        } catch (Exception e) {
+                            asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
+                        }
+                    }
+                }).start();
+            }
+        }).start();
+
+    }
+
     public Response putAgent(String body,
                              @Context SecurityContext context) {
         if (!ThermostatMongoStorage.isConnected()) {
@@ -491,10 +529,12 @@ public class MongoStorageHandler implements StorageHandler {
 
 
     private Bson createSortObject(String sort) {
-        String[] items = sort.split(",");
         BasicDBObject sortObject = new BasicDBObject();
-        for (String item : items) {
-            sortObject.append(item.substring(1), item.charAt(0));
+        if (sort != null) {
+            String[] items = sort.split(",");
+            for (String item : items) {
+                sortObject.append(item.substring(1), item.charAt(0));
+            }
         }
         return sortObject;
     }

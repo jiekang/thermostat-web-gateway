@@ -18,7 +18,7 @@ public class NamespaceHttpHandler {
     }
 
     private static final String OFFSET = "0";
-    private static final String LIMIT = "20";
+    private static final String LIMIT = "50";
 
     @GET
     @Path("systems")

@@ -83,4 +83,6 @@ public interface StorageHandler {
     void putJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
 
     void deleteJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
+
+    void getNamespaces(SecurityContext context, AsyncResponse asyncResponse, String offset, String limit);
 }
