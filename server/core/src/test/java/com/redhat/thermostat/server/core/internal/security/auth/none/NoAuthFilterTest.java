@@ -21,9 +21,9 @@ public class NoAuthFilterTest {
     private ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
     @Before
     public void setup() throws IOException {
-        noAuthFilter = new NoAuthFilter();
         crq = mock(ContainerRequestContext.class);
 
+        noAuthFilter = new NoAuthFilter();
         noAuthFilter.filter(crq);
     }
 

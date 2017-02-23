@@ -55,7 +55,7 @@ public class UserStore {
      * Basic user :
      * <username> = basic,<password>,<roles>
      *
-     * <roles> = <roles><role>
+     * <roles> = <roles>,<role>
      * <role> = STRING
      * <password> = STRING
      *

@@ -49,10 +49,12 @@ public class ProxyWebUser implements WebUser {
         this.roles = roles;
     }
 
+    @Override
     public String getUsername() {
         return this.username;
     }
 
+    @Override
     public boolean isUserInRole(String role) {
         return this.roles.contains(role);
     }

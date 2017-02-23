@@ -59,7 +59,7 @@ public class ProxyAuthFilter implements ContainerRequestFilter{
     }
 
     @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException {
+    public void filter(ContainerRequestContext requestContext) throws IOException, NotAuthorizedException {
         String username = requestContext.getHeaderString("X-SSSD-REMOTE-USER");
         if (username == null) {
             throw new NotAuthorizedException("Authentication credentials are required");
