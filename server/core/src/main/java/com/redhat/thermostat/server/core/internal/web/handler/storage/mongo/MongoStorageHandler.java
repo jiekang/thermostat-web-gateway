@@ -56,9 +56,9 @@ import com.mongodb.util.JSON;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHandler;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.filters.MongoRequestFilters;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.response.MongoResponseBuilder;
 import com.redhat.thermostat.server.core.internal.web.json.DocumentBuilder;
 import com.redhat.thermostat.server.core.internal.web.request.TimedRequest;
-import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.response.MongoResponseBuilder;
 
 public class MongoStorageHandler implements StorageHandler {
 

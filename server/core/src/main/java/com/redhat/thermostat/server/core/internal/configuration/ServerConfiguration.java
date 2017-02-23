@@ -41,5 +41,10 @@ public enum ServerConfiguration {
     SECURITY_BASIC_URL,
 
     SWAGGER_ENABLED,
+
+    MONGO_URL,
+    MONGO_DB,
+    MONGO_USERNAME,
+    MONGO_PASSWORD,
     ;
 }
