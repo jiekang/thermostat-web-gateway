@@ -67,92 +67,92 @@ public class MongoStorageHandler implements StorageHandler {
     private final int MAX_MONGO_DOCUMENTS = 5000;
 
     @Override
-    public void getSystems(SecurityContext context, AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
+    public void getSystems(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void putSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace) {
+    public void putSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
+    public void postSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void deleteSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace) {
+    public void deleteSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void getSystem(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId) {
+    public void getSystem(SecurityContext securityContext, final AsyncResponse asyncResponse, String namespace, String systemId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void putSystem(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace) {
+    public void putSystem(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void deleteSystem(SecurityContext context, AsyncResponse asyncResponse, String namespace) {
+    public void deleteSystem(SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
@@ -252,7 +252,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void deleteAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId) {
+    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, String systemId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -260,136 +260,150 @@ public class MongoStorageHandler implements StorageHandler {
             @Override
             public void run() {
 
+                TimedRequest<Boolean> timedRequest = new TimedRequest<>();
+
+                Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
+                    @Override
+                    public Boolean run() {
+                        try {
+                            ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agents").drop();
+                        } catch (Exception e) {
+                            return Boolean.FALSE;
+                        }
+                        return Boolean.TRUE;
+                    }
+                });
+                asyncResponse.resume(Response.status(Response.Status.OK).entity("DELETE: " + response.toString()).build());
             }
         }).start();
     }
 
     @Override
-    public void getAgent(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void getAgent(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void putAgent(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void putAgent(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void deleteAgent(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void deleteAgent(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void getJvms(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String vmId, String offset, String limit, String sort) {
+    public void getJvms(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String vmId, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void putJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void putJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort) {
+    public void postJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void deleteJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void deleteJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void getJvm(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
+    public void getJvm(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void putJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
+    public void putJvm(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
 
     @Override
-    public void deleteJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
+    public void deleteJvm(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-
+                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
             }
         }).start();
     }
