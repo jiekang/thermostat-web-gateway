@@ -7,6 +7,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
+import org.glassfish.jersey.server.ChunkedOutput;
+
 import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHandler;
 
 @Path("/api/v100/{namespace}")
@@ -19,6 +21,7 @@ public class NamespaceHttpHandler {
 
     private static final String OFFSET = "0";
     private static final String LIMIT = "50";
+    private static final String STREAM_LIMIT = "1";
 
     @GET
     @Path("systems")
@@ -105,6 +108,16 @@ public class NamespaceHttpHandler {
                           @QueryParam("limit") @DefaultValue(LIMIT) String limit,
                           @QueryParam("sort") String sort) {
         handler.getAgents(securityContext, asyncResponse, namespace, systemId, offset, limit, sort);
+    }
+
+    @GET
+    @Path("stream/systems/{systemId}/agents")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ChunkedOutput<String> streamAgents(@Context SecurityContext securityContext,
+                                              @PathParam("namespace") String namespace,
+                                              @PathParam("systemId") String systemId,
+                                              @QueryParam("limit") @DefaultValue(STREAM_LIMIT) String limit) {
+        return handler.streamAgents(securityContext, namespace, systemId, limit);
     }
 
     @PUT

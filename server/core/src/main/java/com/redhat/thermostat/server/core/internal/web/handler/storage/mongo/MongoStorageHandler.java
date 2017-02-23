@@ -167,7 +167,7 @@ public class MongoStorageHandler implements StorageHandler {
             @Override
             public void run() {
                 final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-                final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
                 final String userName = context.getUserPrincipal().getName();
                 final Bson filter = MongoRequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
 
@@ -177,7 +177,7 @@ public class MongoStorageHandler implements StorageHandler {
                     String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                         @Override
                         public String run() {
-                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
+                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(l).skip(o);
                             return MongoResponseBuilder.buildJsonDocuments(documents);
                         }
                     });
@@ -237,7 +237,7 @@ public class MongoStorageHandler implements StorageHandler {
                 BasicDBList queries = (BasicDBList) JSON.parse(body);
 
                 final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-                final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
                 final String userName = context.getUserPrincipal().getName();
                 final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
 
@@ -247,7 +247,7 @@ public class MongoStorageHandler implements StorageHandler {
                     String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                         @Override
                         public String run() {
-                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
+                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(l).skip(o);
                             return MongoResponseBuilder.buildJsonDocuments(documents);
                         }
                     });
@@ -455,48 +455,23 @@ public class MongoStorageHandler implements StorageHandler {
 
     }
 
-    public Response putAgent(String body,
-                             @Context SecurityContext context) {
-        if (!ThermostatMongoStorage.isConnected()) {
-            return Response.status(Response.Status.OK).entity("PUT " + context.getUserPrincipal().getName() + "\n\n" + body).build();
-        }
 
-        TimedRequest<Boolean> timedRequest = new TimedRequest<>();
-
-        /*
-         * TODO: Verify body matches expected schema
-         * TODO: Clean up insertion of tags into JSON body
-         */
-        final Document item = Document.parse(DocumentBuilder.addTags(body, context.getUserPrincipal().getName()));
-
-        Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
-            @Override
-            public Boolean run() {
-                try {
-                    ThermostatMongoStorage.getDatabase().getCollection("agents").insertOne(item);
-                } catch (Exception e) {
-                    return Boolean.FALSE;
-                }
-                return Boolean.TRUE;
-            }
-        });
-
-        return Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build();
-    }
-
-    public ChunkedOutput<String> streamHostCpuInfo(SecurityContext context, String agentId) {
+    @Override
+    public ChunkedOutput<String> streamAgents(SecurityContext context, final String namespace, String systemId, final String limit) {
         final ChunkedOutput<String> output = new ChunkedOutput<>(String.class, "\r\n");
 
         new Thread() {
             public void run() {
                 try {
+                    final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
 
                     while (true) {
+
                         TimedRequest<FindIterable<Document>> request = new TimedRequest<>();
                         FindIterable<Document> documents = request.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
                             @Override
                             public FindIterable<Document> run() {
-                                return ThermostatMongoStorage.getDatabase().getCollection("cpu-stats").find().sort(new BasicDBObject("_id", -1)).limit(1);
+                                return ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agents").find().sort(new BasicDBObject("_id", -1)).limit(l);
                             }
                         });
                         output.write(MongoResponseBuilder.buildJsonResponseWithTime(documents, request.getElapsed()));

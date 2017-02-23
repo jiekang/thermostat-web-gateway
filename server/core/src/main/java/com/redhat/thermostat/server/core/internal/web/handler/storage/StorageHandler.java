@@ -39,6 +39,8 @@ package com.redhat.thermostat.server.core.internal.web.handler.storage;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.SecurityContext;
 
+import org.glassfish.jersey.server.ChunkedOutput;
+
 public interface StorageHandler {
     void getSystems(SecurityContext context, AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort);
 
@@ -85,4 +87,6 @@ public interface StorageHandler {
     void deleteJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
 
     void getNamespaces(SecurityContext context, AsyncResponse asyncResponse, String offset, String limit);
+
+    ChunkedOutput<String> streamAgents(SecurityContext securityContext, String namespace, String systemId, String limit);
 }
