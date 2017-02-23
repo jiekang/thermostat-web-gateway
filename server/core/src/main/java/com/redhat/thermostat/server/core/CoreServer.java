@@ -40,8 +40,6 @@ public class CoreServer {
     private int port = 8090;
 
     public void buildServer(Map<String, String> serverConfig, Map<String, String> userConfig) {
-        server = new Server();
-
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
 
         ResourceConfig resourceConfig = new ResourceConfig();
