@@ -34,31 +34,56 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.filters;
+package com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.filters;
 
 import static com.mongodb.client.model.Filters.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bson.conversions.Bson;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.client.model.Filters;
 
-public class RequestFilters {
+public class MongoRequestFilters {
 
     public static Bson buildGetFilter(List<String> tags) {
-        return buildGetFilter(null, tags);
+        return buildGetFilter(null, null, null, tags);
     }
 
-    public static Bson buildGetFilter(String id, List<String> tags) {
-        return buildGetFilter(id, tags);
+    public static Bson buildGetFilter(String systemId, List<String> tags) {
+        return buildGetFilter(systemId, null, null, tags);
     }
 
     public static Bson buildGetFilter(String systemId, String agentId, String jvmId, List<String> tags) {
         List<Bson> filters = new ArrayList<>();
 
+        filters.add(buildIdFilters(systemId, agentId, jvmId));
+
+        filters.add(buildTagsFilter(tags));
+
+        return and(filters);
+    }
+
+    public static Bson buildPostFilter(BasicDBList queries, String systemId, List<String> tags) {
+        List<Bson> filters = new ArrayList<>();
+
+        filters.add(buildQueriesFilter(queries));
+
+        if (systemId != null && !(systemId.equals("all"))) {
+            filters.add(eq("systemId", systemId));
+        }
+
+        filters.add(buildTagsFilter(tags));
+
+        return and(filters);
+    }
+
+    private static Bson buildIdFilters(String systemId, String agentId, String jvmId) {
+        List<Bson> filters = new ArrayList<>();
         if (systemId != null && !(systemId.equals("all"))) {
             filters.add(eq("systemId", systemId));
         }
@@ -68,48 +93,48 @@ public class RequestFilters {
         }
 
         if (jvmId != null && !(jvmId.equals("all"))) {
-            filters.add(eq("vmId", jvmId));
+            filters.add(eq("jvmId", jvmId));
         }
+        return and(filters);
+    }
 
+    private static Bson buildTagsFilter(List<String> tags) {
+        List<Bson> filters = new ArrayList<>();
         if (tags != null && !tags.isEmpty()) {
             for (String tag : tags) {
                 filters.add(or(Filters.exists("tags", false), eq("tags", tag)));
             }
         }
-
-        return and(filters);
+        return or(filters);
     }
 
-    private static final String DELIM_SPLIT = "((?<=%1$s)|(?=%1$s))";
-
-    public static Bson buildPostFilter(BasicDBList queries, String systemId, List<String> tags) {
+    private static Bson buildQueriesFilter(BasicDBList queries) {
         List<Bson> filters = new ArrayList<>();
-        for (Object filter : queries) {
-            String s[] = filter.toString().split(String.format(DELIM_SPLIT, "(>=|<=|=|>|<)"));
-
-            //TODO: Set comparator, key, value from input of:
-            // <string><comparator><string>
-            // key:comparator:value
-
-            String comparator = null;
-            String key = null;
-            String value = null;
-            switch (comparator) {
-                case "<=":
-                    filters.add(lte(key, value));
-                    break;
-                case ">=":
-                    filters.add(gte(key, value));
-                    break;
-                case "=":
-                    filters.add(eq(key, value));
-                    break;
-                case ">":
-                    filters.add(gt(key, value));
-                    break;
-                case "<":
-                    filters.add(lt(key, value));
-                    break;
+        for (Object q : queries) {
+            String filter = q.toString();
+            Pattern p = Pattern.compile("(<=|>=|<|>|=)");
+            Matcher m = p.matcher(filter);
+            if (m.find()) {
+                String comparator = filter.substring(0, m.start());
+                String key = filter.substring(m.start(), m.end());
+                String value = filter.substring(m.end());
+                switch (comparator) {
+                    case "<=":
+                        filters.add(lte(key, value));
+                        break;
+                    case ">=":
+                        filters.add(gte(key, value));
+                        break;
+                    case "=":
+                        filters.add(eq(key, value));
+                        break;
+                    case ">":
+                        filters.add(gt(key, value));
+                        break;
+                    case "<":
+                        filters.add(lt(key, value));
+                        break;
+                }
             }
         }
         return and(filters);

@@ -55,8 +55,8 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
 import com.mongodb.util.JSON;
 import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
-import com.redhat.thermostat.server.core.internal.web.filters.RequestFilters;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.filters.MongoRequestFilters;
 import com.redhat.thermostat.server.core.internal.web.json.DocumentBuilder;
 import com.redhat.thermostat.server.core.internal.web.request.TimedRequest;
 import com.redhat.thermostat.server.core.internal.web.response.MongoResponseBuilder;
@@ -169,7 +169,7 @@ public class MongoStorageHandler implements StorageHandler {
                 final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
                 final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
                 final String userName = context.getUserPrincipal().getName();
-                final Bson filter = RequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
+                final Bson filter = MongoRequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
 
                 TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
 
@@ -233,7 +233,7 @@ public class MongoStorageHandler implements StorageHandler {
                 final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
                 final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
                 final String userName = context.getUserPrincipal().getName();
-                final Bson filter = RequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
+                final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
 
                 TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
 
