@@ -38,13 +38,20 @@ package com.redhat.thermostat.server.core.internal.web.json;
 
 public class DocumentBuilder {
 
+    /**
+     * Adds tags to the JSON content
+     * {/[ ... }/] -> {/[ ... ,tags:[admin,...]}/]
+     * @param content
+     * @param tags
+     * @return the JSON string with tags attached
+     */
     public static String addTags(String content, String... tags) {
         StringBuilder tagBuilder = new StringBuilder();
-        tagBuilder.append(",\"tags\":[\"agent\"");
+        tagBuilder.append(",\"tags\":[\"admin\"");
         for (String tag : tags) {
-            tagBuilder.append(", \"").append(tag).append("\"");
+            tagBuilder.append(",\"").append(tag).append("\"");
         }
-        tagBuilder.append("]}");
+        tagBuilder.append("]");
 
         StringBuilder contentBuilder = new StringBuilder(content);
         contentBuilder.insert(contentBuilder.length() - 1, tagBuilder.toString());

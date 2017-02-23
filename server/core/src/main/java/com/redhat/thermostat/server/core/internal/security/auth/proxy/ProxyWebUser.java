@@ -61,6 +61,8 @@ public class ProxyWebUser implements WebUser {
 
     @Override
     public void addRole(String role) {
-        roles.add(role);
+        if (role != null) {
+            roles.add(role);
+        }
     }
 }
