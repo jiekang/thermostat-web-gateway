@@ -171,16 +171,21 @@ public class MongoStorageHandler implements StorageHandler {
                 final String userName = context.getUserPrincipal().getName();
                 final Bson filter = MongoRequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
 
-                TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
+                TimedRequest<String> timedRequest = new TimedRequest<>();
 
-                FindIterable<Document> documents = timedRequest.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
-                    @Override
-                    public FindIterable<Document> run() {
-                        return ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
-                    }
-                });
+                try {
+                    String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
+                        @Override
+                        public String run() {
+                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
+                            return MongoResponseBuilder.buildJsonDocuments(documents);
+                        }
+                    });
 
-                asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
+                    asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
+                } catch (Exception e) {
+                    asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
+                }
             }
         }).start();
     }
@@ -235,17 +240,21 @@ public class MongoStorageHandler implements StorageHandler {
                 final String userName = context.getUserPrincipal().getName();
                 final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
 
-                TimedRequest<FindIterable<Document>> timedRequest = new TimedRequest<>();
+                try {
+                    TimedRequest<String> timedRequest = new TimedRequest<>();
 
-                FindIterable<Document> documents = timedRequest.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
-                    @Override
-                    public FindIterable<Document> run() {
-                        return ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
-                    }
-                });
+                    String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
+                        @Override
+                        public String run() {
+                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(c).skip(o);
+                            return MongoResponseBuilder.buildJsonDocuments(documents);
+                        }
+                    });
 
-                asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
-
+                    asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
+                } catch (Exception e) {
+                    asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
+                }
 
             }
         }).start();

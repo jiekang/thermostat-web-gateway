@@ -54,7 +54,7 @@ public class ThermostatMongoStorage {
     public static void start(int port) {
         MongoCredential credential = MongoCredential.createCredential(username, dbName, password);
         ServerAddress address = new ServerAddress("127.0.0.1", port);
-        mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(0).build());
+        mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(0).connectTimeout(0).socketTimeout(0).build());
     }
 
     public static boolean isConnected() {

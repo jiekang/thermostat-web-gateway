@@ -81,7 +81,14 @@ public class MongoResponseBuilder {
                 "}";
     }
 
-    private static String buildJsonDocuments(FindIterable<Document> documents) {
+    public static String buildJsonResponseWithTime(String documents, long elapsed) {
+        return "{" +
+                documents +
+                buildKeyAddition("time", "" + elapsed) +
+                "}";
+    }
+
+    public static String buildJsonDocuments(FindIterable<Document> documents) {
         StringBuilder s = new StringBuilder();
         int i = 0;
 

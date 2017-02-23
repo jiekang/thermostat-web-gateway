@@ -37,12 +37,12 @@ import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.Mong
 @Service(CoreServer.class)
 public class CoreServer {
     private Server server;
+    private int port = 8090;
 
     public void buildServer(Map<String, String> serverConfig, Map<String, String> userConfig) {
-
         server = new Server();
 
-        URI baseUri = UriBuilder.fromUri("http://localhost").port(8080).build();
+        URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
 
         ResourceConfig resourceConfig = new ResourceConfig();
         setupResourceConfig(serverConfig, userConfig, resourceConfig);
@@ -80,7 +80,8 @@ public class CoreServer {
             try {
                 URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL.toString()));
                 httpConnector.setHost(url.getHost());
-                httpConnector.setPort(url.getPort());
+                port = url.getPort();
+                httpConnector.setPort(port);
             } catch (MalformedURLException e) {
 
                 httpConnector.setHost("localhost");
@@ -97,6 +98,7 @@ public class CoreServer {
             try {
                 URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_BASIC_URL.toString()));
                 httpConnector.setHost(url.getHost());
+                port = url.getPort();
                 httpConnector.setPort(url.getPort());
             } catch (MalformedURLException e) {
                 httpConnector.setHost("localhost");
@@ -152,5 +154,14 @@ public class CoreServer {
 
     public void finish() {
         ThermostatMongoStorage.finish();
+        try {
+            server.stop();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getPort() {
+        return port;
     }
 }
