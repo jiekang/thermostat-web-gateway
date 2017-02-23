@@ -36,15 +36,15 @@
 
 package com.redhat.thermostat.server.core.internal.security.auth.proxy;
 
-import java.util.List;
+import java.util.Set;
 
 import com.redhat.thermostat.server.core.internal.security.WebUser;
 
 public class ProxyWebUser implements WebUser {
     private final String username;
-    private final List<String> roles;
+    private final Set<String> roles;
 
-    public ProxyWebUser(String username, List<String> roles) {
+    public ProxyWebUser(String username, Set<String> roles) {
         this.username = username;
         this.roles = roles;
     }
@@ -55,5 +55,10 @@ public class ProxyWebUser implements WebUser {
 
     public boolean isUserInRole(String role) {
         return this.roles.contains(role);
+    }
+
+    @Override
+    public void addRole(String role) {
+        roles.add(role);
     }
 }

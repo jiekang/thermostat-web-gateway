@@ -36,16 +36,16 @@
 
 package com.redhat.thermostat.server.core.internal.security.auth.basic;
 
-import java.util.List;
+import java.util.Set;
 
 import com.redhat.thermostat.server.core.internal.security.WebUser;
 
 public class BasicWebUser implements WebUser {
     private final String username;
-    private final List<String> roles;
+    private final Set<String> roles;
     private final char[] password;
 
-    public BasicWebUser(String username, char[] password, List<String> roles) {
+    public BasicWebUser(String username, char[] password, Set<String> roles) {
         this.username = username;
         this.roles = roles;
         this.password = password;
@@ -59,6 +59,11 @@ public class BasicWebUser implements WebUser {
     @Override
     public boolean isUserInRole(String role) {
         return this.roles.contains(role);
+    }
+
+    @Override
+    public void addRole(String role) {
+        roles.add(role);
     }
 
     public String getPassword() {

@@ -39,4 +39,5 @@ package com.redhat.thermostat.server.core.internal.security;
 public interface WebUser {
     String getUsername();
     boolean isUserInRole(String role);
+    void addRole(String role);
 }

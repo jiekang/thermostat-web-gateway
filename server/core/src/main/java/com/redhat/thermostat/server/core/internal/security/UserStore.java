@@ -39,6 +39,7 @@ package com.redhat.thermostat.server.core.internal.security;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicWebUser;
@@ -65,9 +66,9 @@ public class UserStore {
             ArrayList<String> items = new ArrayList<>(Arrays.asList(entry.getValue().split(",")));
             WebUser user;
             if (items.get(0).equals("proxy")) {
-                user = new ProxyWebUser(username, new ArrayList<>(items.subList(1, items.size())));
+                user = new ProxyWebUser(username, new HashSet<>(items.subList(1, items.size())));
             } else {
-                user = new BasicWebUser(username, items.get(1).toCharArray(), items.subList(2, items.size()));
+                user = new BasicWebUser(username, items.get(1).toCharArray(), new HashSet<>(items.subList(2, items.size())));
             }
             userStore.put(username, user);
         }
