@@ -33,6 +33,7 @@ import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage
 import com.redhat.thermostat.server.core.internal.web.handler.http.BaseHttpHandler;
 import com.redhat.thermostat.server.core.internal.web.handler.http.NamespaceHttpHandler;
 import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.MongoStorageHandler;
+import com.redhat.thermostat.server.core.internal.web.handler.swagger.SwaggerUiHandler;
 
 @Component
 @Service(CoreServer.class)
@@ -127,26 +128,10 @@ public class CoreServer {
             Handler originalHandler = server.getHandler();
 
             HandlerList handlers = new HandlerList();
-            handlers.setHandlers(new Handler[]{createSwaggerResource(), originalHandler});
+            handlers.setHandlers(new Handler[]{new SwaggerUiHandler().createSwaggerResourceHandler(), originalHandler});
 
             server.setHandler(handlers);
         }
-    }
-
-    private Handler createSwaggerResource() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(true);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        resourceHandler.setResourceBase("");
-        URL u = this.getClass().getResource("/swagger/index.html");
-        URI root;
-        try {
-            root = u.toURI().resolve("./").normalize();
-            resourceHandler.setBaseResource(Resource.newResource(root));
-        } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
-        }
-        return resourceHandler;
     }
 
     public Server getServer() {

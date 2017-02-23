@@ -42,7 +42,6 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.container.AsyncResponse;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
@@ -59,7 +58,7 @@ import com.redhat.thermostat.server.core.internal.web.handler.storage.StorageHan
 import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.filters.MongoRequestFilters;
 import com.redhat.thermostat.server.core.internal.web.json.DocumentBuilder;
 import com.redhat.thermostat.server.core.internal.web.request.TimedRequest;
-import com.redhat.thermostat.server.core.internal.web.response.MongoResponseBuilder;
+import com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.response.MongoResponseBuilder;
 
 public class MongoStorageHandler implements StorageHandler {
 

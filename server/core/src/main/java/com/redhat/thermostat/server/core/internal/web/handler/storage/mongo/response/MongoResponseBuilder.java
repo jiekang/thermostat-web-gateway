@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.response;
+package com.redhat.thermostat.server.core.internal.web.handler.storage.mongo.response;
 
 import org.bson.Document;
 
