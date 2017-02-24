@@ -68,6 +68,10 @@
             <source>src/config/authorization-config.properties</source>
             <outputDirectory>/etc/plugins.d/${thermostat.plugin}</outputDirectory>
         </file>
+        <file>
+            <source>src/config/mongo-config.properties</source>
+            <outputDirectory>/etc/plugins.d/${thermostat.plugin}</outputDirectory>
+        </file>
     </files>
 </assembly>
 
