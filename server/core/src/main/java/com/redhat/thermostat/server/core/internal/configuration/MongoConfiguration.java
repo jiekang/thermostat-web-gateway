@@ -36,10 +36,10 @@
 
 package com.redhat.thermostat.server.core.internal.configuration;
 
-public enum ServerConfiguration {
-    SECURITY_PROXY_URL,
-    SECURITY_BASIC_URL,
-
-    SWAGGER_UI_ENABLED,
+public enum MongoConfiguration {
+    MONGO_URL,
+    MONGO_DB,
+    MONGO_USERNAME,
+    MONGO_PASSWORD,
     ;
 }

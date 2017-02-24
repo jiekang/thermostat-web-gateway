@@ -36,8 +36,8 @@
 
 package com.redhat.thermostat.server.core.internal.storage;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -46,41 +46,45 @@ import com.mongodb.MongoClientOptions;
 import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoDatabase;
-import com.redhat.thermostat.server.core.internal.configuration.ServerConfiguration;
+import com.redhat.thermostat.server.core.internal.configuration.MongoConfiguration;
 
 public class ThermostatMongoStorage {
     private static MongoClient mongoClient;
 
-    private static String username = "mongodevuser";
-    private static char[] password = "mongodevpassword".toCharArray();
     private static String dbName = "thermostat";
-    private static String host = "127.0.0.1";
-    private static int port = 27518;
 
-    public static void start(Map<String, String> serverConfiguration) {
+    public static void start(Map<String, String> mongoConfiguration) {
+        String username = null;
+        char[] password = null;
+        String host = "127.0.0.1";
+        int port = 27518;
 
-        if (serverConfiguration.containsKey(ServerConfiguration.MONGO_DB)) {
-            dbName = serverConfiguration.get(ServerConfiguration.MONGO_DB);
+        if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_DB.toString())) {
+            dbName = mongoConfiguration.get(MongoConfiguration.MONGO_DB.toString());
         }
-        if (serverConfiguration.containsKey(ServerConfiguration.MONGO_USERNAME)) {
-            username = serverConfiguration.get(ServerConfiguration.MONGO_USERNAME);
+        if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_USERNAME.toString())) {
+            username = mongoConfiguration.get(MongoConfiguration.MONGO_USERNAME.toString());
         }
-        if (serverConfiguration.containsKey(ServerConfiguration.MONGO_PASSWORD)) {
-            password = serverConfiguration.get(ServerConfiguration.MONGO_PASSWORD).toCharArray();
+        if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_PASSWORD.toString())) {
+            password = mongoConfiguration.get(MongoConfiguration.MONGO_PASSWORD.toString()).toCharArray();
         }
-        if (serverConfiguration.containsKey(ServerConfiguration.MONGO_URL)) {
+        if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_URL.toString())) {
             try {
-                URL url = new URL(serverConfiguration.get(ServerConfiguration.MONGO_URL));
+                URI url = new URI(mongoConfiguration.get(MongoConfiguration.MONGO_URL.toString()));
                 host = url.getHost();
                 port = url.getPort();
-            } catch (MalformedURLException e) {
-                //Do nothing. Defaults will be used
+            } catch (URISyntaxException e) {
+                // Do nothing. Defaults will be used.
             }
         }
 
-        MongoCredential credential = MongoCredential.createCredential(username, dbName, password);
         ServerAddress address = new ServerAddress(host, port);
-        mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(0).connectTimeout(0).socketTimeout(0).build());
+        if (username != null && password != null) {
+            MongoCredential credential = MongoCredential.createCredential(username, dbName, password);
+            mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(0).connectTimeout(0).socketTimeout(0).build());
+        } else {
+            mongoClient = new MongoClient(address, new MongoClientOptions.Builder().serverSelectionTimeout(0).connectTimeout(0).socketTimeout(0).build());
+        }
     }
 
     public static boolean isConnected() {

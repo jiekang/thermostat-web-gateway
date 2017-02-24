@@ -20,7 +20,7 @@ public class AbstractCoreServerTest {
     @BeforeClass
     public static void setupClass() throws Exception {
         coreServer= new CoreServer();
-        coreServer.buildServer(Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+        coreServer.buildServer(Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {

@@ -1,9 +1,7 @@
 package com.redhat.thermostat.server.core;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Map;
 
@@ -18,8 +16,6 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -41,7 +37,7 @@ public class CoreServer {
     private Server server;
     private int port = 8090;
 
-    public void buildServer(Map<String, String> serverConfig, Map<String, String> userConfig) {
+    public void buildServer(Map<String, String> serverConfig, Map<String, String> mongoConfig, Map<String, String> userConfig) {
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
 
         ResourceConfig resourceConfig = new ResourceConfig();
@@ -53,7 +49,7 @@ public class CoreServer {
 
         setupHandlers(serverConfig);
 
-        ThermostatMongoStorage.start(27518);
+        ThermostatMongoStorage.start(mongoConfig);
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
@@ -123,8 +119,8 @@ public class CoreServer {
     }
 
     private void setupHandlers(Map<String, String> serverConfig) {
-        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_ENABLED.toString()) &&
-                serverConfig.get(ServerConfiguration.SWAGGER_ENABLED.toString()).equals("true")) {
+        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_UI_ENABLED.toString()) &&
+                serverConfig.get(ServerConfiguration.SWAGGER_UI_ENABLED.toString()).equals("true")) {
             Handler originalHandler = server.getHandler();
 
             HandlerList handlers = new HandlerList();
