@@ -21,7 +21,7 @@ public class SwaggerUiHandler {
             root = u.toURI().resolve("./").normalize();
             resourceHandler.setBaseResource(Resource.newResource(root));
         } catch (URISyntaxException | IOException e) {
-            e.printStackTrace();
+            return null;
         }
         return resourceHandler;
     }

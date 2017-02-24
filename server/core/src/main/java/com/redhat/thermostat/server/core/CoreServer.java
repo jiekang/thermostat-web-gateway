@@ -16,6 +16,7 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
@@ -121,12 +122,17 @@ public class CoreServer {
     private void setupHandlers(Map<String, String> serverConfig) {
         if (serverConfig.containsKey(ServerConfiguration.SWAGGER_UI_ENABLED.toString()) &&
                 serverConfig.get(ServerConfiguration.SWAGGER_UI_ENABLED.toString()).equals("true")) {
-            Handler originalHandler = server.getHandler();
+            ResourceHandler swaggerHandler = new SwaggerUiHandler().createSwaggerResourceHandler();
+            if (swaggerHandler != null) {
+                Handler originalHandler = server.getHandler();
 
-            HandlerList handlers = new HandlerList();
-            handlers.setHandlers(new Handler[]{new SwaggerUiHandler().createSwaggerResourceHandler(), originalHandler});
+                HandlerList handlers = new HandlerList();
+                handlers.setHandlers(new Handler[]{swaggerHandler, originalHandler});
 
-            server.setHandler(handlers);
+                server.setHandler(handlers);
+            } else {
+                System.err.println("Unable to add swagger UI resource handler. Resources invalid or not found.");
+            }
         }
     }
 
