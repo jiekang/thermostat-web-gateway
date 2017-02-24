@@ -1,6 +1,8 @@
 package com.redhat.thermostat.server.core.storage;
 
 import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
@@ -23,11 +25,19 @@ public class ThermostatMongoStorageTest {
 
     // TODO: Test connecting to a temporary mongo instance created by the test
     @Test
-    @Ignore
-    public void testStorage() throws IOException {
-        MongodTestUtil.startMongod();
+    public void testStorage() throws IOException, InterruptedException {
+        MongodTestUtil mongodTestUtil = new MongodTestUtil();
+        mongodTestUtil.startMongod();
+
         ThermostatMongoStorage.start(MongodTestUtil.mongoConfiguration);
-        MongodTestUtil.stopMongod();
+
+        mongodTestUtil.waitForMongodStart();
+
+        assertTrue(ThermostatMongoStorage.isConnected());
+
+        mongodTestUtil.stopMongod();
+        mongodTestUtil.waitForMongodStop();
+        assertEquals(0, mongodTestUtil.process.exitValue());
     }
 
 }
