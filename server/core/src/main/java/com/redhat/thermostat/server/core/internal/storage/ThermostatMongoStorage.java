@@ -58,6 +58,7 @@ public class ThermostatMongoStorage {
         char[] password = null;
         String host = "127.0.0.1";
         int port = 27518;
+        int timeout = 1000;
 
         if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_DB.toString())) {
             dbName = mongoConfiguration.get(MongoConfiguration.MONGO_DB.toString());
@@ -77,13 +78,16 @@ public class ThermostatMongoStorage {
                 // Do nothing. Defaults will be used.
             }
         }
+        if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_SERVER_TIMEOUT.toString())) {
+            timeout = Integer.valueOf(mongoConfiguration.get(MongoConfiguration.MONGO_SERVER_TIMEOUT.toString()));
+        }
 
         ServerAddress address = new ServerAddress(host, port);
         if (username != null && password != null) {
             MongoCredential credential = MongoCredential.createCredential(username, dbName, password);
-            mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(0).connectTimeout(0).socketTimeout(0).build());
+            mongoClient = new MongoClient(address, Collections.singletonList(credential), new MongoClientOptions.Builder().serverSelectionTimeout(timeout).connectTimeout(0).socketTimeout(0).build());
         } else {
-            mongoClient = new MongoClient(address, new MongoClientOptions.Builder().serverSelectionTimeout(0).connectTimeout(0).socketTimeout(0).build());
+            mongoClient = new MongoClient(address, new MongoClientOptions.Builder().serverSelectionTimeout(timeout).connectTimeout(0).socketTimeout(0).build());
         }
     }
 
@@ -91,6 +95,7 @@ public class ThermostatMongoStorage {
         try {
             mongoClient.getAddress();
         } catch (Exception e) {
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -98,6 +103,7 @@ public class ThermostatMongoStorage {
 
     public static void finish() {
         mongoClient.close();
+        mongoClient = null;
     }
 
     public static MongoDatabase getDatabase() {

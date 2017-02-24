@@ -41,5 +41,7 @@ public enum MongoConfiguration {
     MONGO_DB,
     MONGO_USERNAME,
     MONGO_PASSWORD,
+
+    MONGO_SERVER_TIMEOUT,
     ;
 }

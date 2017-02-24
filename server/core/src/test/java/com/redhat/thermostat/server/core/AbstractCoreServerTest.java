@@ -8,6 +8,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import com.redhat.thermostat.test.util.MongodTestUtil;
+
 public class AbstractCoreServerTest {
     public static CoreServer coreServer;
     public static HttpClient client;
@@ -20,7 +22,7 @@ public class AbstractCoreServerTest {
     @BeforeClass
     public static void setupClass() throws Exception {
         coreServer= new CoreServer();
-        coreServer.buildServer(Collections.EMPTY_MAP, Collections.EMPTY_MAP, Collections.EMPTY_MAP);
+        coreServer.buildServer(Collections.EMPTY_MAP, MongodTestUtil.timeoutMongoConfiguration, Collections.EMPTY_MAP);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {

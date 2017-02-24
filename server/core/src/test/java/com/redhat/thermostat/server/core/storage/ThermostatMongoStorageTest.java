@@ -15,7 +15,7 @@ public class ThermostatMongoStorageTest {
 
     @Test
     public void testNoStorage() {
-        ThermostatMongoStorage.start(MongodTestUtil.mongoConfiguration);
+        ThermostatMongoStorage.start(MongodTestUtil.timeoutMongoConfiguration);
 
         assertFalse(ThermostatMongoStorage.isConnected());
 
@@ -30,13 +30,16 @@ public class ThermostatMongoStorageTest {
 
         ThermostatMongoStorage.start(MongodTestUtil.mongoConfiguration);
 
-        mongodTestUtil.waitForMongodStart();
-
+        assertTrue(mongodTestUtil.waitForMongodStart());
         assertTrue(ThermostatMongoStorage.isConnected());
 
         mongodTestUtil.stopMongod();
-        mongodTestUtil.waitForMongodStop();
+
+        assertTrue(mongodTestUtil.waitForMongodStop());
         assertEquals(0, mongodTestUtil.process.exitValue());
+
+        ThermostatMongoStorage.finish();
+        mongodTestUtil.finish();
     }
 
 }
