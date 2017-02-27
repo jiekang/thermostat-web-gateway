@@ -1,4 +1,4 @@
-package com.redhat.thermostat.server.core.internal.security.auth.proxy;
+package com.redhat.thermostat.server.core.internal.security.authentication.proxy;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -42,7 +42,7 @@ public class ProxyAuthFilterTest {
         when(crq.getHeaderString("X-SSSD-REMOTE-USER")).thenReturn(userName);
         when(crq.getHeaderString("X-SSSD-REMOTE-USER-GROUPS")).thenReturn(groups);
 
-        proxyAuthFilter = new ProxyAuthFilter(userStore);
+        proxyAuthFilter = new ProxyAuthFilter();
     }
 
     @Test (expected = NotAuthorizedException.class)

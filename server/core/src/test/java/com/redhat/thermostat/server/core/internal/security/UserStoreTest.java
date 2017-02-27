@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicWebUser;
-import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyWebUser;
+import com.redhat.thermostat.server.core.internal.security.authentication.basic.BasicWebUser;
+import com.redhat.thermostat.server.core.internal.security.authentication.proxy.ProxyWebUser;
 
 public class UserStoreTest {
 
@@ -20,7 +20,7 @@ public class UserStoreTest {
         Map<String,String> entries = new HashMap<>();
         entries.put(userName, userInfo);
 
-        UserStore userStore = new UserStore(entries);
+        UserStore userStore = UserStore.get().load(entries);
 
         WebUser user = userStore.getUser(userName);
 
@@ -39,7 +39,7 @@ public class UserStoreTest {
         Map<String,String> entries = new HashMap<>();
         entries.put(userName, userInfo);
 
-        UserStore userStore = new UserStore(entries);
+        UserStore userStore = UserStore.get().load(entries);
 
         WebUser user = userStore.getUser(userName);
 

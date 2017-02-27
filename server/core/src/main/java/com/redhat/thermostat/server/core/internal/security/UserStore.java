@@ -42,11 +42,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.redhat.thermostat.server.core.internal.security.auth.basic.BasicWebUser;
-import com.redhat.thermostat.server.core.internal.security.auth.proxy.ProxyWebUser;
+import javax.jws.soap.SOAPBinding;
+
+import com.redhat.thermostat.server.core.internal.security.authentication.basic.BasicWebUser;
+import com.redhat.thermostat.server.core.internal.security.authentication.proxy.ProxyWebUser;
 
 public class UserStore {
-    private final Map<String, WebUser> userStore = new HashMap<>();
+
+    private static final UserStore userStore = new UserStore();
+
+    private final Map<String, WebUser> users = new HashMap<>();
+
+    public static UserStore get() {
+        return userStore;
+    }
 
     /**
      * Proxy user:
@@ -60,8 +69,15 @@ public class UserStore {
      * <password> = STRING
      *
      */
-    public UserStore(Map<String, String> users) {
-        for (Map.Entry<String, String> entry : users.entrySet()) {
+    private UserStore() {
+    }
+
+    public WebUser getUser(String userName) {
+        return users.get(userName);
+    }
+
+    public UserStore load(Map<String, String> userConfig) {
+        for (Map.Entry<String, String> entry : userConfig.entrySet()) {
             String username = entry.getKey();
             ArrayList<String> items = new ArrayList<>(Arrays.asList(entry.getValue().split(",")));
             WebUser user;
@@ -70,11 +86,8 @@ public class UserStore {
             } else {
                 user = new BasicWebUser(username, items.get(1).toCharArray(), new HashSet<>(items.subList(2, items.size())));
             }
-            userStore.put(username, user);
+            this.users.put(username, user);
         }
-    }
-
-    public WebUser getUser(String userName) {
-        return userStore.get(userName);
+        return this;
     }
 }

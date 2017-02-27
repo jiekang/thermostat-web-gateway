@@ -55,12 +55,6 @@ import com.redhat.thermostat.server.core.internal.security.UserStore;
 @Priority(Priorities.AUTHENTICATION)
 public class BasicAuthFilter implements ContainerRequestFilter {
 
-    private final UserStore userStore;
-
-    public BasicAuthFilter(UserStore userStore) {
-        this.userStore = userStore;
-    }
-
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
             String authentication = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
@@ -82,7 +76,7 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             String username = values[0];
             String password = values[1];
 
-            BasicWebUser user = (BasicWebUser) userStore.getUser(username);
+            BasicWebUser user = (BasicWebUser) UserStore.get().getUser(username);
             if (user == null) {
                 throw new NotAuthorizedException("Authentication credentials are required");
             }

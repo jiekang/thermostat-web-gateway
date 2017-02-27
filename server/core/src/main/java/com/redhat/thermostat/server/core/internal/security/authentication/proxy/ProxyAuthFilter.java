@@ -52,12 +52,6 @@ import com.redhat.thermostat.server.core.internal.security.WebUser;
 @Priority(Priorities.AUTHENTICATION)
 public class ProxyAuthFilter implements ContainerRequestFilter{
 
-    private final UserStore userStore;
-
-    public ProxyAuthFilter(UserStore userStore) {
-        this.userStore = userStore;
-    }
-
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException, NotAuthorizedException {
         String username = requestContext.getHeaderString("X-SSSD-REMOTE-USER");
@@ -65,7 +59,7 @@ public class ProxyAuthFilter implements ContainerRequestFilter{
             throw new NotAuthorizedException("Authentication credentials are required");
         }
 
-        WebUser user = userStore.getUser(username);
+        WebUser user = UserStore.get().getUser(username);
         if (user == null) {
             throw new NotAuthorizedException("Authentication credentials are required");
         }
