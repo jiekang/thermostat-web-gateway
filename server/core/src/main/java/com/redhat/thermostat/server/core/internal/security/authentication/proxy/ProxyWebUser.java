@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.security.auth.proxy;
+package com.redhat.thermostat.server.core.internal.security.authentication.proxy;
 
 import java.util.Set;
 

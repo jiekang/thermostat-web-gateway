@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.security.auth.proxy;
+package com.redhat.thermostat.server.core.internal.security.authentication.basic;
 
 import java.security.Principal;
 
@@ -42,10 +42,10 @@ import javax.ws.rs.core.SecurityContext;
 
 import com.redhat.thermostat.server.core.internal.security.WebUser;
 
-class ProxySecurityContext implements SecurityContext{
+class BasicSecurityContext implements SecurityContext {
     private final WebUser user;
 
-    public ProxySecurityContext(WebUser user) {
+    public BasicSecurityContext(WebUser user) {
         this.user = user;
     }
 
@@ -71,6 +71,6 @@ class ProxySecurityContext implements SecurityContext{
 
     @Override
     public String getAuthenticationScheme() {
-        return "Proxy";
+        return "Basic";
     }
 }

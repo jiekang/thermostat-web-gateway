@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.security.auth.basic;
+package com.redhat.thermostat.server.core.internal.security.authentication.basic;
 
 import java.io.IOException;
 import java.nio.charset.Charset;

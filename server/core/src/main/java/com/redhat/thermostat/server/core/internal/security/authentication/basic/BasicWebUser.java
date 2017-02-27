@@ -34,50 +34,39 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.security.auth.proxy;
+package com.redhat.thermostat.server.core.internal.security.authentication.basic;
 
-import java.io.IOException;
+import java.util.Set;
 
-import javax.annotation.Priority;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.Priorities;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.ext.Provider;
-
-import com.redhat.thermostat.server.core.internal.security.UserStore;
 import com.redhat.thermostat.server.core.internal.security.WebUser;
 
-@Provider
-@Priority(Priorities.AUTHENTICATION)
-public class ProxyAuthFilter implements ContainerRequestFilter{
+public class BasicWebUser implements WebUser {
+    private final String username;
+    private final Set<String> roles;
+    private final char[] password;
 
-    private final UserStore userStore;
-
-    public ProxyAuthFilter(UserStore userStore) {
-        this.userStore = userStore;
+    public BasicWebUser(String username, char[] password, Set<String> roles) {
+        this.username = username;
+        this.roles = roles;
+        this.password = password;
     }
 
     @Override
-    public void filter(ContainerRequestContext requestContext) throws IOException, NotAuthorizedException {
-        String username = requestContext.getHeaderString("X-SSSD-REMOTE-USER");
-        if (username == null) {
-            throw new NotAuthorizedException("Authentication credentials are required");
-        }
+    public String getUsername() {
+        return this.username;
+    }
 
-        WebUser user = userStore.getUser(username);
-        if (user == null) {
-            throw new NotAuthorizedException("Authentication credentials are required");
-        }
+    @Override
+    public boolean isUserInRole(String role) {
+        return this.roles.contains(role);
+    }
 
-        String groups = requestContext.getHeaderString("X-SSSD-REMOTE-USER-GROUPS");
-        if (groups != null) {
-            String[] roles = groups.split(":");
-            for (String role : roles) {
-                user.addRole(role);
-            }
-        }
+    @Override
+    public void addRole(String role) {
+        roles.add(role);
+    }
 
-        requestContext.setSecurityContext(new ProxySecurityContext(user));
+    public String getPassword() {
+        return new String(password);
     }
 }

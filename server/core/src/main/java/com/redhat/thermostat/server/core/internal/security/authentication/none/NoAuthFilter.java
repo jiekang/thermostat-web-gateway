@@ -1,4 +1,4 @@
-package com.redhat.thermostat.server.core.internal.security.auth.none;
+package com.redhat.thermostat.server.core.internal.security.authentication.none;
 
 import java.io.IOException;
 import java.security.Principal;
@@ -15,6 +15,7 @@ import javax.ws.rs.ext.Provider;
 public class NoAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
+        System.out.println("INCOMING REQUEST: " + requestContext.getUriInfo().getPath());
         requestContext.setSecurityContext(new SecurityContext() {
             @Override
             public Principal getUserPrincipal() {
