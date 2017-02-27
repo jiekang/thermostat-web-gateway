@@ -22,7 +22,6 @@ public class ThermostatMongoStorageTest {
         ThermostatMongoStorage.finish();
     }
 
-    // TODO: Test connecting to a temporary mongo instance created by the test
     @Test
     public void testStorage() throws IOException, InterruptedException {
         MongodTestUtil mongodTestUtil = new MongodTestUtil();

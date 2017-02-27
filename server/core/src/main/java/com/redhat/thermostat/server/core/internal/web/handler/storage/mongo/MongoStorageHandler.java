@@ -65,6 +65,9 @@ public class MongoStorageHandler implements StorageHandler {
     private final int BASE_OFFSET = 0;
     private final int MAX_MONGO_DOCUMENTS = 5000;
 
+    private final String agentCollectionSuffix = "-agents";
+    private final String jvmCollectionSuffix = "-jvms";
+
     @Override
     public void getSystems(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
         if (!isMongoConnected(asyncResponse)) {
@@ -176,14 +179,13 @@ public class MongoStorageHandler implements StorageHandler {
                     String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                         @Override
                         public String run() {
-                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(l).skip(o);
+                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).find(filter).sort(createSortObject(sort)).limit(l).skip(o);
                             return MongoResponseBuilder.buildJsonDocuments(documents);
                         }
                     });
 
                     asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
                 } catch (Exception e) {
-                    e.printStackTrace();
                     asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
                 }
             }
@@ -212,7 +214,7 @@ public class MongoStorageHandler implements StorageHandler {
                     @Override
                     public Boolean run() {
                         try {
-                            ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agents").insertMany(items);
+                            ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).insertMany(items);
                         } catch (Exception e) {
                             return Boolean.FALSE;
                         }
@@ -246,14 +248,14 @@ public class MongoStorageHandler implements StorageHandler {
                     String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                         @Override
                         public String run() {
-                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agent").find(filter).sort(createSortObject(sort)).limit(l).skip(o);
+                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).find(filter).sort(createSortObject(sort)).limit(l).skip(o);
                             return MongoResponseBuilder.buildJsonDocuments(documents);
                         }
                     });
 
                     asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
                 } catch (Exception e) {
-                    asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
+                    asyncResponse.resume(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Unable to access Backing Storage").build());
                 }
 
             }
@@ -275,7 +277,7 @@ public class MongoStorageHandler implements StorageHandler {
                     @Override
                     public Boolean run() {
                         try {
-                            ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agents").drop();
+                            ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).drop();
                         } catch (Exception e) {
                             return Boolean.FALSE;
                         }
@@ -470,7 +472,7 @@ public class MongoStorageHandler implements StorageHandler {
                         FindIterable<Document> documents = request.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
                             @Override
                             public FindIterable<Document> run() {
-                                return ThermostatMongoStorage.getDatabase().getCollection(namespace + "-agents").find().sort(new BasicDBObject("_id", -1)).limit(l);
+                                return ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).find().sort(new BasicDBObject("_id", -1)).limit(l);
                             }
                         });
                         output.write(MongoResponseBuilder.buildJsonResponseWithTime(documents, request.getElapsed()));
