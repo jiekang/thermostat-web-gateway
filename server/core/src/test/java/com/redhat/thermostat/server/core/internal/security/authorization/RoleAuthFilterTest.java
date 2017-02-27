@@ -1,6 +1,5 @@
 package com.redhat.thermostat.server.core.internal.security.authorization;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,8 +45,6 @@ public class RoleAuthFilterTest {
     public void testAsNone() throws IOException {
         when(uriInfo.getPath()).thenReturn("/api/v100/systems/all/agents/all/jvms/all");
 
-        when(securityContext.isUserInRole(anyString())).thenReturn(false);
-
         roleAuthFilter.filter(containerRequestContext);
     }
 
@@ -55,13 +52,11 @@ public class RoleAuthFilterTest {
     public void testAsNoneBase() throws IOException {
         when(uriInfo.getPath()).thenReturn("/api/v100");
 
-        when(securityContext.isUserInRole(anyString())).thenReturn(false);
-
         roleAuthFilter.filter(containerRequestContext);
     }
 
     @Test
-    public void testNamespaceAll() throws IOException {
+    public void testNamespacesAll() throws IOException {
         when(uriInfo.getPath()).thenReturn("/api/v100/any/systems");
 
         when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
@@ -69,8 +64,15 @@ public class RoleAuthFilterTest {
         roleAuthFilter.filter(containerRequestContext);
     }
 
+    @Test(expected = NotAuthorizedException.class)
+    public void testNamespacesNone() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems");
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
     @Test
-    public void testNamespaceSpecificYes() throws IOException {
+    public void testNamespacesSpecificYes() throws IOException {
         when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems");
 
         when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(false);
@@ -78,8 +80,9 @@ public class RoleAuthFilterTest {
 
         roleAuthFilter.filter(containerRequestContext);
     }
+
     @Test (expected = NotAuthorizedException.class)
-    public void testNamespaceSpecificNo() throws IOException {
+    public void testNamespacesSpecificNo() throws IOException {
         when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems");
 
         when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(false);
@@ -89,8 +92,8 @@ public class RoleAuthFilterTest {
     }
 
     @Test
-    public void testSystemAll() throws IOException {
-        when(uriInfo.getPath()).thenReturn("/api/v100/systems/all");
+    public void testSystemsAll() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems/all");
 
         when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
         when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(true);
@@ -98,4 +101,150 @@ public class RoleAuthFilterTest {
         roleAuthFilter.filter(containerRequestContext);
     }
 
+    @Test(expected = NotAuthorizedException.class)
+    public void testSystemsNone() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems/all");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test
+    public void testSystemsSpecificYes() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems/specific");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-systems-specific")).thenReturn(true);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test (expected = NotAuthorizedException.class)
+    public void testSystemsSpecificNo() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems/specific");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-systems-specific")).thenReturn(false);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test
+    public void testAgentsAll() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems/all/agents/all");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(true);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test(expected = NotAuthorizedException.class)
+    public void testAgentsNone() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems/all/agents/all");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(true);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test
+    public void testAgentsSpecificYes() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems/specific/agents/specific");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-systems-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-agents-specific")).thenReturn(true);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test (expected = NotAuthorizedException.class)
+    public void testAgentsSpecificNo() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems/specific/agents/specific");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-systems-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-agents-specific")).thenReturn(false);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test
+    public void testJvmsAll() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems/all/agents/all/jvms/all");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-jvms-all")).thenReturn(true);
+
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test(expected = NotAuthorizedException.class)
+    public void testJvmsNone() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/any/systems/all/agents/all/jvms/all");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(true);
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(true);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test
+    public void testJvmsSpecificYes() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems/specific/agents/specific/jvms/specific");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-all")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-systems-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-agents-specific")).thenReturn(true);
+
+
+        when(securityContext.isUserInRole("thermostat-jvms-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-jvms-specific")).thenReturn(true);
+
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
+
+    @Test (expected = NotAuthorizedException.class)
+    public void testJvmsSpecificNo() throws IOException {
+        when(uriInfo.getPath()).thenReturn("/api/v100/specific/systems/specific/agents/specific/jvms/specific");
+
+        when(securityContext.isUserInRole("thermostat-namespaces-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-systems-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-systems-specific")).thenReturn(true);
+
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-agents-specific")).thenReturn(true);
+
+
+        when(securityContext.isUserInRole("thermostat-agents-all")).thenReturn(false);
+        when(securityContext.isUserInRole("thermostat-agents-specific")).thenReturn(false);
+
+        roleAuthFilter.filter(containerRequestContext);
+    }
 }
