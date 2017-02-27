@@ -77,7 +77,6 @@ public class WebEndpointCommand extends AbstractCommand {
         Server server = coreServer.getServer();
         try {
             server.start();
-            System.out.println(server.dump());
             server.join();
         } catch (Exception e) {
             e.printStackTrace();

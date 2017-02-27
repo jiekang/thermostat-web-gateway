@@ -497,7 +497,7 @@ public class MongoStorageHandler implements StorageHandler {
             return true;
         }
 
-        asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
+        asyncResponse.resume(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Unable to access Backing Storage").build());
         return false;
     }
 

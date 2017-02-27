@@ -10,19 +10,23 @@ import org.junit.BeforeClass;
 
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
-public class AbstractCoreServerTest {
+public class AbstractMongoCoreServerTest {
     public static CoreServer coreServer;
     public static HttpClient client;
     public static int port;
     public String baseUrl = "http://localhost:" + port + "/api/v100";
+    public static MongodTestUtil mongodTestUtil = new MongodTestUtil();
+
 
     private static Thread thread;
     private static AtomicBoolean ready = new AtomicBoolean(false);
-
     @BeforeClass
     public static void setupClass() throws Exception {
+        mongodTestUtil.startMongod();
+        mongodTestUtil.waitForMongodStart();
+
         coreServer= new CoreServer();
-        coreServer.buildServer(Collections.EMPTY_MAP, MongodTestUtil.timeoutMongoConfiguration, Collections.EMPTY_MAP);
+        coreServer.buildServer(Collections.EMPTY_MAP, MongodTestUtil.mongoConfiguration, Collections.EMPTY_MAP);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -41,12 +45,17 @@ public class AbstractCoreServerTest {
         client.start();
 
         port = coreServer.getPort();
+
     }
 
     @AfterClass
     public static void cleanupClass() throws Exception {
         coreServer.finish();
         thread.join();
+
+        mongodTestUtil.stopMongod();
+        mongodTestUtil.waitForMongodStop();
+        mongodTestUtil.finish();
     }
 
     @Before
