@@ -15,14 +15,14 @@ import javax.ws.rs.ext.Provider;
 public class RoleAuthFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext containerRequestContext) throws IOException, NotAuthorizedException {
-        String paths[] = containerRequestContext.getUriInfo().getPath().split("/");
+        String paths[] = containerRequestContext.getUriInfo().getPath().substring(1).split("/");
+        int length = paths.length;
         SecurityContext securityContext = containerRequestContext.getSecurityContext();
 
         /**
          * Path:
-         * /{namespace}/systems/{id}/agents/{id}/jvms/{id}
-         *       0         1      2    3      4    5   6
-         *       1         2      3    4      5    6   7
+         * /api/v100/{namespace}/systems/{id}/agents/{id}/jvms/{id}
+         *   0    1     2         3        4   5       6   7     8
          * Roles:
          *
          * thermostat-
@@ -39,38 +39,38 @@ public class RoleAuthFilter implements ContainerRequestFilter {
         /**
          * request to / is always authorized
          */
-        if (paths.length < 1) {
+        if (length < 3) {
             return;
         }
 
-        String namespaceRole = "thermostat-namespace-" + paths[0];
-        if (!(securityContext.isUserInRole("thermostat-namespace-all") || securityContext.isUserInRole(namespaceRole))) {
+        String namespaceRole = "thermostat-namespaces-" + paths[2];
+        if (!(securityContext.isUserInRole("thermostat-namespaces-all") || securityContext.isUserInRole(namespaceRole))) {
             throw new NotAuthorizedException("Authentication credentials are required");
         }
 
-        if (paths.length < 3) {
+        if (length < 5) {
             return;
         }
 
-        String systemRole = "thermostat-systems-" + paths[2];
-        if (!(securityContext.isUserInRole("thermostat-system-all") || securityContext.isUserInRole(systemRole))) {
+        String systemRole = "thermostat-systems-" + paths[4];
+        if (!(securityContext.isUserInRole("thermostat-systems-all") || securityContext.isUserInRole(systemRole))) {
             throw new NotAuthorizedException("Authentication credentials are required");
         }
 
-        if (paths.length < 5) {
+        if (length < 7) {
             return;
         }
 
-        String agentRole = "thermostat-agents-" + paths[4];
+        String agentRole = "thermostat-agents-" + paths[6];
         if (!(securityContext.isUserInRole("thermostat-agents-all") || securityContext.isUserInRole(agentRole))) {
             throw new NotAuthorizedException("Authentication credentials are required");
         }
 
-        if (paths.length < 7) {
+        if (length < 9) {
             return;
         }
 
-        String jvmRole = "thermostat-jvms-" + paths[6];
+        String jvmRole = "thermostat-jvms-" + paths[8];
         if (!(securityContext.isUserInRole("thermostat-jvms-all") || securityContext.isUserInRole(jvmRole))) {
             throw new NotAuthorizedException("Authentication credentials are required");
         }
