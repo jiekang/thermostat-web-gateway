@@ -40,6 +40,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -89,13 +91,15 @@ public class ThermostatMongoStorage {
         } else {
             mongoClient = new MongoClient(address, new MongoClientOptions.Builder().serverSelectionTimeout(timeout).connectTimeout(0).socketTimeout(0).build());
         }
+
+        Logger mongoLog = Logger.getLogger("org.mongodb.driver");
+        mongoLog.setLevel(Level.OFF);
     }
 
     public static boolean isConnected() {
         try {
             mongoClient.getAddress();
         } catch (Exception e) {
-            e.printStackTrace();
             return false;
         }
         return true;

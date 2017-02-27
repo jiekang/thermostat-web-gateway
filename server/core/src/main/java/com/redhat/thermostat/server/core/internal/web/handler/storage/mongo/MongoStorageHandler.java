@@ -168,14 +168,14 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-                final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
-                final String userName = context.getUserPrincipal().getName();
-                final Bson filter = MongoRequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
-
-                TimedRequest<String> timedRequest = new TimedRequest<>();
-
                 try {
+                    final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
+                    final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                    final String userName = context.getUserPrincipal().getName();
+                    final Bson filter = MongoRequestFilters.buildGetFilter(systemId, Collections.singletonList(userName));
+
+                    TimedRequest<String> timedRequest = new TimedRequest<>();
+
                     String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                         @Override
                         public String run() {
@@ -186,7 +186,7 @@ public class MongoStorageHandler implements StorageHandler {
 
                     asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
                 } catch (Exception e) {
-                    asyncResponse.resume(Response.status(Response.Status.OK).entity("Unable to access Backing Storage").build());
+                    asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
                 }
             }
         }).start();
@@ -201,28 +201,32 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                BasicDBList inputList = (BasicDBList) JSON.parse(body);
+                try {
+                    BasicDBList inputList = (BasicDBList) JSON.parse(body);
 
-                final List<Document> items = new ArrayList<>();
-                for (Object item : inputList) {
-                    items.add(Document.parse(DocumentBuilder.addTags(item.toString(), context.getUserPrincipal().getName())));
-                }
-
-                TimedRequest<Boolean> timedRequest = new TimedRequest<>();
-
-                Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
-                    @Override
-                    public Boolean run() {
-                        try {
-                            ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).insertMany(items);
-                        } catch (Exception e) {
-                            return Boolean.FALSE;
-                        }
-                        return Boolean.TRUE;
+                    final List<Document> items = new ArrayList<>();
+                    for (Object item : inputList) {
+                        items.add(Document.parse(DocumentBuilder.addTags(item.toString(), context.getUserPrincipal().getName())));
                     }
-                });
 
-                asyncResponse.resume(Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build());
+                    TimedRequest<Boolean> timedRequest = new TimedRequest<>();
+
+                    Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
+                        @Override
+                        public Boolean run() {
+                            try {
+                                ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).insertMany(items);
+                            } catch (Exception e) {
+                                return Boolean.FALSE;
+                            }
+                            return Boolean.TRUE;
+                        }
+                    });
+
+                    asyncResponse.resume(Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build());
+                } catch (Exception e) {
+                    asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+                }
             }
         }).start();
     }
@@ -235,14 +239,14 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                BasicDBList queries = (BasicDBList) JSON.parse(body);
-
-                final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-                final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
-                final String userName = context.getUserPrincipal().getName();
-                final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
-
                 try {
+                    BasicDBList queries = (BasicDBList) JSON.parse(body);
+
+                    final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
+                    final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                    final String userName = context.getUserPrincipal().getName();
+                    final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
+
                     TimedRequest<String> timedRequest = new TimedRequest<>();
 
                     String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
@@ -255,7 +259,8 @@ public class MongoStorageHandler implements StorageHandler {
 
                     asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
                 } catch (Exception e) {
-                    asyncResponse.resume(Response.status(Response.Status.SERVICE_UNAVAILABLE).entity("Unable to access Backing Storage").build());
+                    e.printStackTrace();
+                    asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
                 }
 
             }

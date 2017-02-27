@@ -29,7 +29,6 @@ public class GetCoreServerTest extends AbstractCoreServerTest {
     public void testGetAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/namespace/systems/systemId/agents";
         ContentResponse response = client.GET(url);
-        System.out.println(response.getContentAsString());
         assertTrue(response.getStatus() == Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
     }
 
@@ -44,7 +43,6 @@ public class GetCoreServerTest extends AbstractCoreServerTest {
     public void testGetJvms() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/namespace/systems/systemId/agents/agentId/jvms";
         ContentResponse response = client.GET(url);
-        System.out.println(response.getContentAsString());
         assertTrue(response.getStatus() == Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
     }
 

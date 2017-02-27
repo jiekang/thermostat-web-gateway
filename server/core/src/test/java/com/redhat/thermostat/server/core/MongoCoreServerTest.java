@@ -13,7 +13,7 @@ import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
-public class MongoCoreServerTest extends AbstractMongoCoreServerTest {
+public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
     @Test
     public void testSystems() throws InterruptedException, ExecutionException, TimeoutException {
@@ -24,9 +24,9 @@ public class MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
     @Test
     public void testPutGetAgents() throws InterruptedException, ExecutionException, TimeoutException {
-        String input = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
         String url = baseUrl + "/PutGetAgents/systems/all/agents";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(input), "application/json").send();
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
 
         assertEquals("PUT: true", putResponse.getContentAsString());
         assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
@@ -39,9 +39,9 @@ public class MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
     @Test
     public void testGetAgentsLimit() throws InterruptedException, ExecutionException, TimeoutException {
-        String input = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
         String url = baseUrl + "/GetAgentsLimit/systems/all/agents";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(input), "application/json").send();
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
 
         assertEquals("PUT: true", putResponse.getContentAsString());
         assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
@@ -50,6 +50,22 @@ public class MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    public void testPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        String url = baseUrl + "/GetAgentsLimit/systems/all/agents";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
+
+        String postInput = "[\"agentId=a\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
     @Test
