@@ -50,14 +50,6 @@ import com.mongodb.client.model.Filters;
 
 public class MongoRequestFilters {
 
-    public static Bson buildGetFilter(List<String> tags) {
-        return buildGetFilter(null, null, null, tags);
-    }
-
-    public static Bson buildGetFilter(String systemId, List<String> tags) {
-        return buildGetFilter(systemId, null, null, tags);
-    }
-
     public static Bson buildGetFilter(String systemId, String agentId, String jvmId, List<String> tags) {
         List<Bson> filters = new ArrayList<>();
 
@@ -68,14 +60,12 @@ public class MongoRequestFilters {
         return and(filters);
     }
 
-    public static Bson buildPostFilter(BasicDBList queries, String systemId, List<String> tags) {
+    public static Bson buildPostFilter(BasicDBList queries, String systemId, String agentId, String jvmId, List<String> tags) {
         List<Bson> filters = new ArrayList<>();
 
         filters.add(buildQueriesFilter(queries));
 
-        if (systemId != null && !(systemId.equals("all"))) {
-            filters.add(eq("systemId", systemId));
-        }
+        filters.add(buildIdFilters(systemId, agentId, jvmId));
 
         filters.add(buildTagsFilter(tags));
 

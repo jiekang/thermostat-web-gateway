@@ -96,14 +96,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void postSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort) {
+    public void postSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
+                postAll(body, offset, limit, context, null, null, null, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
@@ -196,30 +196,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    BasicDBList queries = (BasicDBList) JSON.parse(body);
-
-                    final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-                    final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
-                    final String userName = context.getUserPrincipal().getName();
-                    final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, Collections.singletonList(userName));
-
-                    TimedRequest<String> timedRequest = new TimedRequest<>();
-
-                    String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
-                        @Override
-                        public String run() {
-                            FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).find(filter).sort(createSortObject(sort)).limit(l).skip(o);
-                            return MongoResponseBuilder.buildJsonDocuments(documents);
-                        }
-                    });
-
-                    asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-                }
-
+               postAll(body, offset, limit, context, systemId, null, null, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
@@ -317,14 +294,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void postJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort) {
+    public void postJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
+                postAll(body, offset, limit, context, systemId, agentId, null, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
@@ -529,6 +506,32 @@ public class MongoStorageHandler implements StorageHandler {
 
             asyncResponse.resume(Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build());
         } catch (Exception e) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+    }
+
+    private void postAll(String body, String offset, String limit, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, final String sort, AsyncResponse asyncResponse, final String collectionSuffix) {
+        try {
+            BasicDBList queries = (BasicDBList) JSON.parse(body);
+
+            final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
+            final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+            final String userName = context.getUserPrincipal().getName();
+            final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, agentId, jvmId, Collections.singletonList(userName));
+
+            TimedRequest<String> timedRequest = new TimedRequest<>();
+
+            String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
+                @Override
+                public String run() {
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).sort(createSortObject(sort)).limit(l).skip(o);
+                    return MongoResponseBuilder.buildJsonDocuments(documents);
+                }
+            });
+
+            asyncResponse.resume(Response.status(Response.Status.OK).entity(MongoResponseBuilder.buildJsonResponseWithTime(documents, timedRequest.getElapsed())).build());
+        } catch (Exception e) {
+            e.printStackTrace();
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
     }
