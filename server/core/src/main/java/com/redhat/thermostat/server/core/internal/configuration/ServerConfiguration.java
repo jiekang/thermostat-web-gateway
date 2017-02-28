@@ -37,8 +37,10 @@
 package com.redhat.thermostat.server.core.internal.configuration;
 
 public enum ServerConfiguration {
-    SECURITY_PROXY_URL,
-    SECURITY_BASIC_URL,
+    URL,
+
+    SECURITY_PROXY,
+    SECURITY_BASIC,
 
     SWAGGER_UI_ENABLED,
     ;

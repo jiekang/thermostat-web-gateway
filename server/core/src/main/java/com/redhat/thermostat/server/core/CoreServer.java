@@ -58,66 +58,52 @@ public class CoreServer {
         MongoStorageHandler storageHandler = new MongoStorageHandler();
         resourceConfig.register(new NamespaceHttpHandler(storageHandler));
         resourceConfig.register(new BaseHttpHandler(storageHandler));
-        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
+        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY.toString()) &&
+                serverConfig.get(ServerConfiguration.SECURITY_PROXY.toString()).equals("true")) {
             resourceConfig.register(new ProxyAuthFilter());
-        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
+        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC.toString()) &&
+                serverConfig.get(ServerConfiguration.SECURITY_BASIC.toString()).equals("true")) {
             resourceConfig.register(new BasicAuthFilter(new BasicUserStore(userConfig)));
         } else {
             resourceConfig.register(new NoAuthFilter());
         }
+
         resourceConfig.register(new RolesAllowedDynamicFeature());
         resourceConfig.register(new RoleAuthFilter());
     }
 
     private void setupConnectors(Map<String, String> serverConfig) {
         server.setConnectors(new Connector[]{});
-        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
+        ServerConnector httpConnector = new ServerConnector(server);
+
+        if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY.toString()) &&
+                serverConfig.get(ServerConfiguration.SECURITY_PROXY.toString()).equals("true")) {
             HttpConfiguration httpConfig = new HttpConfiguration();
             httpConfig.addCustomizer(new org.eclipse.jetty.server.ForwardedRequestCustomizer());
 
-            ServerConnector httpConnector = new ServerConnector(server);
             httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
-
-            try {
-                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_PROXY_URL.toString()));
-                httpConnector.setHost(url.getHost());
-                port = url.getPort();
-                httpConnector.setPort(port);
-            } catch (MalformedURLException e) {
-                httpConnector.setHost("localhost");
-                httpConnector.setPort(port);
-            }
-            httpConnector.setIdleTimeout(30000);
-
-            server.addConnector(httpConnector);
-        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
+        } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC.toString()) &&
+                serverConfig.get(ServerConfiguration.SECURITY_BASIC.toString()).equals("true")) {
             HttpConfiguration httpConfig = new HttpConfiguration();
-            ServerConnector httpConnector = new ServerConnector(server);
             httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
-
-            try {
-                URL url = new URL(serverConfig.get(ServerConfiguration.SECURITY_BASIC_URL.toString()));
-                httpConnector.setHost(url.getHost());
-                port = url.getPort();
-                httpConnector.setPort(url.getPort());
-            } catch (MalformedURLException e) {
-                httpConnector.setHost("localhost");
-                httpConnector.setPort(port);
-            }
-            httpConnector.setIdleTimeout(30000);
-
-            server.addConnector(httpConnector);
         } else {
             HttpConfiguration httpConfig = new HttpConfiguration();
-            ServerConnector httpConnector = new ServerConnector(server);
             httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
+        }
 
+        try {
+            URL url = new URL(serverConfig.get(ServerConfiguration.URL.toString()));
+            httpConnector.setHost(url.getHost());
+            port = url.getPort();
+            httpConnector.setPort(port);
+        } catch (MalformedURLException e) {
             httpConnector.setHost("localhost");
             httpConnector.setPort(port);
-            httpConnector.setIdleTimeout(30000);
-
-            server.addConnector(httpConnector);
         }
+
+        httpConnector.setIdleTimeout(30000);
+
+        server.addConnector(httpConnector);
     }
 
     private void setupHandlers(Map<String, String> serverConfig) {

@@ -29,6 +29,7 @@ public class GetCoreServerTest extends AbstractCoreServerTest {
     public void testGetAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/namespace/systems/systemId/agents";
         ContentResponse response = client.GET(url);
+        System.out.println(response.getStatus());
         assertTrue(response.getStatus() == Response.Status.SERVICE_UNAVAILABLE.getStatusCode());
     }
 

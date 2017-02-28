@@ -41,6 +41,8 @@ USER_THERMOSTAT_HOME/etc/plugins.d/server
 
 The properties in USER_THERMOSTAT_HOME override those in THERMOSTAT_HOME.
 
+The url to listen on is specified in 'server-config.properties' via the
+URL property.
 
 Authentication and Authorization
 
@@ -55,26 +57,37 @@ basic-config.properties
 None
 
 This amounts to no authentication or authorization for requests. To enable this, modify
-the 'server-config.properties' file to have no SECURITY_PROXY_URL or SECURITY_BASIC_URL
+the 'server-config.properties' file to have no SECURITY_PROXY and no SECURITY_BASIC 
+properties.
 
 Basic
 
 This requires requests to have BASIC authentication using a username and password. To
-enable this, modify the 'server-config.properties' file to have SECURITY_BASIC_URL
-property and no SECURITY_PROXY_URL property.
+enable this, modify the 'server-config.properties' file to have SECURITY_BASIC property
+and no SECURITY_PROXY property. 
 
 e.g.
-SECURITY_BASIC_URL=http://localhost:8090
+SECURITY_BASIC=true
+
+The username, password, role combinations allowed are specifed in 'basic-config.properties'
+file. The input format is: 
+<username> = <password>,<roles>
+
+where <username> and <password> are strings, and <roles> is a comma separated list
+of roles.
+
+e.g.
+admin=password,thermostat-admin
 
 Proxy
 
 This system requires a front-end server to reverse proxy requests to the Thermostat
 Web Server. The front-end server will provide authentication and authorization via
 for example, Kerberos and LDAP. To enable this, modify the 'server-config.properties'
-file to have SECURITY_PROXY_URL property and no SECURITY_BASIC_URL property.
+file to have SECURITY_PROXY property and no SECURITY_BASIC property.
 
 e.g.
-SECURITY_PROXY_URL=http://localhost:8090
+SECURITY_PROXY=true
 
 The Thermostat Web Server will expect requests to have the X-SSSD-REMOTE-USER header
 set to the username, as well as the X-SSSD-REMOTE-USER-GROUPS header set to a colon
@@ -83,7 +96,6 @@ set to the username, as well as the X-SSSD-REMOTE-USER-GROUPS header set to a co
 With Proxy configuration, the Thermostat Web Server should only listen on the local
 loopback interface (localhost, 127.0.0.1) while the front-end server listens on the
 network and reverse proxies requests to the Web Server.
-
 
 Storage Backend
 
@@ -100,4 +112,5 @@ MONGO_PASSWORD : the password to use for authentication
 
 Authentication via username and password is optional and will not be done unless
 both MONGO_USERNAME and MONGO_PASSWORD are specified.
+
 
