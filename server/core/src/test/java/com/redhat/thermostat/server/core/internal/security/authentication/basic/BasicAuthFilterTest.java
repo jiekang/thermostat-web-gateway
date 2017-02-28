@@ -53,7 +53,15 @@ public class BasicAuthFilterTest {
     }
 
     @Test(expected = NotAuthorizedException.class)
-    public void testInvalidHeader() throws IOException {
+    public void testInvalidAuthHeader() throws IOException {
+        ContainerRequestContext crq = mock(ContainerRequestContext.class);
+        String authString = DatatypeConverter.printBase64Binary("user:password".getBytes());
+        when(crq.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("NotBasic " + authString);
+        basicAuthFilter.filter(crq);
+    }
+
+    @Test(expected = NotAuthorizedException.class)
+    public void testInvalidUserPassHeader() throws IOException {
         ContainerRequestContext crq = mock(ContainerRequestContext.class);
         String authString = DatatypeConverter.printBase64Binary("blob".getBytes());
         when(crq.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("Basic " + authString);
@@ -64,6 +72,14 @@ public class BasicAuthFilterTest {
     @Test(expected = NotAuthorizedException.class)
     public void testUserNotInStore() throws IOException {
         basicAuthFilter = new BasicAuthFilter(new BasicUserStore(Collections.EMPTY_MAP));
+        basicAuthFilter.filter(crq);
+    }
+
+    @Test(expected = NotAuthorizedException.class)
+    public void testIncorrectPassword() throws IOException {
+        ContainerRequestContext crq = mock(ContainerRequestContext.class);
+        String authString = DatatypeConverter.printBase64Binary((userName + ":badpassword").getBytes());
+        when(crq.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("Basic " + authString);
         basicAuthFilter.filter(crq);
     }
 

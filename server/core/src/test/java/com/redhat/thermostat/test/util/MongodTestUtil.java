@@ -32,8 +32,10 @@ public class MongodTestUtil {
 
     static {
         mongoConfiguration.put(MongoConfiguration.MONGO_URL.toString(), "mongodb://" + host + ":" + port);
+        mongoConfiguration.put(MongoConfiguration.MONGO_DB.toString(), "mongoConfig");
 
         timeoutMongoConfiguration.put(MongoConfiguration.MONGO_URL.toString(), "mongodb://" + host + ":" + port);
+        timeoutMongoConfiguration.put(MongoConfiguration.MONGO_DB.toString(), "timeoutMongoConfig");
         timeoutMongoConfiguration.put(MongoConfiguration.MONGO_SERVER_TIMEOUT.toString(), "0");
     }
 
