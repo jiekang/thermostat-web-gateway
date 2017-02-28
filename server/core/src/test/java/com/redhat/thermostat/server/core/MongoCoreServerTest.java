@@ -98,8 +98,8 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
     }
 
     @Test
-    public void testPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
-        String url = baseUrl + "/GetAgentsLimit/systems/all/agents";
+    public void testEqualQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/EqualQueryPostAgents/systems/all/agents";
         String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
         ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
 
@@ -110,6 +110,87 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
         assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    public void testLessQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/LessQueryPostAgents/systems/all/agents";
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
+
+        String postInput = "[\"agentId<b\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    public void testGreaterQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/GreaterQueryPostAgents/systems/all/agents";
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
+
+        String postInput = "[\"agentId>a\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    public void testLessEqualQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/LessEqualQueryPostAgents/systems/all/agents";
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
+
+        String postInput = "[\"agentId<=b\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
+    }
+
+    @Test
+    public void testGreaterEqualQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/GreaterEqualQueryPostAgents/systems/all/agents";
+        String putInput = "[{\"agentId\":\"a\"},{\"agentId\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
+
+        String postInput = "[\"agentId>=a\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
+    }
+
+
+    @Test
+    public void testMultiQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/MultiQueryPostAgents/systems/all/agents";
+        String putInput = "[{\"agentId\":\"a\", \"item\":\"1\"},{\"agentId\":\"a\", \"item\":\"2\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertTrue(putResponse.getStatus() == Response.Status.OK.getStatusCode());
+
+        String postInput = "[\"agentId=a\", \"item<2\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"item\" : \"1\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
