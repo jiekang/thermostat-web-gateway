@@ -65,7 +65,7 @@
             <outputDirectory>/etc/plugins.d/${thermostat.plugin}</outputDirectory>
         </file>
         <file>
-            <source>src/config/authorization-config.properties</source>
+            <source>src/config/basic-config.properties</source>
             <outputDirectory>/etc/plugins.d/${thermostat.plugin}</outputDirectory>
         </file>
         <file>

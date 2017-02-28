@@ -68,7 +68,7 @@ public class WebEndpointCommand extends AbstractCommand {
         try {
             Map<String, String> serverConfig = config.getConfiguration("server", "server-config.properties");
             Map<String,String> mongoConfig = config.getConfiguration("server", "mongo-config.properties");
-            Map<String, String> userConfig = config.getConfiguration("server", "authorization-config.properties");
+            Map<String, String> userConfig = config.getConfiguration("server", "basic-config.properties");
 
             coreServer.buildServer(serverConfig, mongoConfig, userConfig);
         } catch (IOException ignored) {
