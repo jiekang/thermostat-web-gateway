@@ -37,7 +37,7 @@ import com.redhat.thermostat.server.core.internal.web.handler.swagger.SwaggerUiH
 @Service(CoreServer.class)
 public class CoreServer {
     private Server server;
-    private int port = 8090;
+    private int port = 29000;
 
     public void buildServer(Map<String, String> serverConfig, Map<String, String> mongoConfig, Map<String, String> userConfig) {
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
@@ -84,9 +84,8 @@ public class CoreServer {
                 port = url.getPort();
                 httpConnector.setPort(port);
             } catch (MalformedURLException e) {
-
                 httpConnector.setHost("localhost");
-                httpConnector.setPort(8090);
+                httpConnector.setPort(port);
             }
             httpConnector.setIdleTimeout(30000);
 
@@ -103,7 +102,7 @@ public class CoreServer {
                 httpConnector.setPort(url.getPort());
             } catch (MalformedURLException e) {
                 httpConnector.setHost("localhost");
-                httpConnector.setPort(8090);
+                httpConnector.setPort(port);
             }
             httpConnector.setIdleTimeout(30000);
 
@@ -114,7 +113,7 @@ public class CoreServer {
             httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
             httpConnector.setHost("localhost");
-            httpConnector.setPort(8090);
+            httpConnector.setPort(port);
             httpConnector.setIdleTimeout(30000);
 
             server.addConnector(httpConnector);
