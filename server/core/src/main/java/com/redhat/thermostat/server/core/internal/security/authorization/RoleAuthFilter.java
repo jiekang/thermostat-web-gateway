@@ -25,8 +25,13 @@ public class RoleAuthFilter implements ContainerRequestFilter {
          *   0    1     2         3        4   5       6   7     8
          * Roles:
          *
-         * thermostat-
+         * thermostat-admin
+         * thermostat-namespaces-(name)
+         * thermostat-systems-(name)
+         * thermostat-jvms-(name)
+         * thermostat-agents-(name)
          *
+         * (name) is either 'all' or some string referencing a specific identity
          */
 
         /**
