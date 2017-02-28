@@ -45,9 +45,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.ext.Provider;
 
-import com.redhat.thermostat.server.core.internal.security.UserStore;
-import com.redhat.thermostat.server.core.internal.security.WebUser;
-
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class ProxyAuthFilter implements ContainerRequestFilter{
@@ -59,10 +56,7 @@ public class ProxyAuthFilter implements ContainerRequestFilter{
             throw new NotAuthorizedException("Authentication credentials are required");
         }
 
-        WebUser user = UserStore.get().getUser(username);
-        if (user == null) {
-            throw new NotAuthorizedException("Authentication credentials are required");
-        }
+        ProxyWebUser user = new ProxyWebUser(username);
 
         String groups = requestContext.getHeaderString("X-SSSD-REMOTE-USER-GROUPS");
         if (groups != null) {

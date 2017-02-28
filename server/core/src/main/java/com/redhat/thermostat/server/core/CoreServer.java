@@ -22,7 +22,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature;
 
 import com.redhat.thermostat.server.core.internal.configuration.ServerConfiguration;
-import com.redhat.thermostat.server.core.internal.security.UserStore;
+import com.redhat.thermostat.server.core.internal.security.authentication.basic.BasicUserStore;
 import com.redhat.thermostat.server.core.internal.security.authentication.basic.BasicAuthFilter;
 import com.redhat.thermostat.server.core.internal.security.authentication.none.NoAuthFilter;
 import com.redhat.thermostat.server.core.internal.security.authentication.proxy.ProxyAuthFilter;
@@ -55,14 +55,13 @@ public class CoreServer {
     }
 
     private void setupResourceConfig(Map<String, String> serverConfig, Map<String, String> userConfig, ResourceConfig resourceConfig) {
-        UserStore.get().load(userConfig);
         MongoStorageHandler storageHandler = new MongoStorageHandler();
         resourceConfig.register(new NamespaceHttpHandler(storageHandler));
         resourceConfig.register(new BaseHttpHandler(storageHandler));
         if (serverConfig.containsKey(ServerConfiguration.SECURITY_PROXY_URL.toString())) {
             resourceConfig.register(new ProxyAuthFilter());
         } else if (serverConfig.containsKey(ServerConfiguration.SECURITY_BASIC_URL.toString())) {
-            resourceConfig.register(new BasicAuthFilter());
+            resourceConfig.register(new BasicAuthFilter(new BasicUserStore(userConfig)));
         } else {
             resourceConfig.register(new NoAuthFilter());
         }

@@ -49,11 +49,15 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.ext.Provider;
 import javax.xml.bind.DatatypeConverter;
 
-import com.redhat.thermostat.server.core.internal.security.UserStore;
-
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class BasicAuthFilter implements ContainerRequestFilter {
+
+    private final BasicUserStore userStore;
+
+    public BasicAuthFilter(BasicUserStore userStore) {
+        this.userStore = userStore;
+    }
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
@@ -70,13 +74,13 @@ public class BasicAuthFilter implements ContainerRequestFilter {
             String[] values = new String(DatatypeConverter.parseBase64Binary(authentication),
                     Charset.forName("ASCII")).split(":");
             if (values.length < 2) {
-                throw new WebApplicationException(400);
+                throw new NotAuthorizedException("Authentication credentials are required");
             }
 
             String username = values[0];
             String password = values[1];
 
-            BasicWebUser user = (BasicWebUser) UserStore.get().getUser(username);
+            BasicWebUser user = userStore.getUser(username);
             if (user == null) {
                 throw new NotAuthorizedException("Authentication credentials are required");
             }

@@ -36,17 +36,17 @@
 
 package com.redhat.thermostat.server.core.internal.security.authentication.proxy;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.redhat.thermostat.server.core.internal.security.WebUser;
 
 public class ProxyWebUser implements WebUser {
     private final String username;
-    private final Set<String> roles;
+    private final Set<String> roles = new HashSet<>();
 
-    public ProxyWebUser(String username, Set<String> roles) {
+    public ProxyWebUser(String username) {
         this.username = username;
-        this.roles = roles;
     }
 
     @Override

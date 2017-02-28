@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.security;
+package com.redhat.thermostat.server.core.internal.security.authentication.basic;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,52 +42,20 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import javax.jws.soap.SOAPBinding;
+public class BasicUserStore {
 
-import com.redhat.thermostat.server.core.internal.security.authentication.basic.BasicWebUser;
-import com.redhat.thermostat.server.core.internal.security.authentication.proxy.ProxyWebUser;
+    private final Map<String, BasicWebUser> users = new HashMap<>();
 
-public class UserStore {
-
-    private static final UserStore userStore = new UserStore();
-
-    private final Map<String, WebUser> users = new HashMap<>();
-
-    public static UserStore get() {
-        return userStore;
-    }
-
-    /**
-     * Proxy user:
-     * <username> = proxy,<roles>
-     *
-     * Basic user :
-     * <username> = basic,<password>,<roles>
-     *
-     * <roles> = <roles>,<role>
-     * <role> = STRING
-     * <password> = STRING
-     *
-     */
-    private UserStore() {
-    }
-
-    public WebUser getUser(String userName) {
-        return users.get(userName);
-    }
-
-    public UserStore load(Map<String, String> userConfig) {
+    public BasicUserStore(Map<String, String> userConfig) {
         for (Map.Entry<String, String> entry : userConfig.entrySet()) {
             String username = entry.getKey();
             ArrayList<String> items = new ArrayList<>(Arrays.asList(entry.getValue().split(",")));
-            WebUser user;
-            if (items.get(0).equals("proxy")) {
-                user = new ProxyWebUser(username, new HashSet<>(items.subList(1, items.size())));
-            } else {
-                user = new BasicWebUser(username, items.get(1).toCharArray(), new HashSet<>(items.subList(2, items.size())));
-            }
+            BasicWebUser user = new BasicWebUser(username, items.get(0).toCharArray(), new HashSet<>(items.subList(1, items.size())));
             this.users.put(username, user);
         }
-        return this;
+    }
+
+    public BasicWebUser getUser(String userName) {
+        return users.get(userName);
     }
 }
