@@ -36,6 +36,10 @@
 
 package com.redhat.thermostat.server.core.internal.web.handler.storage.mongo;
 
+import static com.mongodb.client.model.Projections.exclude;
+import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Projections.fields;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -407,11 +411,12 @@ public class MongoStorageHandler implements StorageHandler {
 
                     while (true) {
 
-                        TimedRequest<FindIterable<Document>> request = new TimedRequest<>();
-                        FindIterable<Document> documents = request.run(new TimedRequest.TimedRunnable<FindIterable<Document>>() {
+                        TimedRequest<String> request = new TimedRequest<>();
+                        String documents = request.run(new TimedRequest.TimedRunnable<String>() {
                             @Override
-                            public FindIterable<Document> run() {
-                                return ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).find().sort(new BasicDBObject("_id", -1)).limit(l);
+                            public String run() {
+                                FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).find().sort(new BasicDBObject("_id", -1)).limit(l);
+                                return MongoResponseBuilder.buildJsonDocuments(documents);
                             }
                         });
                         output.write(MongoResponseBuilder.buildJsonResponseWithTime(documents, request.getElapsed()));
@@ -470,7 +475,7 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).sort(createSortObject(sort)).limit(l).skip(o);
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });
@@ -524,7 +529,7 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).sort(createSortObject(sort)).limit(l).skip(o);
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });

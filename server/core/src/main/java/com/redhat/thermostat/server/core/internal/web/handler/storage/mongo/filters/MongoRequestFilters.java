@@ -46,7 +46,6 @@ import java.util.regex.Pattern;
 import org.bson.conversions.Bson;
 
 import com.mongodb.BasicDBList;
-import com.mongodb.client.model.Filters;
 
 public class MongoRequestFilters {
 
@@ -90,9 +89,10 @@ public class MongoRequestFilters {
 
     private static Bson buildTagsFilter(List<String> tags) {
         List<Bson> filters = new ArrayList<>();
+        filters.add(exists("tags", false));
         if (tags != null && !tags.isEmpty()) {
             for (String tag : tags) {
-                filters.add(or(Filters.exists("tags", false), eq("tags", tag)));
+                filters.add(eq("tags", tag));
             }
         }
         return or(filters);

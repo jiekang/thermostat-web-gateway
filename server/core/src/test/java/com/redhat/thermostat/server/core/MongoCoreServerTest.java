@@ -27,7 +27,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
-        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"systemId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"systemId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"systemId\" : \"a\" },\\{ \"systemId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -42,7 +42,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
-        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" },\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -57,7 +57,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("limit", "1").send();
 
-        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -72,13 +72,13 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse sortDescResponse = client.newRequest(url).method(HttpMethod.GET).param("sort", "-agentId").send();
 
-        assertTrue(sortDescResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(sortDescResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"b\" },\\{ \"agentId\" : \"a\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(sortDescResponse.getStatus() == Response.Status.OK.getStatusCode());
 
 
         ContentResponse sortAsceResponse = client.newRequest(url).method(HttpMethod.GET).param("sort", "+agentId").send();
 
-        assertTrue(sortAsceResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(sortAsceResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" },\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(sortAsceResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -93,7 +93,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("limit", "1").param("sort", "-agentId").send();
 
-        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -109,7 +109,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         String postInput = "[\"agentId=a\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -125,7 +125,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         String postInput = "[\"agentId<b\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -141,7 +141,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         String postInput = "[\"agentId>a\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -157,7 +157,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         String postInput = "[\"agentId<=b\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" },\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -173,7 +173,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         String postInput = "[\"agentId>=a\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" },\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -190,7 +190,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
         String postInput = "[\"agentId=a\", \"item<2\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"item\" : \"1\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\", \"item\" : \"1\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(postResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -205,7 +205,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
-        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"agentId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentId\" : \"a\" },\\{ \"agentId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
 
         ContentResponse deleteResponse = client.newRequest(url).method(HttpMethod.DELETE).send();
@@ -215,7 +215,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getAfterResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
-        assertTrue(getAfterResponse.getContentAsString().matches("\\{\"response\" : \\{},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getAfterResponse.getContentAsString().matches("\\{\"response\" : \\[],\"time\" : \"[0-9]*\"}"));
         assertTrue(getAfterResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 
@@ -230,7 +230,7 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
-        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\{\"0\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"jvmId\" : \"a\", \"tags\" : \\[\"admin\", \"user\"] },\"1\" : \\{ \"_id\" : \\{ \"\\$oid\" : \".*\" }, \"jvmId\" : \"b\", \"tags\" : \\[\"admin\", \"user\"] }},\"time\" : \"[0-9]*\"}"));
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"jvmId\" : \"a\" },\\{ \"jvmId\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
         assertTrue(getResponse.getStatus() == Response.Status.OK.getStatusCode());
     }
 

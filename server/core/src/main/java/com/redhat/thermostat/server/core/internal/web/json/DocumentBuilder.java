@@ -40,7 +40,7 @@ public class DocumentBuilder {
 
     /**
      * Adds tags to the JSON content
-     * {/[ ... }/] -> {/[ ... ,tags:[admin,...]}/]
+     * {/[ ... }/] -> {/[ ... ,tags:["admin",...]}/]
      * @param content
      * @param tags
      * @return the JSON string with tags attached

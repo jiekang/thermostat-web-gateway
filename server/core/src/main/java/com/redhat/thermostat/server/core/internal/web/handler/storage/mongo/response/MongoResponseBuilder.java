@@ -46,10 +46,7 @@ public class MongoResponseBuilder {
      * JSON Response format
      * {
      *   "response" : {
-     *       "0" : {
-     *           ...
-     *       },
-     *       ...
+     *       [ {...}, ... ]
      *   }
      * }
      */
@@ -57,29 +54,11 @@ public class MongoResponseBuilder {
      * Timed JSON Response format
      * {
      *   "response" : {
-     *       "0" : {
-     *          ...
-     *       },
-     *       "1" : {
-     *         ...
-     *       },
-     *       ...
+     *       [ {...}, ... ]
      *   },
      *   "time" : elapsed
      * }
      */
-    public static String buildJsonResponse(FindIterable<Document> documents) {
-        return "{" +
-                buildJsonDocuments(documents) +
-                "}";
-    }
-
-    public static String buildJsonResponseWithTime(FindIterable<Document> documents, long elapsed) {
-        return "{" +
-                buildJsonDocuments(documents) +
-                buildKeyAddition("time", "" + elapsed) +
-                "}";
-    }
 
     public static String buildJsonResponseWithTime(String documents, long elapsed) {
         return "{" +
@@ -90,18 +69,21 @@ public class MongoResponseBuilder {
 
     public static String buildJsonDocuments(FindIterable<Document> documents) {
         StringBuilder s = new StringBuilder();
-        int i = 0;
 
-        s.append("\"response\" : {");
+        s.append("\"response\" : [");
+
+        int i = 0;
         for (Document document : documents) {
-            s.append("\"").append(i).append("\" : ").append(document.toJson()).append(",");
             i++;
+            s.append(document.toJson()).append(",");
         }
 
         if (i != 0) {
             s.deleteCharAt(s.length() - 1);
         }
-        s.append("}");
+
+        s.append("]");
+
         return s.toString();
     }
 
