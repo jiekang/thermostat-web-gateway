@@ -30,10 +30,13 @@
                 }
             }
         },
-        "/{namespace}/systems": {
+        "/{namespace}/systems/{systemId}": {
             "parameters": [
                 {
                     "$ref": "#/parameters/namespace"
+                },
+                {
+                    "$ref": "#/parameters/system-id"
                 }
             ],
             "get": {
@@ -113,58 +116,16 @@
                 }
             }
         },
-        "/{namespace}/systems/{systemId}": {
+        "/{namespace}/systems/{systemId}/agents/{agentId}": {
             "parameters": [
                 {
                     "$ref": "#/parameters/namespace"
                 },
                 {
                     "$ref": "#/parameters/system-id"
-                }
-            ],
-            "get": {
-                "description": "Get system information",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/system-info"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Add or update system information",
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/tags"
-                    },
-                    {
-                        "$ref": "#/parameters/system-info"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete system information",
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/ok"
-                    }
-                }
-            }
-        },
-        "/{namespace}/systems/{systemId}/agents": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/namespace"
                 },
                 {
-                    "$ref": "#/parameters/system-id"
+                    "$ref": "#/parameters/agent-id"
                 }
             ],
             "get": {
@@ -242,7 +203,7 @@
                 }
             }
         },
-        "/{namespace}/systems/{systemId}/agents/{agentId}": {
+        "/{namespace}/system/{systemId}/agents/{agentId}/jvms/{jvmId}": {
             "parameters": [
                 {
                     "$ref": "#/parameters/namespace"
@@ -252,57 +213,9 @@
                 },
                 {
                     "$ref": "#/parameters/agent-id"
-                }
-            ],
-            "get": {
-                "description": "Get agent information",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/agent-info"
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    }
-                }
-            },
-            "put": {
-                "description": "Adds or updates agent information",
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/tags"
-                    },
-                    {
-                        "$ref": "#/parameters/agent-info"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/ok"
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete agent information",
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/ok"
-                    }
-                }
-            }
-        },
-        "/{namespace}/systems/{systemId}/agents/{agentId}/jvms": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/namespace"
                 },
                 {
-                    "$ref": "#/parameters/system-id"
-                },
-                {
-                    "$ref": "#/parameters/agent-id"
+                    "$ref": "#/parameters/jvm-id"
                 }
             ],
             "get": {
@@ -368,60 +281,6 @@
                         "schema": {
                             "$ref": "#/definitions/jvm-info"
                         }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete JVM information",
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/ok"
-                    }
-                }
-            }
-        },
-        "/{namespace}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}": {
-            "parameters": [
-                {
-                    "$ref": "#/parameters/namespace"
-                },
-                {
-                    "$ref": "#/parameters/system-id"
-                },
-                {
-                    "$ref": "#/parameters/agent-id"
-                },
-                {
-                    "$ref": "#/parameters/jvm-id"
-                }
-            ],
-            "get": {
-                "description": "Get JVM information",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/jvm-info"
-                        }
-                    },
-                    "401": {
-                        "$ref": "#/responses/unauthorized"
-                    }
-                }
-            },
-            "put": {
-                "description": "Adds or updates JVM information",
-                "parameters": [
-                    {
-                        "$ref": "#/parameters/tags"
-                    },
-                    {
-                        "$ref": "#/parameters/jvm-info"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "$ref": "#/responses/ok"
                     }
                 }
             },
