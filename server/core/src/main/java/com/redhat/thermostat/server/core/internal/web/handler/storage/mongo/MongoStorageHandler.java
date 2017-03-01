@@ -39,6 +39,7 @@ package com.redhat.thermostat.server.core.internal.web.handler.storage.mongo;
 import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.excludeId;
 import static com.mongodb.client.model.Projections.fields;
+import static com.mongodb.client.model.Projections.include;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,59 +75,50 @@ public class MongoStorageHandler implements StorageHandler {
     private final String jvmCollectionSuffix = "-jvms";
 
     @Override
-    public void getSystems(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String offset, final String limit, final String sort) {
+    public void getSystems(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                getAll(offset,limit,context,null,null,null,namespace,sort,asyncResponse,systemCollectionSuffix);
+                getAll(offset, limit, context, systemId, null, null, namespace, sort, asyncResponse, systemCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void putSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace) {
+    public void putSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId) {
+        if (!isMongoConnected(asyncResponse)) {
+            return;
+        }
+        if (systemId.equals("all")) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+            return;
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                putAll(body, context, systemId, null, null, namespace, asyncResponse, systemCollectionSuffix);
+            }
+        }).start();
+    }
+
+    @Override
+    public void postSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, namespace, asyncResponse, systemCollectionSuffix);
+                postAll(body, offset, limit, context, systemId, null, null, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void postSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String offset, final String limit, final String sort) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                postAll(body, offset, limit, context, null, null, null, namespace, sort, asyncResponse, agentCollectionSuffix);
-            }
-        }).start();
-    }
-
-    @Override
-    public void deleteSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void getSystem(SecurityContext securityContext, final AsyncResponse asyncResponse, String namespace, String systemId) {
+    public void deleteSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -139,33 +131,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void putSystem(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void deleteSystem(SecurityContext context, final AsyncResponse asyncResponse, String namespace) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void getAgents(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
+    public void getAgents(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -173,40 +139,45 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                getAll(offset,limit,context,systemId,null,null,namespace,sort,asyncResponse,agentCollectionSuffix);
+                getAll(offset,limit,context,systemId,agentId,null,namespace,sort,asyncResponse,agentCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void putAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId) {
+    public void putAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId) {
         if (!isMongoConnected(asyncResponse)) {
+            return;
+        }
+
+        if (agentId.equals("all")) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
             return;
         }
 
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, namespace, asyncResponse, agentCollectionSuffix);
+                putAll(body, context, systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void postAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
+    public void postAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-               postAll(body, offset, limit, context, systemId, null, null, namespace, sort, asyncResponse, agentCollectionSuffix);
+               postAll(body, offset, limit, context, systemId, agentId, null, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, String systemId) {
+    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, String systemId, String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -233,124 +204,52 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void getAgent(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void getJvms(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String jvmId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
+                getAll(offset, limit, context, systemId, agentId, jvmId, namespace, sort, asyncResponse, jvmCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void putAgent(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
+    public void putJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String jvmId) {
+        if (!isMongoConnected(asyncResponse)) {
+            return;
+        }
+
+        if (jvmId.equals("all")) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+            return;
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                putAll(body, context, systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix);
+            }
+        }).start();
+    }
+
+    @Override
+    public void postJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String jvmId, final String offset, final String limit, final String sort) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
+                postAll(body, offset, limit, context, systemId, agentId, jvmId, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
 
     @Override
-    public void deleteAgent(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void getJvms(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, String vmId, final String offset, final String limit, final String sort) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                getAll(offset, limit, context, systemId, agentId, null, namespace, sort, asyncResponse, jvmCollectionSuffix);
-            }
-        }).start();
-    }
-
-    @Override
-    public void putJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, String systemId, String agentId) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                putAll(body, context, namespace, asyncResponse, jvmCollectionSuffix);
-            }
-        }).start();
-    }
-
-    @Override
-    public void postJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String offset, final String limit, final String sort) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                postAll(body, offset, limit, context, systemId, agentId, null, namespace, sort, asyncResponse, agentCollectionSuffix);
-            }
-        }).start();
-    }
-
-    @Override
-    public void deleteJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void getJvm(SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void putJvm(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                asyncResponse.resume(Response.status(Response.Status.NOT_IMPLEMENTED).build());
-            }
-        }).start();
-    }
-
-    @Override
-    public void deleteJvm(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
+    public void deleteJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -454,9 +353,9 @@ public class MongoStorageHandler implements StorageHandler {
             String[] items = sort.split(",");
             for (String item : items) {
                 if (item.charAt(0) == '+') {
-                    sortObject.append(item.substring(1), 1);
+                    sortObject.append("obj." + item.substring(1), 1);
                 } else if (item.charAt(0) == '-') {
-                    sortObject.append(item.substring(1), -1);
+                    sortObject.append("obj." + item.substring(1), -1);
                 }
             }
         }
@@ -475,7 +374,7 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o);
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(include("obj"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });
@@ -486,13 +385,13 @@ public class MongoStorageHandler implements StorageHandler {
         }
     }
 
-    private void putAll(String body, SecurityContext context, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix) {
+    private void putAll(String body, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix) {
         try {
             BasicDBList inputList = (BasicDBList) JSON.parse(body);
 
             final List<Document> items = new ArrayList<>();
             for (Object item : inputList) {
-                items.add(Document.parse(DocumentBuilder.addTags(item.toString(), context.getUserPrincipal().getName())));
+                items.add(Document.parse(new DocumentBuilder(item.toString()).addTags(context.getUserPrincipal().getName()).addId("systemId", systemId).addId("agentId", agentId).addId("jvmId", jvmId).build()));
             }
 
             TimedRequest<Boolean> timedRequest = new TimedRequest<>();

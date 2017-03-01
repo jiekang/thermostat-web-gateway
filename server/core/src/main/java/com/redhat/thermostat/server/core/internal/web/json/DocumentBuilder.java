@@ -38,14 +38,22 @@ package com.redhat.thermostat.server.core.internal.web.json;
 
 public class DocumentBuilder {
 
+    private StringBuilder contentBuilder;
+
+    public DocumentBuilder(String content) {
+        contentBuilder = new StringBuilder();
+        contentBuilder.append("{ \"obj\" : ");
+        contentBuilder.append(content);
+        contentBuilder.append("}");
+    }
+
     /**
      * Adds tags to the JSON content
      * {/[ ... }/] -> {/[ ... ,tags:["admin",...]}/]
-     * @param content
      * @param tags
      * @return the JSON string with tags attached
      */
-    public static String addTags(String content, String... tags) {
+    public DocumentBuilder addTags(String... tags) {
         StringBuilder tagBuilder = new StringBuilder();
         tagBuilder.append(",\"tags\":[\"admin\"");
         for (String tag : tags) {
@@ -53,8 +61,27 @@ public class DocumentBuilder {
         }
         tagBuilder.append("]");
 
-        StringBuilder contentBuilder = new StringBuilder(content);
         contentBuilder.insert(contentBuilder.length() - 1, tagBuilder.toString());
+        return this;
+    }
+
+    /**
+     * Add key-value pair to the JSON content
+     * {/[ ... }/] -> {/[ ... ,"key:"admin"}/]
+     *
+     * @param key
+     * @param value
+     * @return the JSON string with key-value pair attached
+     */
+    public DocumentBuilder addId(String key, String value) {
+        if (key != null && value != null) {
+            String kvPair = ",\"" + key + "\":\"" + value + "\"";
+            contentBuilder.insert(contentBuilder.length() - 1, kvPair);
+        }
+        return this;
+    }
+
+    public String build() {
         return contentBuilder.toString();
     }
 }

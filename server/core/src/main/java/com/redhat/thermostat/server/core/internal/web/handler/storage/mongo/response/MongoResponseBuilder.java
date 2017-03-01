@@ -75,7 +75,7 @@ public class MongoResponseBuilder {
         int i = 0;
         for (Document document : documents) {
             i++;
-            s.append(document.toJson()).append(",");
+            s.append(((Document)document.get("obj")).toJson()).append(",");
         }
 
         if (i != 0) {

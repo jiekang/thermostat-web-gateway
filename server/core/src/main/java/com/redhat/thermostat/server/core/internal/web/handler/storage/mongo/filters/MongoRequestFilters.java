@@ -105,7 +105,7 @@ public class MongoRequestFilters {
             Pattern p = Pattern.compile("(<=|>=|<|>|=)");
             Matcher m = p.matcher(filter);
             if (m.find()) {
-                String key = filter.substring(0, m.start());
+                String key = "obj." + filter.substring(0, m.start());
                 String comparator = filter.substring(m.start(), m.end());
                 String value = filter.substring(m.end());
                 switch (comparator) {

@@ -34,8 +34,8 @@ public class MongoResponseBuilderTest {
 
     @Test
     public void testBuildJsonDocument() {
-        Document d1 = Document.parse("{\"hello\" : \"blob\"}");
-        Document d2 = Document.parse("{\"a\" : {\"blob\" : [\"hi\"]}}");
+        Document d1 = Document.parse("{\"obj\" : {\"hello\" : \"blob\"}}");
+        Document d2 = Document.parse("{\"obj\" : {\"a\" : {\"blob\" : [\"hi\"]}}}");
         final List<Document> list = new ArrayList<>();
         list.add(d1);
         list.add(d2);

@@ -42,49 +42,29 @@ import javax.ws.rs.core.SecurityContext;
 import org.glassfish.jersey.server.ChunkedOutput;
 
 public interface StorageHandler {
-    void getSystems(SecurityContext context, AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort);
+    void getSystems(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String offset, String limit, String sort);
 
-    void putSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace);
+    void putSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
 
-    void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String offset, String limit, String sort);
+    void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String offset, String limit, String sort);
 
-    void deleteSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace);
+    void deleteSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
 
-    void getSystem(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId);
+    void getAgents(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort);
 
-    void putSystem(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace);
+    void putAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
 
-    void deleteSystem(SecurityContext context, AsyncResponse asyncResponse, String namespace);
+    void postAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort);
 
-    void getAgents(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String offset, String limit, String sort);
+    void deleteAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
 
-    void putAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
+    void getJvms(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId, String offset, String limit, String sort);
 
+    void putJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
 
-    void postAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String offset, String limit, String sort);
+    void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId, String offset, String limit, String sort);
 
-
-    void deleteAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
-
-    void getAgent(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
-
-    void putAgent(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
-
-    void deleteAgent(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
-
-    void getJvms(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String vmId, String offset, String limit, String sort);
-
-    void putJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
-
-    void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort);
-
-    void deleteJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
-
-    void getJvm(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
-
-    void putJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
-
-    void deleteJvm(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
+    void deleteJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
 
     void getNamespaces(SecurityContext context, AsyncResponse asyncResponse, String offset, String limit);
 
