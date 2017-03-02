@@ -38,7 +38,7 @@ package com.redhat.thermostat.server.core.internal.web.json;
 
 public class DocumentBuilder {
 
-    private StringBuilder contentBuilder;
+    private final StringBuilder contentBuilder;
 
     public DocumentBuilder(String content) {
         contentBuilder = new StringBuilder();
@@ -50,7 +50,7 @@ public class DocumentBuilder {
     /**
      * Adds tags to the JSON content
      * {/[ ... }/] -> {/[ ... ,tags:["admin",...]}/]
-     * @param tags
+     * @param tags the tags to add
      * @return the JSON string with tags attached
      */
     public DocumentBuilder addTags(String... tags) {
@@ -69,8 +69,8 @@ public class DocumentBuilder {
      * Add key-value pair to the JSON content
      * {/[ ... }/] -> {/[ ... ,"key:"admin"}/]
      *
-     * @param key
-     * @param value
+     * @param key the key
+     * @param value the value
      * @return the JSON string with key-value pair attached
      */
     public DocumentBuilder addId(String key, String value) {

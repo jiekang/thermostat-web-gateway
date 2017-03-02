@@ -61,11 +61,6 @@ public class BasicWebUser implements WebUser {
         return this.roles.contains(role);
     }
 
-    @Override
-    public void addRole(String role) {
-        roles.add(role);
-    }
-
     public String getPassword() {
         return new String(password);
     }

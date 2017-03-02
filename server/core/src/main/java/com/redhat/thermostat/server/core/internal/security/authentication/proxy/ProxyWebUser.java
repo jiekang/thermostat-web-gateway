@@ -59,7 +59,6 @@ public class ProxyWebUser implements WebUser {
         return this.roles.contains(role);
     }
 
-    @Override
     public void addRole(String role) {
         if (role != null) {
             roles.add(role);

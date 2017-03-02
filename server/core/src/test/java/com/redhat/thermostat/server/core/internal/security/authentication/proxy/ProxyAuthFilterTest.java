@@ -15,23 +15,20 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
-import com.redhat.thermostat.server.core.internal.security.authentication.basic.BasicUserStore;
-import com.redhat.thermostat.server.core.internal.security.WebUser;
-
 public class ProxyAuthFilterTest {
     private ProxyAuthFilter proxyAuthFilter;
 
     private ContainerRequestContext crq;
 
-    private String userName = "user";
-    private String groups = "a:b";
+    private final String userName = "user";
 
-    private ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
+    private final ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
 
     @Before
     public void setup() {
         crq = mock(ContainerRequestContext.class);
         when(crq.getHeaderString("X-SSSD-REMOTE-USER")).thenReturn(userName);
+        String groups = "a:b";
         when(crq.getHeaderString("X-SSSD-REMOTE-USER-GROUPS")).thenReturn(groups);
 
         proxyAuthFilter = new ProxyAuthFilter();

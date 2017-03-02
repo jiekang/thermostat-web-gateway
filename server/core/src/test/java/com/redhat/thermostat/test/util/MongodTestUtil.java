@@ -2,7 +2,6 @@ package com.redhat.thermostat.test.util;
 
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
@@ -18,16 +17,16 @@ import com.redhat.thermostat.server.core.internal.configuration.MongoConfigurati
 
 public class MongodTestUtil {
 
-    public static Map<String, String> mongoConfiguration = new HashMap<>();
+    public static final Map<String, String> mongoConfiguration = new HashMap<>();
 
-    public static Map<String, String> timeoutMongoConfiguration = new HashMap<>();
+    public static final Map<String, String> timeoutMongoConfiguration = new HashMap<>();
 
     private static final String host = "127.0.0.1";
     private static final int port = 28000;
 
-    public MongoClient mongoClient;
-    public Path tempDbDir;
-    public Path tempLogFile;
+    private MongoClient mongoClient;
+    private Path tempDbDir;
+    private Path tempLogFile;
     public Process process;
 
     static {
@@ -54,7 +53,7 @@ public class MongodTestUtil {
         mongoClient = new MongoClient(new ServerAddress(host, port));
     }
 
-    public void stopMongod() throws IOException {
+    public void stopMongod() {
         try {
             mongoClient.getDatabase("admin").runCommand(new Document("shutdown", 1));
         } catch (Exception e) {
@@ -97,7 +96,7 @@ public class MongodTestUtil {
             } else if (s[0].contains(match)) {
                 return true;
             }
-            Thread.sleep(100l);
+            Thread.sleep(100L);
         }
         return false;
     }

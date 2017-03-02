@@ -19,7 +19,7 @@ public class RoleAuthFilter implements ContainerRequestFilter {
         int length = paths.length;
         SecurityContext securityContext = containerRequestContext.getSecurityContext();
 
-        /**
+        /*
          * Path:
          * /api/v100/{namespace}/systems/{id}/agents/{id}/jvms/{id}
          *   0    1     2         3        4   5       6   7     8
@@ -34,14 +34,14 @@ public class RoleAuthFilter implements ContainerRequestFilter {
          * (name) is either 'all' or some string referencing a specific identity
          */
 
-        /**
+        /*
          * thermostat-admin is always authorized
          */
         if (securityContext.isUserInRole("thermostat-admin")) {
             return;
         }
 
-        /**
+        /*
          * request to / is always authorized
          */
         if (length < 3) {

@@ -49,8 +49,7 @@ public class MongoResponseBuilder {
      *       [ {...}, ... ]
      *   }
      * }
-     */
-    /**
+     *
      * Timed JSON Response format
      * {
      *   "response" : {

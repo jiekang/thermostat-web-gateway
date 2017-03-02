@@ -177,7 +177,7 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, String systemId, String agentId) {
+    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -191,7 +191,7 @@ public class MongoStorageHandler implements StorageHandler {
                     @Override
                     public Boolean run() {
                         try {
-                            ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).drop();
+                            ThermostatMongoStorage.getDatabase().getCollection(namespace + agentCollectionSuffix).deleteMany(MongoRequestFilters.buildDeleteFilter(systemId, agentId, null));
                         } catch (Exception e) {
                             return Boolean.FALSE;
                         }
@@ -274,7 +274,6 @@ public class MongoStorageHandler implements StorageHandler {
                     public void run() {
                         final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
                         final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
-                        final String userName = context.getUserPrincipal().getName();
 
                         TimedRequest<String> timedRequest = new TimedRequest<>();
 

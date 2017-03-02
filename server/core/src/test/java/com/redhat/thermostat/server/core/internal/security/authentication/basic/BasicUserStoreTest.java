@@ -22,9 +22,9 @@ public class BasicUserStoreTest {
 
         BasicUserStore userStore = new BasicUserStore(entries);
 
-        WebUser user = userStore.getUser(userName);
+        BasicWebUser user = userStore.getUser(userName);
 
-        assertTrue(user instanceof BasicWebUser);
+        assertTrue(user != null);
 
         assertTrue(user.isUserInRole("a"));
         assertTrue(user.isUserInRole("b"));
@@ -48,9 +48,9 @@ public class BasicUserStoreTest {
         for (int i = 0; i < num; i++) {
             String userName = "user" + i;
             String password = "password" + i;
-            WebUser user = userStore.getUser(userName);
+            BasicWebUser user = userStore.getUser(userName);
 
-            assertTrue(user instanceof BasicWebUser);
+            assertTrue(user != null);
 
             assertTrue(user.isUserInRole("a"));
             assertTrue(user.isUserInRole("b"));

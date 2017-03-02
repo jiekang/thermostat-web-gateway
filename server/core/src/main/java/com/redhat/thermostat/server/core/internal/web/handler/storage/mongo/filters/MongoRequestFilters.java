@@ -129,4 +129,8 @@ public class MongoRequestFilters {
         }
         return and(filters);
     }
+
+    public static Bson buildDeleteFilter(String systemId, String agentId, String jvmId) {
+        return buildIdFilters(systemId, agentId, jvmId);
+    }
 }

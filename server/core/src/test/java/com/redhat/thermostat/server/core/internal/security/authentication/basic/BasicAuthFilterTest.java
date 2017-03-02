@@ -24,23 +24,22 @@ public class BasicAuthFilterTest {
 
     private BasicAuthFilter basicAuthFilter;
     private ContainerRequestContext crq;
-    private Map<String,String> entries;
-    private String userName = "user";
+    private final String userName = "user";
 
 
-    private ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
+    private final ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
 
     @Before
     public void setup() {
         String password = "password;";
         String userInfo = password + ",a,b";
 
-        entries = new HashMap<>();
+        Map<String, String> entries = new HashMap<>();
         entries.put(userName, userInfo);
 
         crq = mock(ContainerRequestContext.class);
 
-        String authString = DatatypeConverter.printBase64Binary(new String(userName + ":" + password).getBytes());
+        String authString = DatatypeConverter.printBase64Binary((userName + ":" + password).getBytes());
         when(crq.getHeaderString(HttpHeaders.AUTHORIZATION)).thenReturn("Basic " + authString);
 
         basicAuthFilter = new BasicAuthFilter(new BasicUserStore(entries));

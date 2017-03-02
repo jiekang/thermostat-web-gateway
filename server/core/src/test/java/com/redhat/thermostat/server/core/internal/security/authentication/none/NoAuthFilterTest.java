@@ -15,14 +15,13 @@ import org.mockito.ArgumentCaptor;
 
 public class NoAuthFilterTest {
 
-    private NoAuthFilter noAuthFilter;
     private ContainerRequestContext crq;
-    private ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
+    private final ArgumentCaptor<SecurityContext> sc = ArgumentCaptor.forClass(SecurityContext.class);
     @Before
     public void setup() throws IOException {
         crq = mock(ContainerRequestContext.class);
 
-        noAuthFilter = new NoAuthFilter();
+        NoAuthFilter noAuthFilter = new NoAuthFilter();
         noAuthFilter.filter(crq);
     }
 

@@ -11,13 +11,13 @@ import org.junit.BeforeClass;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
 public class AbstractCoreServerTest {
-    public static CoreServer coreServer;
-    public static HttpClient client;
-    public static int port;
-    public String baseUrl = "http://localhost:" + port + "/api/v100";
+    private static CoreServer coreServer;
+    static HttpClient client;
+    private static int port;
+    final String baseUrl = "http://localhost:" + port + "/api/v100";
 
     private static Thread thread;
-    private static AtomicBoolean ready = new AtomicBoolean(false);
+    private static final AtomicBoolean ready = new AtomicBoolean(false);
 
     @BeforeClass
     public static void setupClass() throws Exception {
