@@ -11,7 +11,9 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
-public class CoreServerHttpTest extends AbstractCoreServerTest {
+import com.redhat.thermostat.server.core.web.setup.CoreServerTestSetup;
+
+public class CoreServerHttpTest extends CoreServerTestSetup {
     @Test
     public void testGetSystems() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/namespace/systems/systemId";

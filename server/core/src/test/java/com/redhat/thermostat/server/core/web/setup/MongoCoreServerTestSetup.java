@@ -1,4 +1,4 @@
-package com.redhat.thermostat.server.core.web;
+package com.redhat.thermostat.server.core.web.setup;
 
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -8,18 +8,20 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
+import com.redhat.thermostat.server.core.web.CoreServer;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
-public class AbstractMongoCoreServerTest {
+public class MongoCoreServerTestSetup {
     private static CoreServer coreServer;
-    static HttpClient client;
+    protected static HttpClient client;
     private static int port;
-    final String baseUrl = "http://localhost:" + port + "/api/v100";
+    protected final String baseUrl = "http://localhost:" + port + "/api/v100";
     private static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
 
 
     private static Thread thread;
     private static final AtomicBoolean ready = new AtomicBoolean(false);
+
     @BeforeClass
     public static void setupClass() throws Exception {
         mongodTestUtil.startMongod();
