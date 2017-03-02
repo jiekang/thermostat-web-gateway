@@ -27,7 +27,7 @@ public class BasicUserStoreTest {
         assertTrue(user.isUserInRole("a"));
         assertTrue(user.isUserInRole("b"));
         assertEquals(userName, user.getUsername());
-        assertEquals("password", ((BasicWebUser) user).getPassword());
+        assertEquals("password", user.getPassword());
     }
 
     @Test
@@ -54,7 +54,7 @@ public class BasicUserStoreTest {
             assertTrue(user.isUserInRole("b"));
             assertTrue(user.isUserInRole(String.valueOf(i)));
             assertEquals(userName, user.getUsername());
-            assertEquals(password, ((BasicWebUser) user).getPassword());
+            assertEquals(password, user.getPassword());
         }
     }
 }
