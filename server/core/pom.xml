@@ -65,7 +65,7 @@
                         <!-- need to declare bundles explicitly since the automatisms fail if an embedded jetty
                              -->
                         <Export-Package>
-                            com.redhat.thermostat.server.core,
+                            com.redhat.thermostat.server.core.web,
                         </Export-Package>
                         <Private-Package>
                             io.swagger.api.*,

@@ -13,7 +13,7 @@ import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
-import com.redhat.thermostat.server.core.internal.configuration.MongoConfiguration;
+import com.redhat.thermostat.server.core.internal.storage.mongo.configuration.MongoConfiguration;
 
 public class MongodTestUtil {
 

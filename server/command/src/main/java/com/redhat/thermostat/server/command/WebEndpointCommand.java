@@ -50,7 +50,7 @@ import com.redhat.thermostat.common.cli.Command;
 import com.redhat.thermostat.common.cli.CommandContext;
 import com.redhat.thermostat.common.cli.CommandException;
 import com.redhat.thermostat.common.config.experimental.ConfigurationInfoSource;
-import com.redhat.thermostat.server.core.CoreServer;
+import com.redhat.thermostat.server.core.web.CoreServer;
 
 @Component
 @Service(Command.class)

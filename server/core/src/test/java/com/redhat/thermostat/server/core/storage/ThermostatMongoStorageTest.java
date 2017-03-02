@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.redhat.thermostat.server.core.internal.storage.ThermostatMongoStorage;
+import com.redhat.thermostat.server.core.internal.storage.mongo.ThermostatMongoStorage;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
 public class ThermostatMongoStorageTest {

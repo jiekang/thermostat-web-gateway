@@ -2,7 +2,8 @@ package com.redhat.thermostat.server.command;
 
 import java.util.Collections;
 
-import com.redhat.thermostat.server.core.CoreServer;
+import com.redhat.thermostat.server.core.web.CoreServer;
+
 
 public class WebServerCommand {
     public static void main(String[] args) {
