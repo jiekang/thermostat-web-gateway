@@ -31,6 +31,39 @@ public class  MongoCoreServerTest extends AbstractMongoCoreServerTest {
     }
 
     @Test
+    public void testPutAllSystems() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/PutGetSystems/systems/all";
+
+        String putInput = "[{\"systemStuff\":\"a\"},{\"systemStuff\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResponse.getStatus());
+        assertEquals("", putResponse.getContentAsString());
+    }
+
+    @Test
+    public void testPutAllAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/PutGetSystems/systems/systemId/agents/all";
+
+        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResponse.getStatus());
+        assertEquals("", putResponse.getContentAsString());
+    }
+
+    @Test
+    public void testPutAllJvms() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/PutGetSystems/systems/systemId/agents/agentId/jvms/all";
+
+        String putInput = "[{\"jvmStuff\":\"a\"},{\"jvmStuff\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResponse.getStatus());
+        assertEquals("", putResponse.getContentAsString());
+    }
+
+    @Test
     public void testPutGetAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/PutGetAgents/systems/all/agents/agentId";
         String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
