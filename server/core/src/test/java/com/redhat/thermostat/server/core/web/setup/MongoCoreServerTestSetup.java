@@ -24,6 +24,8 @@ public class MongoCoreServerTestSetup {
 
     @BeforeClass
     public static void setupClass() throws Exception {
+        ready.getAndSet(false);
+
         mongodTestUtil.startMongod();
         mongodTestUtil.waitForMongodStart();
 
@@ -61,8 +63,9 @@ public class MongoCoreServerTestSetup {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws InterruptedException {
         while (!ready.get()){
+            Thread.sleep(100L);
         }
     }
 }
