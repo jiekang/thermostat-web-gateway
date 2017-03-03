@@ -50,7 +50,7 @@ public class RoleAuthFilter implements ContainerRequestFilter {
 
         String namespaceRole = "thermostat-namespaces-" + paths[2];
         if (!(securityContext.isUserInRole("thermostat-namespaces-all") || securityContext.isUserInRole(namespaceRole))) {
-            throw new NotAuthorizedException("Authentication credentials are required");
+            throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
         }
 
         if (length < 5) {
@@ -59,7 +59,7 @@ public class RoleAuthFilter implements ContainerRequestFilter {
 
         String systemRole = "thermostat-systems-" + paths[4];
         if (!(securityContext.isUserInRole("thermostat-systems-all") || securityContext.isUserInRole(systemRole))) {
-            throw new NotAuthorizedException("Authentication credentials are required");
+            throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
         }
 
         if (length < 7) {
@@ -68,7 +68,7 @@ public class RoleAuthFilter implements ContainerRequestFilter {
 
         String agentRole = "thermostat-agents-" + paths[6];
         if (!(securityContext.isUserInRole("thermostat-agents-all") || securityContext.isUserInRole(agentRole))) {
-            throw new NotAuthorizedException("Authentication credentials are required");
+            throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
         }
 
         if (length < 9) {
@@ -77,7 +77,7 @@ public class RoleAuthFilter implements ContainerRequestFilter {
 
         String jvmRole = "thermostat-jvms-" + paths[8];
         if (!(securityContext.isUserInRole("thermostat-jvms-all") || securityContext.isUserInRole(jvmRole))) {
-            throw new NotAuthorizedException("Authentication credentials are required");
+            throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
         }
     }
 }

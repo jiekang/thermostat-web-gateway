@@ -62,18 +62,18 @@ public class BasicAuthFilter implements ContainerRequestFilter {
     public void filter(ContainerRequestContext requestContext) throws IOException {
             String authentication = requestContext.getHeaderString(HttpHeaders.AUTHORIZATION);
             if (authentication == null) {
-                throw new NotAuthorizedException("Authentication credentials are required");
+                throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
             }
 
             if (!authentication.startsWith("Basic ")) {
-                throw new NotAuthorizedException("Authentication credentials are required");
+                throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
             }
 
             authentication = authentication.substring("Basic ".length());
             String[] values = new String(DatatypeConverter.parseBase64Binary(authentication),
                     Charset.forName("ASCII")).split(":");
             if (values.length < 2) {
-                throw new NotAuthorizedException("Authentication credentials are required");
+                throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
             }
 
             String username = values[0];
@@ -81,11 +81,11 @@ public class BasicAuthFilter implements ContainerRequestFilter {
 
             BasicWebUser user = userStore.getUser(username);
             if (user == null) {
-                throw new NotAuthorizedException("Authentication credentials are required");
+                throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
             }
 
             if (!user.getPassword().equals(password)) {
-                throw new NotAuthorizedException("Authentication credentials are required");
+                throw new NotAuthorizedException("Basic: realm=\"thermostat\"");
             }
 
             requestContext.setSecurityContext(new BasicSecurityContext(user));

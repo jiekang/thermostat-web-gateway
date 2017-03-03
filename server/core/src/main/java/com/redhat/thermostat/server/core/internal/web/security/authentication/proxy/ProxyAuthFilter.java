@@ -53,7 +53,7 @@ public class ProxyAuthFilter implements ContainerRequestFilter{
     public void filter(ContainerRequestContext requestContext) throws IOException, NotAuthorizedException {
         String username = requestContext.getHeaderString("X-SSSD-REMOTE-USER");
         if (username == null) {
-            throw new NotAuthorizedException("Authentication credentials are required");
+            throw new NotAuthorizedException("Proxy: realm=\"thermostat\"");
         }
 
         ProxyWebUser user = new ProxyWebUser(username);
