@@ -92,7 +92,6 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("limit", "1").param("sort", "-agentStuff").send();
 
-        System.out.println(getResponse.getContentAsString());
         assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
         assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
     }

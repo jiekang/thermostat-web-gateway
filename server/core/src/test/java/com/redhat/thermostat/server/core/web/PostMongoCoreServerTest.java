@@ -110,7 +110,6 @@ public class PostMongoCoreServerTest extends MongoCoreServerTestSetup {
         String postInput = "[\"agentStuff=a\", \"item<2\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        System.out.println(postResponse.getContentAsString());
         assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
         assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\", \"item\" : \"1\" }],\"time\" : \"[0-9]*\"}"));
     }
