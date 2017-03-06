@@ -11,11 +11,10 @@ import org.junit.BeforeClass;
 import com.redhat.thermostat.server.core.web.CoreServer;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
-public class MongoCoreServerTestSetup {
+public class MongoCoreServerTestSetup extends TimedTestSetup {
     private static CoreServer coreServer;
     protected static HttpClient client;
-    private static int port;
-    protected final String baseUrl = "http://localhost:" + port + "/api/v100";
+    protected static String baseUrl;
     private static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
 
 
@@ -23,7 +22,7 @@ public class MongoCoreServerTestSetup {
     private static final AtomicBoolean ready = new AtomicBoolean(false);
 
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void beforeClassMongoCoreServerTestSetup() throws Exception {
         ready.getAndSet(false);
 
         mongodTestUtil.startMongod();
@@ -48,12 +47,15 @@ public class MongoCoreServerTestSetup {
         client = new HttpClient();
         client.start();
 
-        port = coreServer.getPort();
+        baseUrl = "http://localhost:" + coreServer.getPort() + "/api/v100";
 
+        while (!ready.get()){
+            Thread.sleep(100L);
+        }
     }
 
     @AfterClass
-    public static void cleanupClass() throws Exception {
+    public static void afterClassMongoCoreServerTestSetup() throws Exception {
         coreServer.finish();
         thread.join();
 
@@ -63,7 +65,7 @@ public class MongoCoreServerTestSetup {
     }
 
     @Before
-    public void setup() throws InterruptedException {
+    public void beforeMongoCoreServerTestSetup() throws InterruptedException {
         while (!ready.get()){
             Thread.sleep(100L);
         }

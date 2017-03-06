@@ -11,7 +11,7 @@ import org.junit.BeforeClass;
 import com.redhat.thermostat.server.core.web.CoreServer;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
-public class CoreServerTestSetup {
+public class CoreServerTestSetup extends TimedTestSetup {
     private static CoreServer coreServer;
     protected static HttpClient client;
     private static int port;
@@ -21,7 +21,7 @@ public class CoreServerTestSetup {
     private static final AtomicBoolean ready = new AtomicBoolean(false);
 
     @BeforeClass
-    public static void setupClass() throws Exception {
+    public static void setupClassCoreServerTestSetup() throws Exception {
         coreServer= new CoreServer();
         coreServer.buildServer(Collections.EMPTY_MAP, MongodTestUtil.timeoutMongoConfiguration, Collections.EMPTY_MAP);
         thread = new Thread(new Runnable() {
@@ -45,13 +45,14 @@ public class CoreServerTestSetup {
     }
 
     @AfterClass
-    public static void cleanupClass() throws Exception {
+    public static void cleanupClassCoreServerTestSetup() throws Exception {
         coreServer.finish();
+            client.stop();
         thread.join();
     }
 
     @Before
-    public void setup() {
+    public void setupCoreServerTestSetup() {
         while (!ready.get()){
         }
     }
