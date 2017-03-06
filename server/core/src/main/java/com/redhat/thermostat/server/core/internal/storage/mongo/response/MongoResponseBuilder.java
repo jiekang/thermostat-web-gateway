@@ -72,6 +72,7 @@ public class MongoResponseBuilder {
         s.append("\"response\" : [");
 
         int i = 0;
+
         for (Document document : documents) {
             i++;
             s.append(((Document)document.get("obj")).toJson()).append(",");

@@ -18,6 +18,40 @@ import com.redhat.thermostat.server.core.web.setup.MongoCoreServerTestSetup;
 public class PostMongoCoreServerTest extends MongoCoreServerTestSetup {
 
     @Test
+    public void testEmptyStringPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/EmptyStringPostAgents/systems/all/agents/agentId";
+        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
+        assertEquals("PUT: true", putResponse.getContentAsString());
+
+        String postInput = "";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        System.out.println(postResponse.getContentAsString());
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\" },\\{ \"agentStuff\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
+    }
+
+    @Test
+    public void testEmptyQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/EmptyQueryPostAgents/systems/all/agents/agentId";
+        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
+        assertEquals("PUT: true", putResponse.getContentAsString());
+
+        String postInput = "[]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        System.out.println(postResponse.getContentAsString());
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\" },\\{ \"agentStuff\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
+    }
+
+    @Test
     public void testEqualQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/EqualQueryPostAgents/systems/all/agents/agentId";
         String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
@@ -68,17 +102,18 @@ public class PostMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testLessEqualQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/LessEqualQueryPostAgents/systems/all/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        String putInput = "[{\"agentStuff\":5},{\"agentStuff\":10}]";
         ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
 
         assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
         assertEquals("PUT: true", putResponse.getContentAsString());
 
-        String postInput = "[\"agentStuff<=b\"]";
+        String postInput = "[\"agentStuff<=10\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
         assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
-        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\" },\\{ \"agentStuff\" : \"b\" }],\"time\" : \"[0-9]*\"}"));
+        System.out.println(postResponse.getContentAsString());
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : 5 },\\{ \"agentStuff\" : 10 }],\"time\" : \"[0-9]*\"}"));
     }
 
     @Test
@@ -101,16 +136,34 @@ public class PostMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testMultiQueryPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/MultiQueryPostAgents/systems/all/agents/agentId";
+        String putInput = "[{\"agentStuff\":\"a\", \"item\":1},{\"agentStuff\":\"a\", \"item\":2}]";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
+        assertEquals("PUT: true", putResponse.getContentAsString());
+
+        String postInput = "[\"agentStuff=\\\"a\\\"\", \"item<2\"]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        System.out.println(postResponse.getContentAsString());
+        assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\", \"item\" : 1 }],\"time\" : \"[0-9]*\"}"));
+    }
+
+    @Test
+    public void testQueryStringPostAgents() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/QueryStringPostAgents/systems/all/agents/agentId";
         String putInput = "[{\"agentStuff\":\"a\", \"item\":\"1\"},{\"agentStuff\":\"a\", \"item\":\"2\"}]";
         ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
 
         assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
         assertEquals("PUT: true", putResponse.getContentAsString());
 
-        String postInput = "[\"agentStuff=a\", \"item<2\"]";
+        String postInput = "[\"agentStuff=\\\"a\\\"\", \"item<\\\"2\\\"\"]";
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
         assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        System.out.println(postResponse.getContentAsString());
         assertTrue(postResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\", \"item\" : \"1\" }],\"time\" : \"[0-9]*\"}"));
     }
 }

@@ -62,7 +62,9 @@ public class MongoRequestFilters {
     public static Bson buildPostFilter(BasicDBList queries, String systemId, String agentId, String jvmId, List<String> tags) {
         List<Bson> filters = new ArrayList<>();
 
-        filters.add(buildQueriesFilter(queries));
+        if (queries != null) {
+            filters.add(buildQueriesFilter(queries));
+        }
 
         filters.add(buildIdFilters(systemId, agentId, jvmId));
 
@@ -107,7 +109,20 @@ public class MongoRequestFilters {
             if (m.find()) {
                 String key = "obj." + filter.substring(0, m.start());
                 String comparator = filter.substring(m.start(), m.end());
-                String value = filter.substring(m.end());
+                String valueInput = filter.substring(m.end());
+
+                Object value;
+
+                try {
+                    value = Double.parseDouble(valueInput);
+                } catch (Exception e) {
+                    if (valueInput.startsWith("\"") && valueInput.endsWith("\"")) {
+                        value = valueInput.substring(1, valueInput.length()-1);
+                    } else {
+                        value = valueInput;
+                    }
+                }
+
                 switch (comparator) {
                     case "<=":
                         filters.add(lte(key, value));

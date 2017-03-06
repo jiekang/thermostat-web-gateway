@@ -44,7 +44,9 @@ import static com.mongodb.client.model.Projections.include;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.core.Response;
@@ -57,6 +59,9 @@ import org.glassfish.jersey.server.ChunkedOutput;
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.FindIterable;
+import com.mongodb.client.model.IndexOptionDefaults;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.util.JSON;
 import com.redhat.thermostat.server.core.internal.storage.mongo.ThermostatMongoStorage;
 import com.redhat.thermostat.server.core.internal.storage.mongo.request.TimedRequest;
@@ -67,12 +72,12 @@ import com.redhat.thermostat.server.core.internal.storage.mongo.response.Documen
 
 public class MongoStorageHandler implements StorageHandler {
 
-    private final int BASE_OFFSET = 0;
-    private final int MAX_MONGO_DOCUMENTS = 5000;
-
     private final String systemCollectionSuffix = "";
     private final String agentCollectionSuffix = "-agents";
     private final String jvmCollectionSuffix = "-jvms";
+
+    private final Set<String> namespaceSet = new HashSet<>();
+    private final Set<String> indexSet = new HashSet<>();
 
     @Override
     public void getSystems(final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String offset, final String limit, final String sort) {
@@ -112,7 +117,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                postAll(body, offset, limit, context, systemId, null, null, namespace, sort, asyncResponse, agentCollectionSuffix);
+                postAll(body, offset, limit, context, systemId, null, null, namespace, sort, asyncResponse, systemCollectionSuffix);
             }
         }).start();
     }
@@ -125,7 +130,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                deleteAll(systemId, null, null, namespace, asyncResponse, agentCollectionSuffix);
+                deleteAll(systemId, null, null, namespace, asyncResponse, systemCollectionSuffix);
             }
         }).start();
     }
@@ -171,7 +176,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-               postAll(body, offset, limit, context, systemId, agentId, null, namespace, sort, asyncResponse, agentCollectionSuffix);
+                postAll(body, offset, limit, context, systemId, agentId, null, namespace, sort, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
@@ -229,7 +234,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                postAll(body, offset, limit, context, systemId, agentId, jvmId, namespace, sort, asyncResponse, agentCollectionSuffix);
+                postAll(body, offset, limit, context, systemId, agentId, jvmId, namespace, sort, asyncResponse, jvmCollectionSuffix);
             }
         }).start();
     }
@@ -242,7 +247,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                deleteAll(systemId, agentId, jvmId, namespace, asyncResponse, agentCollectionSuffix);
+                deleteAll(systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix);
             }
         }).start();
     }
@@ -258,8 +263,8 @@ public class MongoStorageHandler implements StorageHandler {
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-                        final int c = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                        final int o = Integer.valueOf(offset);
+                        final int l = Integer.valueOf(limit);
 
                         TimedRequest<String> timedRequest = new TimedRequest<>();
 
@@ -267,7 +272,7 @@ public class MongoStorageHandler implements StorageHandler {
                             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                                 @Override
                                 public String run() {
-                                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection("namespaces").find().limit(c).skip(o);
+                                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection("namespaces").find().limit(l).skip(o);
                                     return MongoResponseBuilder.buildJsonDocuments(documents);
                                 }
                             });
@@ -291,7 +296,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread() {
             public void run() {
                 try {
-                    final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+                    final int l = Integer.valueOf(limit);
 
                     while (true) {
 
@@ -349,8 +354,9 @@ public class MongoStorageHandler implements StorageHandler {
 
     private void getAll(String offset, String limit, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, final String sort, AsyncResponse asyncResponse, final String collectionSuffix) {
         try {
-            final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-            final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+            final int o = Integer.valueOf(offset);
+            final int l = Integer.valueOf(limit);
+
             final String userName = context.getUserPrincipal().getName();
             final Bson filter = MongoRequestFilters.buildGetFilter(systemId, agentId, jvmId, Collections.singletonList(userName));
 
@@ -359,7 +365,8 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(include("obj"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o);
+
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(include("obj"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o).batchSize(l);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });
@@ -371,6 +378,17 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     private void putAll(String body, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix) {
+        if (!namespaceSet.contains(namespace)) {
+            namespaceSet.add(namespace);
+        }
+
+        if (!indexSet.contains(namespace + collectionSuffix)) {
+            ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).createIndex(Indexes.descending("systemId"), new IndexOptions().background(true));
+            ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).createIndex(Indexes.descending("agentId"), new IndexOptions().background(true));
+            ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).createIndex(Indexes.descending("jvmId"), new IndexOptions().background(true));
+            indexSet.add(namespace + collectionSuffix);
+        }
+
         try {
             BasicDBList inputList = (BasicDBList) JSON.parse(body);
 
@@ -403,8 +421,9 @@ public class MongoStorageHandler implements StorageHandler {
         try {
             BasicDBList queries = (BasicDBList) JSON.parse(body);
 
-            final int o = Math.min(Integer.valueOf(offset), BASE_OFFSET);
-            final int l = Math.min(Integer.valueOf(limit), MAX_MONGO_DOCUMENTS);
+            final int o = Integer.valueOf(offset);
+            final int l = Integer.valueOf(limit);
+
             final String userName = context.getUserPrincipal().getName();
             final Bson filter = MongoRequestFilters.buildPostFilter(queries, systemId, agentId, jvmId, Collections.singletonList(userName));
 
@@ -413,7 +432,7 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o);
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o).batchSize(l);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });
