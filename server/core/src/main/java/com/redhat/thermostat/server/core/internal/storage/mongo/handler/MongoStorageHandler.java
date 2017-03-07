@@ -58,6 +58,7 @@ import org.glassfish.jersey.server.ChunkedOutput;
 
 import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.CursorType;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.IndexOptionDefaults;
 import com.mongodb.client.model.IndexOptions;
@@ -365,8 +366,7 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(include("obj"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o).batchSize(l);
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(include("obj"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o).batchSize(l).cursorType(CursorType.NonTailable);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });
@@ -432,7 +432,7 @@ public class MongoStorageHandler implements StorageHandler {
             String documents = timedRequest.run(new TimedRequest.TimedRunnable<String>() {
                 @Override
                 public String run() {
-                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o).batchSize(l);
+                    FindIterable<Document> documents = ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).find(filter).projection(fields(exclude("tags"), excludeId())).sort(createSortObject(sort)).limit(l).skip(o).batchSize(l).cursorType(CursorType.NonTailable);
                     return MongoResponseBuilder.buildJsonDocuments(documents);
                 }
             });
