@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import com.redhat.thermostat.server.core.web.CoreServer;
+import com.redhat.thermostat.test.util.CoreServerTestUtil;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
 public class MongoCoreServerTestSetup extends TimedTestSetup {
@@ -29,7 +30,7 @@ public class MongoCoreServerTestSetup extends TimedTestSetup {
         mongodTestUtil.waitForMongodStart();
 
         coreServer= new CoreServer();
-        coreServer.buildServer(Collections.EMPTY_MAP, MongodTestUtil.mongoConfiguration, Collections.EMPTY_MAP);
+        coreServer.buildServer(CoreServerTestUtil.serverConfiguration, MongodTestUtil.mongoConfiguration, Collections.EMPTY_MAP);
         thread = new Thread(new Runnable() {
             @Override
             public void run() {

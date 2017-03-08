@@ -22,7 +22,7 @@ public class MongodTestUtil {
     public static final Map<String, String> timeoutMongoConfiguration = new HashMap<>();
 
     private static final String host = "127.0.0.1";
-    private static final int port = 28000;
+    private static final int port = TestPortSetup.MONGODB_PORT;
 
     private MongoClient mongoClient;
     private Path tempDbDir;

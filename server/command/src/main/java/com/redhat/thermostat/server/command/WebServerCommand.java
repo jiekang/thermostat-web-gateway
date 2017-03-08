@@ -18,7 +18,7 @@ public class WebServerCommand {
         mongoConfig.put("MONGO_PASSWORD", "mongodevpassword");
 
         Map<String, String> serverConfig = new HashMap<>();
-        serverConfig.put("URL", "http://localhost:28000");
+        serverConfig.put("URL", "http://localhost:26000");
         serverConfig.put("SECURITY_PROXY", "false");
         serverConfig.put("SECURITY_BASIC", "false");
         serverConfig.put("SWAGGER_UI_ENABLED", "false");

@@ -12,6 +12,7 @@ import org.junit.BeforeClass;
 
 import com.redhat.thermostat.server.core.internal.web.configuration.ServerConfiguration;
 import com.redhat.thermostat.server.core.web.CoreServer;
+import com.redhat.thermostat.test.util.CoreServerTestUtil;
 import com.redhat.thermostat.test.util.MongodTestUtil;
 
 public class ProxyCoreServerTestSetup extends TimedTestSetup {
@@ -25,7 +26,7 @@ public class ProxyCoreServerTestSetup extends TimedTestSetup {
 
     @BeforeClass
     public static void setupClassProxyCoreServerTestSetup() throws Exception {
-        Map<String, String> serverConfig = new HashMap<>();
+        Map<String, String> serverConfig = new HashMap<>(CoreServerTestUtil.serverConfiguration);
         serverConfig.put(ServerConfiguration.SECURITY_PROXY.toString(), "true");
 
         coreServer= new CoreServer();

@@ -37,7 +37,7 @@ import com.redhat.thermostat.server.core.internal.web.swagger.SwaggerUiHandler;
 @Service(CoreServer.class)
 public class CoreServer {
     private Server server;
-    private int port = 29000;
+    private int port = 26000;
 
     public void buildServer(Map<String, String> serverConfig, Map<String, String> mongoConfig, Map<String, String> userConfig) {
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
