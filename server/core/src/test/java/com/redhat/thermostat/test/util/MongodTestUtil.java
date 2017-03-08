@@ -56,7 +56,7 @@ public class MongodTestUtil {
     public void stopMongod() {
         try {
             mongoClient.getDatabase("admin").runCommand(new Document("shutdown", 1));
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         mongoClient.close();
         mongoClient = null;

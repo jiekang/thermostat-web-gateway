@@ -60,7 +60,6 @@ import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
 import com.mongodb.CursorType;
 import com.mongodb.client.FindIterable;
-import com.mongodb.client.model.IndexOptionDefaults;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.util.JSON;

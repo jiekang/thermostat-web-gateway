@@ -46,10 +46,6 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <properties>
-        <thermostat.plugin>server</thermostat.plugin>
-    </properties>
-
     <artifactId>thermostat-server-distribution</artifactId>
     <name>Thermostat Server Distribution</name>
 
@@ -67,7 +63,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>assemble-plugin</id>
+                        <id>assemble-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>

@@ -7,7 +7,7 @@ import java.util.Map;
 import org.junit.AfterClass;
 
 public class TimedTestSetup {
-    public static final Map<String, List<Long>> times = new HashMap<>();
+    protected static final Map<String, List<Long>> times = new HashMap<>();
 
     @AfterClass
     public static void afterClassTimedTestSetup() throws Exception {

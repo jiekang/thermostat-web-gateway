@@ -14,8 +14,6 @@ import org.junit.Test;
 import com.mongodb.Block;
 import com.mongodb.CursorType;
 import com.mongodb.Function;
-import com.mongodb.ServerAddress;
-import com.mongodb.ServerCursor;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
