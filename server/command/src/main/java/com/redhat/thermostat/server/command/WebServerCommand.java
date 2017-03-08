@@ -12,10 +12,18 @@ public class WebServerCommand {
         CoreServer server = new CoreServer();
 
         Map<String, String> mongoConfig = new HashMap<>();
+        mongoConfig.put("MONGO_URL", "mongodb://127.0.0.1:27518");
+        mongoConfig.put("MONGO_DB", "thermostat");
         mongoConfig.put("MONGO_USERNAME", "mongodevuser");
         mongoConfig.put("MONGO_PASSWORD", "mongodevpassword");
 
-        server.buildServer(Collections.EMPTY_MAP, mongoConfig, Collections.EMPTY_MAP);
+        Map<String, String> serverConfig = new HashMap<>();
+        serverConfig.put("URL", "http://localhost:28000");
+        serverConfig.put("SECURITY_PROXY", "false");
+        serverConfig.put("SECURITY_BASIC", "false");
+        serverConfig.put("SWAGGER_UI_ENABLED", "false");
+
+        server.buildServer(serverConfig, mongoConfig, Collections.EMPTY_MAP);
 
         try {
             server.getServer().start();
