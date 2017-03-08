@@ -7,8 +7,6 @@ import java.util.Map;
 
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.felix.scr.annotations.Component;
-import org.apache.felix.scr.annotations.Service;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -33,8 +31,6 @@ import com.redhat.thermostat.server.core.internal.web.http.NamespaceHttpHandler;
 import com.redhat.thermostat.server.core.internal.storage.mongo.handler.MongoStorageHandler;
 import com.redhat.thermostat.server.core.internal.web.swagger.SwaggerUiHandler;
 
-@Component
-@Service(CoreServer.class)
 public class CoreServer {
     private Server server;
     private int port = 26000;

@@ -77,18 +77,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-scr-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>generate-scr-scrdescriptor</id>
-                        <goals>
-                            <goal>scr</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -112,13 +100,6 @@
     </build>
 
     <dependencies>
-        <!-- Thermostat dependencies -->
-        <dependency>
-            <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-common-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <!-- Jetty deps -->
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
