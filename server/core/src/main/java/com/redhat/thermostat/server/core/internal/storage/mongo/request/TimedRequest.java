@@ -38,7 +38,6 @@ package com.redhat.thermostat.server.core.internal.storage.mongo.request;
 
 public class TimedRequest <T> {
     private long elapsed = 0;
-    private TimedRunnable<T> r;
 
     public TimedRequest() {}
 
