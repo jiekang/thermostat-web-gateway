@@ -38,6 +38,7 @@ package com.redhat.thermostat.server.core.internal.storage.mongo.response;
 
 import org.bson.Document;
 
+import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 
 public class MongoResponseBuilder {
@@ -67,18 +68,21 @@ public class MongoResponseBuilder {
     }
 
     public static String buildJsonDocuments(FindIterable<Document> documents) {
-        StringBuilder s = new StringBuilder();
+        final StringBuilder s = new StringBuilder();
 
         s.append("\"response\" : [");
 
-        int i = 0;
+        final int[] i = {0};
 
-        for (Document document : documents) {
-            i++;
-            s.append(((Document)document.get("obj")).toJson()).append(",");
-        }
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                s.append(((Document)document.get("obj")).toJson()).append(",");
+                i[0]++;
+            }
+        });
 
-        if (i != 0) {
+        if (i[0] != 0) {
             s.deleteCharAt(s.length() - 1);
         }
 

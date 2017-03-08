@@ -57,46 +57,7 @@ public class MongoResponseBuilderTest {
 
         @Override
         public MongoCursor<T> iterator() {
-            return new MongoCursor<T>() {
-
-                private int i = 0;
-
-                @Override
-                public void close() {
-
-                }
-
-                @Override
-                public boolean hasNext() {
-                    return i < list.size();
-                }
-
-                @Override
-                public T next() {
-                    i++;
-                    return list.get(i - 1);
-                }
-
-                @Override
-                public void remove() {
-
-                }
-
-                @Override
-                public T tryNext() {
-                    return null;
-                }
-
-                @Override
-                public ServerCursor getServerCursor() {
-                    return null;
-                }
-
-                @Override
-                public ServerAddress getServerAddress() {
-                    return null;
-                }
-            };
+            return null;
         }
 
         @Override
@@ -111,7 +72,9 @@ public class MongoResponseBuilderTest {
 
         @Override
         public void forEach(Block<? super T> block) {
-
+            for (T item : list) {
+                block.apply(item);
+            }
         }
 
         @Override
