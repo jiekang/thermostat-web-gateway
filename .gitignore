@@ -1,0 +1,6 @@
+# Maven target folder should not be checked in
+target
+
+# Intellij stuff
+.idea
+*.iml
