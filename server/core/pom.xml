@@ -131,6 +131,13 @@
             <version>2.0.1</version>
         </dependency>
 
+        <!-- Swagger dependencies -->
+        <dependency>
+          <groupId>io.swagger</groupId>
+          <artifactId>swagger-jersey2-jaxrs</artifactId>
+          <version>1.5.12</version>
+        </dependency>
+
         <!-- MongoDB dependencies -->
         <dependency>
             <groupId>org.mongodb</groupId>

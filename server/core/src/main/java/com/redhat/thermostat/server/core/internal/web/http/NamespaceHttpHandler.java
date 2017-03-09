@@ -8,8 +8,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
 
 import org.glassfish.jersey.server.ChunkedOutput;
+import io.swagger.annotations.Api;
 
 @Path("/api/v100/{namespace}")
+@Api(value = "namespace")
 public class NamespaceHttpHandler {
     private final StorageHandler handler;
 

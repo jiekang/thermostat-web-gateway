@@ -13,6 +13,7 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
@@ -30,15 +31,19 @@ import com.redhat.thermostat.server.core.internal.web.http.BaseHttpHandler;
 import com.redhat.thermostat.server.core.internal.web.http.NamespaceHttpHandler;
 import com.redhat.thermostat.server.core.internal.storage.mongo.handler.MongoStorageHandler;
 import com.redhat.thermostat.server.core.internal.web.swagger.SwaggerUiHandler;
+import io.swagger.jaxrs.listing.ApiListingResource;
+import io.swagger.jaxrs.listing.SwaggerSerializers;
 
 public class CoreServer {
     private Server server;
     private int port = 26000;
 
+    private static final String SWAGGER_WEB_PATH = "/apidocs";
+
     public void buildServer(Map<String, String> serverConfig, Map<String, String> mongoConfig, Map<String, String> userConfig) {
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
 
-        ResourceConfig resourceConfig = new ResourceConfig();
+        ResourceConfig resourceConfig = new CustomResourceConfig(serverConfig);
         setupResourceConfig(serverConfig, userConfig, resourceConfig);
 
         server = JettyHttpContainerFactory.createServer(baseUri, resourceConfig, false);
@@ -62,6 +67,13 @@ public class CoreServer {
             resourceConfig.register(new BasicAuthFilter(new BasicUserStore(userConfig)));
         } else {
             resourceConfig.register(new NoAuthFilter());
+        }
+
+        if (serverConfig.containsKey(ServerConfiguration.SWAGGER_UI_ENABLED.toString()) &&
+                serverConfig.get(ServerConfiguration.SWAGGER_UI_ENABLED.toString()).equals("true")) {
+            // generate swagger.json automatically
+            resourceConfig.register(new ApiListingResource());
+            resourceConfig.register(new SwaggerSerializers());
         }
 
         resourceConfig.register(new RolesAllowedDynamicFeature());
@@ -107,10 +119,14 @@ public class CoreServer {
                 serverConfig.get(ServerConfiguration.SWAGGER_UI_ENABLED.toString()).equals("true")) {
             ResourceHandler swaggerHandler = new SwaggerUiHandler().createSwaggerResourceHandler();
             if (swaggerHandler != null) {
+
+                ContextHandler ctxSwaggerHandler = new ContextHandler(SWAGGER_WEB_PATH); /* the server uri path */
+                ctxSwaggerHandler.setHandler(swaggerHandler);
+
                 Handler originalHandler = server.getHandler();
 
                 HandlerList handlers = new HandlerList();
-                handlers.setHandlers(new Handler[]{swaggerHandler, originalHandler});
+                handlers.setHandlers(new Handler[]{ctxSwaggerHandler, originalHandler});
 
                 server.setHandler(handlers);
             } else {

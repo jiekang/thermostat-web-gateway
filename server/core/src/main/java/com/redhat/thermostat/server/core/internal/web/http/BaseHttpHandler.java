@@ -10,8 +10,10 @@ import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.SecurityContext;
+import io.swagger.annotations.Api;
 
 @Path("/")
+@Api(value = "base")
 public class BaseHttpHandler {
 
     private final StorageHandler handler;
