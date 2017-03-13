@@ -42,11 +42,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.redhat.thermostat</groupId>
-    <artifactId>thermostat-server</artifactId>
+    <artifactId>thermostat-web-gateway</artifactId>
     <packaging>pom</packaging>
     <version>1.99.12-SNAPSHOT</version>
 
-    <name>Thermostat Server</name>
+    <name>Thermostat Web Gateway</name>
 
     <modules>
         <module>command</module>
