@@ -40,14 +40,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>thermostat-server</artifactId>
+        <artifactId>thermostat-web-gateway</artifactId>
         <groupId>com.redhat.thermostat</groupId>
         <version>1.99.12-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thermostat-server-distribution</artifactId>
-    <name>Thermostat Server Distribution</name>
+    <artifactId>thermostat-web-gateway-distribution</artifactId>
+    <name>Thermostat Web Gateway Distribution</name>
 
     <build>
         <plugins>
@@ -84,12 +84,12 @@
     <dependencies>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-server-command</artifactId>
+            <artifactId>thermostat-web-gateway-command</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-server-core</artifactId>
+            <artifactId>thermostat-web-gateway-core</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

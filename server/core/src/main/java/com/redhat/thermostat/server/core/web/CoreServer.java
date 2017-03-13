@@ -67,6 +67,7 @@ import com.redhat.thermostat.server.core.internal.web.http.BaseHttpHandler;
 import com.redhat.thermostat.server.core.internal.web.http.NamespaceHttpHandler;
 import com.redhat.thermostat.server.core.internal.storage.mongo.handler.MongoStorageHandler;
 import com.redhat.thermostat.server.core.internal.web.swagger.SwaggerUiHandler;
+import io.swagger.jaxrs.config.BeanConfig;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 
@@ -79,7 +80,7 @@ public class CoreServer {
     public void buildServer(Map<String, String> serverConfig, Map<String, String> mongoConfig, Map<String, String> userConfig) {
         URI baseUri = UriBuilder.fromUri("http://localhost").port(8090).build();
 
-        ResourceConfig resourceConfig = new CustomResourceConfig(serverConfig);
+        ResourceConfig resourceConfig = new ResourceConfig();
         setupResourceConfig(serverConfig, userConfig, resourceConfig);
 
         server = JettyHttpContainerFactory.createServer(baseUri, resourceConfig, false);
@@ -108,6 +109,16 @@ public class CoreServer {
         if (serverConfig.containsKey(ServerConfiguration.SWAGGER_UI_ENABLED.toString()) &&
                 serverConfig.get(ServerConfiguration.SWAGGER_UI_ENABLED.toString()).equals("true")) {
             // generate swagger.json automatically
+            BeanConfig beanConfig = new BeanConfig();
+            beanConfig.setBasePath("/");
+            beanConfig.setVersion("1.0.0");
+            beanConfig.setTitle("Thermostat Web API");
+            beanConfig.setLicense("GPL v2 with Classpath Exception");
+            beanConfig.setLicenseUrl("http://www.gnu.org/licenses");
+            // scan for JAX-RS classes from this package
+            beanConfig.setResourcePackage("com.redhat.thermostat.server.core.internal.web.http");
+            beanConfig.setScan(true);
+
             resourceConfig.register(new ApiListingResource());
             resourceConfig.register(new SwaggerSerializers());
         }
