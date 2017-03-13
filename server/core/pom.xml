@@ -68,8 +68,6 @@
                             com.redhat.thermostat.server.core.web,
                         </Export-Package>
                         <Private-Package>
-                            io.swagger.api.*,
-                            io.swagger.model.*,
                             com.redhat.thermostat.server.core.internal.*,
                         </Private-Package>
                         <_nouses>true</_nouses>
@@ -125,17 +123,12 @@
             <artifactId>jersey-container-servlet-core</artifactId>
             <version>${jersey-version}</version>
         </dependency>
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-            <version>2.0.1</version>
-        </dependency>
 
         <!-- Swagger dependencies -->
         <dependency>
           <groupId>io.swagger</groupId>
           <artifactId>swagger-jersey2-jaxrs</artifactId>
-          <version>1.5.12</version>
+          <version>${swagger-jersey2-jaxrs-version}</version>
         </dependency>
 
         <!-- MongoDB dependencies -->
@@ -145,18 +138,11 @@
             <version>${mongo-java-driver-version}</version>
         </dependency>
 
-        <!-- JSON parsing dependencies -->
-        <dependency>
-            <groupId>javax.json</groupId>
-            <artifactId>javax.json-api</artifactId>
-            <version>1.0</version>
-        </dependency>
-
         <!-- test scoped deps -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit-version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -168,7 +154,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>2.7.11</version>
+            <version>${mockito-core-version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
