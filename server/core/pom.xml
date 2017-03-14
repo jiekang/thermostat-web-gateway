@@ -102,14 +102,14 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-server</artifactId>
-            <version>${jetty-version}</version>
+            <version>${jetty.version}</version>
         </dependency>
 
         <!-- Jersey deps -->
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-jetty-http</artifactId>
-            <version>${jersey-version}</version>
+            <version>${jersey.version}</version>
             <!-- The jetty-util package here is incompatible with the version of Jetty used -->
             <exclusions>
                 <exclusion>
@@ -121,40 +121,40 @@
         <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet-core</artifactId>
-            <version>${jersey-version}</version>
+            <version>${jersey.version}</version>
         </dependency>
 
         <!-- Swagger dependencies -->
         <dependency>
           <groupId>io.swagger</groupId>
           <artifactId>swagger-jersey2-jaxrs</artifactId>
-          <version>${swagger-jersey2-jaxrs-version}</version>
+          <version>${swagger-jersey2-jaxrs.version}</version>
         </dependency>
 
         <!-- MongoDB dependencies -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>${mongo-java-driver-version}</version>
+            <version>${mongo-java-driver.version}</version>
         </dependency>
 
         <!-- test scoped deps -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>${junit-version}</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-client</artifactId>
-            <version>${jetty-version}</version>
+            <version>${jetty.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${mockito-core-version}</version>
+            <version>${mockito-core.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
