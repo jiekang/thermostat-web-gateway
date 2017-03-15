@@ -52,6 +52,8 @@
         <module>command</module>
         <module>core</module>
         <module>distribution</module>
+
+        <module>tests</module>
     </modules>
 
     <properties>
@@ -67,7 +69,10 @@
         <mockito-core.version>2.7.11</mockito-core.version>
         <swagger-jersey2-jaxrs.version>1.5.12</swagger-jersey2-jaxrs.version>
 
-        <license.skip>false</license.skip>
+	<license.skip>false</license.skip>
+
+	<maven.itest.skip>false</maven.itest.skip>
+	<maven.ptest.skip>true</maven.ptest.skip>
     </properties>
 
     <build>
