@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <title>Thermostat Commands Client (HTML)</title>
+    <style type="text/css"><![CDATA[
+        input#cmd-chan {
+            width: 410px
+        }
+
+        #console-container {
+            width: 400px;
+        }
+
+        #console {
+            border: 1px solid #CCCCCC;
+            border-right-color: #999999;
+            border-bottom-color: #999999;
+            height: 170px;
+            overflow-y: scroll;
+            padding: 5px;
+            width: 100%;
+        }
+
+        #console p {
+            padding: 0;
+            margin: 0;
+        }
+    ]]>
+    </style>
+    <script type="application/javascript">
+    //<![CDATA[
+        var CmdChan = {};
+
+        CmdChan.socket = null;
+
+        CmdChan.connect = (function(host) {
+            if ('WebSocket' in window) {
+                CmdChan.socket = new WebSocket(host);
+            } else if ('MozWebSocket' in window) {
+                CmdChan.socket = new MozWebSocket(host);
+            } else {
+                Console.log('Error: WebSocket is not supported by this browser.');
+                return;
+            }
+
+            CmdChan.socket.onopen = function () {
+                Console.log('Info: WebSocket connection opened.');
+                document.getElementById('cmd-chan').onkeydown = function(event) {
+                    if (event.keyCode == 13) {
+                        CmdChan.sendMessage();
+                    }
+                };
+            };
+
+            CmdChan.socket.onclose = function () {
+                document.getElementById('cmd-chan').onkeydown = null;
+                Console.log('Info: WebSocket closed.');
+            };
+
+            CmdChan.socket.onmessage = function (message) {
+                Console.log(message.data);
+            };
+        });
+
+        CmdChan.initialize = function() {
+            if (window.location.protocol == 'http:') {
+                CmdChan.connect('ws://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc');
+            } else {
+                CmdChan.connect('wss://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc');
+            }
+        };
+
+        CmdChan.sendMessage = (function() {
+            var message = document.getElementById('cmd-chan').value;
+            if (message != '') {
+                CmdChan.socket.send('__agentId__=testAgent\n\nvmId=' + message);
+                document.getElementById('cmd-chan').value = '';
+            }
+        });
+
+        var Console = {};
+
+        Console.log = (function(message) {
+            var console = document.getElementById('console');
+            var p = document.createElement('p');
+            p.style.wordWrap = 'break-word';
+            p.innerHTML = message;
+            console.appendChild(p);
+            while (console.childNodes.length > 25) {
+                console.removeChild(console.firstChild);
+            }
+            console.scrollTop = console.scrollHeight;
+        });
+
+        CmdChan.initialize();
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Remove elements with "noscript" class - <noscript> is not allowed in XHTML
+            var noscripts = document.getElementsByClassName("noscript");
+            for (var i = 0; i < noscripts.length; i++) {
+                noscripts[i].parentNode.removeChild(noscripts[i]);
+            }
+        }, false);
+
+    //]]>
+    </script>
+</head>
+<body>
+<div class="noscript"><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websockets rely on Javascript being enabled. Please enable
+    Javascript and reload this page!</h2></div>
+<div>
+    <p>
+    Thermostat Commands: HTML Client
+    </p>
+    <p>
+        <input type="text" placeholder="type and press enter in order to send a message to agent.html" id="cmd-chan" />
+    </p>
+    <div id="console-container">
+        <div id="console"/>
+    </div>
+</div>
+</body>
+</html>
