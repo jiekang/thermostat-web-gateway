@@ -34,25 +34,47 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.swagger;
+package com.redhat.thermostat.storage;
 
+import static junit.framework.TestCase.assertFalse;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.net.URL;
+import java.io.IOException;
 
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
+import org.junit.Test;
 
-public class SwaggerUiHandler {
-    public ResourceHandler createSwaggerResourceHandler() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(false);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        resourceHandler.setResourceBase("");
+import com.redhat.thermostat.server.core.internal.storage.mongo.ThermostatMongoStorage;
+import com.redhat.thermostat.server.test.util.MongodTestUtil;
 
-        URL u = this.getClass().getResource("/swagger");
+public class ThermostatMongoStorageTest {
 
-        resourceHandler.setBaseResource(Resource.newResource(u));
+    @Test
+    public void testNoStorage() {
+        ThermostatMongoStorage.start(MongodTestUtil.timeoutMongoConfiguration);
 
-        return resourceHandler;
+        assertFalse(ThermostatMongoStorage.isConnected());
+
+        ThermostatMongoStorage.finish();
     }
+
+    @Test
+    public void testStorage() throws IOException, InterruptedException {
+        MongodTestUtil mongodTestUtil = new MongodTestUtil();
+        mongodTestUtil.startMongod();
+
+        ThermostatMongoStorage.start(MongodTestUtil.mongoConfiguration);
+
+        assertTrue(mongodTestUtil.waitForMongodStart());
+        assertTrue(ThermostatMongoStorage.isConnected());
+
+        mongodTestUtil.stopMongod();
+
+        assertTrue(mongodTestUtil.waitForMongodStop());
+        assertEquals(0, mongodTestUtil.process.exitValue());
+
+        ThermostatMongoStorage.finish();
+        mongodTestUtil.finish();
+    }
+
 }

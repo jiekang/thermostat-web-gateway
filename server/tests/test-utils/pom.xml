@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>thermostat-web-gateway-tests</artifactId>
+        <groupId>com.redhat.thermostat</groupId>
+        <version>1.99.12-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>thermostat-web-gateway-tests-utils</artifactId>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>com.redhat.thermostat.server.core</Bundle-SymbolicName>
+                        <Bundle-Vendor>Red Hat, Inc.</Bundle-Vendor>
+                        <!-- Do not autogenerate uses clauses in Manifests -->
+                        <!-- need to declare bundles explicitly since the automatisms fail if an embedded jetty
+                             -->
+                        <Export-Package>
+                            com.redhat.thermostat.server.test.util,
+                        </Export-Package>
+                        <_nouses>true</_nouses>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!-- Thermostat Web Gateway dependencies -->
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Jetty dependencies -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+    </dependencies>
+</project>

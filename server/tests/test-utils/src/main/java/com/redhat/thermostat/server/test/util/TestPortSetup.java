@@ -34,25 +34,9 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.swagger;
+package com.redhat.thermostat.server.test.util;
 
-
-import java.net.URL;
-
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
-
-public class SwaggerUiHandler {
-    public ResourceHandler createSwaggerResourceHandler() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(false);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        resourceHandler.setResourceBase("");
-
-        URL u = this.getClass().getResource("/swagger");
-
-        resourceHandler.setBaseResource(Resource.newResource(u));
-
-        return resourceHandler;
-    }
+class TestPortSetup {
+    public final static int MONGODB_PORT = 28000;
+    public final static int SERVER_PORT = 27000;
 }

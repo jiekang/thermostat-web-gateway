@@ -34,25 +34,20 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.swagger;
+package com.redhat.thermostat.server.test.util;
 
+import java.util.HashMap;
+import java.util.Map;
 
-import java.net.URL;
+import com.redhat.thermostat.server.core.internal.web.configuration.ServerConfiguration;
 
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
+public class CoreServerTestUtil {
+    public static final Map<String, String> serverConfiguration = new HashMap<>();
 
-public class SwaggerUiHandler {
-    public ResourceHandler createSwaggerResourceHandler() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(false);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        resourceHandler.setResourceBase("");
+    private static final String host = "127.0.0.1";
+    private static final int port = TestPortSetup.SERVER_PORT;
 
-        URL u = this.getClass().getResource("/swagger");
-
-        resourceHandler.setBaseResource(Resource.newResource(u));
-
-        return resourceHandler;
+    static {
+        serverConfiguration.put(ServerConfiguration.URL.toString(), "http://" + host + ":" + port);
     }
 }

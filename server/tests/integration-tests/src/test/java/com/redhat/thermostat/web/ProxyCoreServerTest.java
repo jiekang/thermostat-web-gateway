@@ -34,25 +34,38 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.swagger;
+package com.redhat.thermostat.web;
 
+import static org.junit.Assert.assertEquals;
 
-import java.net.URL;
+import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
-import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.util.resource.Resource;
+import javax.ws.rs.core.Response;
 
-public class SwaggerUiHandler {
-    public ResourceHandler createSwaggerResourceHandler() {
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(false);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        resourceHandler.setResourceBase("");
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.http.HttpMethod;
+import org.junit.Test;
 
-        URL u = this.getClass().getResource("/swagger");
+import com.redhat.thermostat.web.setup.ProxyCoreServerTestSetup;
 
-        resourceHandler.setBaseResource(Resource.newResource(u));
+public class ProxyCoreServerTest extends ProxyCoreServerTestSetup {
+    @Test
+    public void testGetNoAuthHeader() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/namespace/systems/systemId";
+        ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
-        return resourceHandler;
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), getResponse.getStatus());
     }
+
+    @Test
+    public void testGetNoGroups() throws InterruptedException, ExecutionException, TimeoutException, URISyntaxException {
+        String url = baseUrl + "/namespace/systems/systemId";
+
+        ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).header("X-SSSD-REMOTE-USERS", "user").send();
+
+        assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), getResponse.getStatus());
+    }
+
 }
