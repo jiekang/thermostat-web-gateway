@@ -55,7 +55,7 @@
     </modules>
 
     <properties>
-        <java-version>1.8</java-version>
+        <java-version>1.7</java-version>
 
         <jersey-version>2.24</jersey-version>
         <jetty-version>9.2.19.v20160908</jetty-version>
