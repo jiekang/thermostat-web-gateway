@@ -37,24 +37,26 @@
 package com.redhat.thermostat.server.core.internal.web.http.handlers;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.AgentSocketsRegistry;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.ClientAgentCommunication;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.ClientRequest;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.ClientRequestFactory;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.CommunicationsRegistry;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketCommunicationBuilder;
+
 public class CommandChannelWebSocketImpl implements CommandChannelWebSocket {
 
-    private static final Map<String, CommandChannelWebSocketImpl> clientSockets = new ConcurrentHashMap<>();
-    private static final Map<String, CommandChannelWebSocketImpl> agentSockets = new ConcurrentHashMap<>();
-    // agentId = > client communication mapping
-    private static final Map<String, ClientCommunication> inFlightComms = new ConcurrentHashMap<>();
+    private static final String SEQ_ID_PATH_PARAM_NAME = "seqId";
     private final String user;
     private final WebSocketType type;
     private final String id;
     private final Session session;
-    private ClientCommunication communication;
 
     public CommandChannelWebSocketImpl(String user, WebSocketType type, Session session) {
         this(user, type, user, session);
@@ -85,38 +87,31 @@ public class CommandChannelWebSocketImpl implements CommandChannelWebSocket {
     @Override
     public void onConnect() {
         addSocket();
-        System.out.println(toString() + " connected.");
+        System.err.println(toString() + " connected.");
     }
 
     private void addSocket() {
         switch (type) {
         case AGENT:
-            System.out.println("Adding agent socket: " + id);
-            agentSockets.put(id, this);
+            System.err.println("Adding agent socket: " + id);
+            AgentSocketsRegistry.addSocket(id, this.session);
             break;
-        case CLIENT:
-            System.out.println("Adding client socket: " + user);
-            clientSockets.put(user, this);
-            break;
-        default: // ignore cases we don't know
+        default: // ignore cases we don't need/know
         }
     }
 
     @Override
     public void onClose(int closeCode, String reason) {
-        System.out.println(toString() + "' closed session.");
+        System.err.println(toString() + "' closed session.");
         removeSocket();
     }
 
     private void removeSocket() {
         switch (type) {
         case AGENT:
-            agentSockets.remove(id);
+            AgentSocketsRegistry.removeSocket(id);
             break;
-        case CLIENT:
-            clientSockets.remove(user);
-            break;
-        default: // ignore cases we don't know how to handle
+        default: // ignore cases we don't need/know
         }
 
     }
@@ -126,39 +121,62 @@ public class CommandChannelWebSocketImpl implements CommandChannelWebSocket {
         System.err.println(toString() + " got message: '" + msg + "'");
         try {
             performCommunication(msg);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     private void performCommunication(String msg) throws IOException {
         switch (type) {
-        case AGENT:
-            communication = inFlightComms.get(id);
+        case AGENT: {
             Response resp = Response.fromMessage(msg);
-            communication.setAgentResponse(resp);
-            communication.perform();
+            String commId = id + resp.getSequenceId();
+            ClientAgentCommunication comm = CommunicationsRegistry.get(commId);
+            comm.responseReceived(resp);
             break;
-        case CLIENT:
-            Request req = Request.fromMessage(msg);
-            String agentId = req.getAgentId();
-            if (!agentId.equals(id)) {
-                throw new AssertionError("Invalid agentId, expected: " + id);
+        }
+        case CLIENT: {
+            // We take the sequence id from the path parameter since we potentially
+            // used it when checking relevant roles
+            String seqPathParam = session.getPathParameters().get(SEQ_ID_PATH_PARAM_NAME);
+            long sequence = Response.UNKNOWN_SEQUENCE;
+            try {
+                sequence = Long.parseLong(seqPathParam);
+            } catch (NumberFormatException e) {
+                sendErrorResponse(sequence /* will be unknown */, this.session);
             }
-            System.out.println("target agentId = " + id);
-            ClientCommunication other = inFlightComms.get(id);
-            if (other != null) {
-                throw new AssertionError(
-                        "Other agent communication in progress: " + other);
+            Session agentSession = AgentSocketsRegistry.getSession(id);
+            if (agentSession == null) {
+                // the agent the client wants to talk to has not connected yet.
+                sendErrorResponse(sequence, this.session);
+                return;
             }
-            communication = new ClientCommunication(user, id, req);
-            inFlightComms.put(id, communication);
-            communication.perform();
-            break;
+            ClientRequest req = ClientRequestFactory.fromMessage(msg, sequence);
+            ClientAgentCommunication clientAgentComm = new WebSocketCommunicationBuilder()
+                                .setRequest(req)
+                                .setAgentSession(agentSession)
+                                .setClientSession(this.session)
+                                .build();
+            String commId = id + req.getSequenceId();
+            CommunicationsRegistry.add(commId, clientAgentComm);
+            Response resp = clientAgentComm.perform();
+            System.out.println("Server: sent response: " + resp);
+        }
         default:
             // ignore unknown communication
         }
+    }
 
+    private void sendErrorResponse(long sequence, Session clientSession) {
+        Response resp = new Response(sequence, ResponseType.ERROR);
+        try {
+            synchronized(clientSession) {
+                Basic remote = clientSession.getBasicRemote();
+                remote.sendText(resp.asStringMesssage());
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // cannot really do more. We've lost client connectivity
+        }
     }
 
     @Override
@@ -175,114 +193,5 @@ public class CommandChannelWebSocketImpl implements CommandChannelWebSocket {
     public String toString() {
         return CommandChannelWebSocketImpl.class.getSimpleName() + "["
                 + type.name() + "," + user + "," + id + "]";
-    }
-
-    private static class ClientCommunication {
-        private final String to;
-        private final String from;
-        private final Request request;
-        private CommunicationState state;
-        private Response agentResponse;
-
-        private ClientCommunication(String from, String to, Request request) {
-            this.from = Objects.requireNonNull(from);
-            this.to = Objects.requireNonNull(to);
-            this.request = Objects.requireNonNull(request);
-            this.state = CommunicationState.INITIAL;
-        }
-
-        public void perform() {
-            try {
-                // Perform the communication
-                // 1. web => agent: initial
-                // 2. web => client: web_to_agent
-                switch (state) {
-                case INITIAL:
-                    doRelay();
-                    break;
-                case WEB_TO_AGENT:
-                    doFinal();
-                    break;
-                default:
-                    throw new AssertionError("Did not expect this!");
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private void doFinal() throws IOException {
-            if (state != CommunicationState.WEB_TO_AGENT) {
-                throw new AssertionError("Illegal state: " + state);
-            }
-            CommandChannelWebSocketImpl clientSocket = clientSockets.get(from);
-            state = CommunicationState.WEB_TO_CLIENT;
-            if (agentResponse == null) {
-                sendResponse(clientSocket, Response.ResponseType.ERROR);
-            }
-            sendResponse(clientSocket, agentResponse.getType());
-            System.out.println("Removing in-flight comm: " + to);
-            inFlightComms.remove(to);
-        }
-
-        private void doRelay() throws IOException {
-            if (state != CommunicationState.INITIAL) {
-                throw new AssertionError("Illegal state: " + state);
-            }
-            CommandChannelWebSocketImpl agentSocket = agentSockets.get(to);
-            System.out.println("agent relay: " + agentSocket);
-            if (agentSocket == null) {
-                state = CommunicationState.WEB_TO_CLIENT;
-                CommandChannelWebSocketImpl clientSocket = clientSockets
-                        .get(from);
-                sendResponse(clientSocket, Response.ResponseType.ERROR);
-                return;
-            }
-            state = CommunicationState.WEB_TO_AGENT;
-            relayRequest(agentSocket, request);
-        }
-
-        private void relayRequest(CommandChannelWebSocketImpl agentSocket,
-                Request req) throws IOException {
-            synchronized (agentSocket) {
-                Basic remote = agentSocket.session.getBasicRemote();
-                remote.sendText(req.asStringMessage());
-            }
-        }
-
-        private void sendResponse(CommandChannelWebSocketImpl socket,
-                Response.ResponseType response) {
-            if (state != CommunicationState.WEB_TO_CLIENT) {
-                throw new AssertionError("Expected Web => Client");
-            }
-            if (socket == null) {
-                // Socket not found, nothing to do
-                return;
-            }
-            try {
-                synchronized (socket) {
-                    socket.session.getBasicRemote().sendText(response.name());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            state = CommunicationState.DONE;
-        }
-
-        public void setAgentResponse(Response resp) {
-            this.agentResponse = resp;
-        }
-
-        @Override
-        public String toString() {
-            return ClientCommunication.class.getSimpleName() + "[from=" + from + ",to=" + to + "]";
-        }
-    }
-
-    private enum CommunicationState {
-        INITIAL,
-        WEB_TO_AGENT,
-        WEB_TO_CLIENT,
-        DONE
     }
 }

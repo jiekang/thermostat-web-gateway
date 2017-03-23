@@ -34,65 +34,35 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.SortedMap;
 
-class Request {
+class Request implements Sequential {
 
-    private static final String AID_PARAM = "__agentId__";
-    private static final Pattern REGEX_PATTERN = Pattern.compile(AID_PARAM + "=([^\\n]+)\\n\\n(.*)");
-    private final String agentId;
-    private final Map<String, String> params;
+    protected final long id;
+    private final SortedMap<String, String> params;
 
-    private Request(String agentId, Map<String, String> params) {
-        this.agentId = agentId;
+    protected Request(long sequence, SortedMap<String, String> params) {
         this.params = params;
+        this.id = sequence;
     }
 
-    Request(String agentId) {
-        this.agentId = agentId;
-        this.params = new HashMap<>();
+    public String getParam(String name) {
+        return params.get(name);
     }
 
-    String getAgentId() {
-        return agentId;
+    public void setParam(String key, String value) {
+        params.put(key, value);
     }
 
-    static Request fromMessage(String msg) {
-        Matcher m = REGEX_PATTERN.matcher(msg);
-        if (!m.matches()) {
-            throw new AssertionError("Illegal protocol! Got: " + msg);
-        }
-        String aId = m.group(1);
-        String paramStr = m.group(2);
-        Map<String, String> paramMap = parseParams(paramStr);
-        return new Request(aId, paramMap);
+    @Override
+    public long getSequenceId() {
+        return id;
     }
 
-    private static Map<String, String> parseParams(String rawString) {
-        if (rawString.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        Map<String, String> paramMap = new HashMap<>();
-        String[] paramTokens = rawString.split(",");
-        for (String sParam : paramTokens) {
-            String[] keyVal = sParam.split("=");
-            paramMap.put(keyVal[0], keyVal[1]);
-        }
-        return paramMap;
-    }
-
-    String asStringMessage() {
+    protected String asStringMessage() {
         StringBuilder builder = new StringBuilder();
-        builder.append(AID_PARAM);
-        builder.append("=");
-        builder.append(this.agentId);
-        builder.append("\n\n");
         for (String key : params.keySet()) {
             builder.append(key);
             builder.append("=");
@@ -105,11 +75,7 @@ class Request {
         return builder.toString();
     }
 
-    String getParam(String name) {
-        return params.get(name);
-    }
-
-    void setParam(String key, String value) {
-        params.put(key, value);
+    SortedMap<String, String> getParams() {
+        return params;
     }
 }

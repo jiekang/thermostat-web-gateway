@@ -37,7 +37,6 @@
 package com.redhat.thermostat.server.core.internal.web.http.handlers;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
@@ -50,6 +49,9 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.ClientRequest;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
+
 /**
  * Handles the client initiated actions. E.g. triggering a cmd channel request
  * to some agent.
@@ -58,12 +60,18 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 @WebSocket(maxTextMessageSize = 64 * 1024)
 public class CmdChannelClientSocket {
     private final CountDownLatch closeLatch;
-    private final String agentId;
+    private final CountDownLatch messageSentLatch;
+    private final long requestId;
     private Response resp;
 
-    public CmdChannelClientSocket(String agentId) {
+    public CmdChannelClientSocket(long requestId, CountDownLatch messageSentLatch) {
         this.closeLatch = new CountDownLatch(1);
-        this.agentId = agentId;
+        this.requestId = requestId;
+        this.messageSentLatch = messageSentLatch;
+    }
+
+    public CmdChannelClientSocket(long sequenceId) {
+        this(sequenceId, new CountDownLatch(1));
     }
 
     public boolean awaitClose(int duration, TimeUnit unit)
@@ -81,11 +89,11 @@ public class CmdChannelClientSocket {
     public void onConnect(Session session) {
         System.out.printf("Got connect: %s%n", session);
         try {
-            Request req = new Request(agentId);
+            ClientRequest req = new ClientRequest(requestId);
             req.setParam("vmId", "someval");
-            Future<Void> fut = session.getRemote()
-                    .sendStringByFuture(req.asStringMessage());
-            fut.get(2, TimeUnit.SECONDS); // wait for send to complete.
+            session.getRemote().sendString(req.asStringMessage());
+            session.getRemote().flush();
+            messageSentLatch.countDown();
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -111,7 +119,10 @@ public class CmdChannelClientSocket {
     @OnWebSocketMessage
     public void onMessage(Session session, String msg) {
         System.out.printf("Got msg: %s%n", msg);
-        this.resp = Response.fromMessage(msg);
+        Response r = Response.fromMessage(msg);
+        if (r.getSequenceId() == requestId) {
+            this.resp = r;
+        }
         System.out.println("Bye now.");
         session.close();
     }

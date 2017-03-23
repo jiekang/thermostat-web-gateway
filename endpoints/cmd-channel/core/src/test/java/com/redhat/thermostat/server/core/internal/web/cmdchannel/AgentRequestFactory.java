@@ -34,28 +34,30 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
-class Response {
+import java.util.SortedMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-    private final Response.ResponseType type;
+public class AgentRequestFactory extends RequestFactory {
 
-    private Response(Response.ResponseType type) {
-        this.type = type;
-    }
+    private static final Pattern REGEX_PATTERN = Pattern.compile(AgentRequest.RID_PARAM + "=([^\\n]+)\\n\\n(.*)");
 
-    static Response fromMessage(String msg) {
-        Response.ResponseType t = ResponseType.valueOf(msg);
-        return new Response(t);
-    }
-
-    Response.ResponseType getType() {
-        return type;
-    }
-
-    enum ResponseType {
-        OK,
-        ERROR,
-        AUTH_FAIL
+    public static AgentRequest fromMessage(String msg) {
+        Matcher m = REGEX_PATTERN.matcher(msg);
+        if (!m.matches()) {
+            throw new IllegalArgumentException("Not a request in properly serilized format. Got: " + msg);
+        }
+        String rid = m.group(1);
+        long sequence;
+        try {
+            sequence = Long.parseLong(rid);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Not a request in properly serilized format. Got: " + msg, e);
+        }
+        String paramStr = m.group(2);
+        SortedMap<String, String> paramMap = parseParams(paramStr);
+        return new AgentRequest(sequence, paramMap);
     }
 }
