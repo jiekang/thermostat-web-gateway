@@ -41,52 +41,22 @@
 
     <parent>
         <groupId>com.redhat.thermostat</groupId>
-        <artifactId>thermostat-web-gateway</artifactId>
+        <artifactId>thermostat-web-gateway-common</artifactId>
         <version>1.99.12-SNAPSHOT</version>
     </parent>
 
-    <artifactId>thermostat-web-gateway-server</artifactId>
+    <artifactId>thermostat-web-gateway-common-mongodb</artifactId>
 
     <packaging>jar</packaging>
 
-    <name>Thermostat Web Gateway Server</name>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/thirdparty-libs</outputDirectory>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <includeScope>runtime</includeScope>
-                            <excludeGroupIds>${project.groupId}</excludeGroupIds>
-                            <excludeArtifactIds>...</excludeArtifactIds>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+    <name>Thermostat Web Gateway Mongodb Package</name>
 
     <dependencies>
-        <!-- Jetty deps -->
+        <!-- MongoDB dependencies -->
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>${mongo-java-driver.version}</version>
         </dependency>
 
         <!-- test scoped deps -->

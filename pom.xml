@@ -42,51 +42,46 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.redhat.thermostat</groupId>
-    <artifactId>thermostat-web-endpoint-cmd-channel</artifactId>
+    <artifactId>thermostat-web-gateway</artifactId>
     <packaging>pom</packaging>
     <version>1.99.12-SNAPSHOT</version>
 
-    <name>Thermostat Web Endpoint Command Channel</name>
+    <name>Thermostat Web Gateway</name>
 
     <modules>
-        <module>command</module>
-        <module>core</module>
+        <module>server</module>
         <module>distribution</module>
+
+        <module>common</module>
+
+        <module>services</module>
     </modules>
 
     <properties>
-        <java-version>1.7</java-version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>1.7</java.version>
 
-        <jersey-version>2.24</jersey-version>
-        <jetty-version>9.2.19.v20160908</jetty-version>
-        <glassfish-version>2.5.0-b05</glassfish-version>
-        <mongo-java-driver-version>3.2.1</mongo-java-driver-version>
-        <gson-version>2.2.2</gson-version>
+        <jersey.version>2.25</jersey.version>
+        <jetty.version>9.2.19.v20160908</jetty.version>
+        <mongo-java-driver.version>3.2.1</mongo-java-driver.version>
+        <gson.version>2.2.2</gson.version>
 
-        <junit-version>4.12</junit-version>
-        <mockito-core-version>2.7.11</mockito-core-version>
-        <swagger-jersey2-jaxrs-version>1.5.12</swagger-jersey2-jaxrs-version>
+        <junit.version>4.12</junit.version>
+        <mockito-core.version>2.7.11</mockito-core.version>
 
-        <license-skip>false</license-skip>
+        <license.skip>false</license.skip>
+
+        <maven.itest.skip>false</maven.itest.skip>
+        <maven.ptest.skip>true</maven.ptest.skip>
     </properties>
 
     <build>
         <pluginManagement>
             <plugins>
-                 <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-bundle-plugin</artifactId>
-                    <version>1.4.0</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.felix</groupId>
-                    <artifactId>maven-scr-plugin</artifactId>
-                    <version>1.22.0</version>
-                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.3</version>
+                    <version>2.4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -96,8 +91,8 @@
                         <fork>true</fork>
                         <meminitial>128m</meminitial>
                         <maxmem>1024m</maxmem>
-                        <source>${java-version}</source>
-                        <target>${java-version}</target>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -106,7 +101,7 @@
                     <version>2.6</version>
                     <inherited>false</inherited>
                     <configuration>
-                        <skip>${license-skip}</skip>
+                        <skip>${license.skip}</skip>
                         <headerDefinitions>
                             <headerDefinition>license/thermostat-java.xml</headerDefinition>
                             <headerDefinition>license/thermostat-xml.xml</headerDefinition>

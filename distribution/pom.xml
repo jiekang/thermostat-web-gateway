@@ -36,72 +36,56 @@
  to do so, delete this exception statement from your version.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <groupId>com.redhat.thermostat</groupId>
         <artifactId>thermostat-web-gateway</artifactId>
+        <groupId>com.redhat.thermostat</groupId>
         <version>1.99.12-SNAPSHOT</version>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thermostat-web-gateway-server</artifactId>
-
-    <packaging>jar</packaging>
-
-    <name>Thermostat Web Gateway Server</name>
+    <artifactId>thermostat-web-gateway-distribution</artifactId>
+    <name>Thermostat Web Gateway Distribution</name>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-dependencies</id>
+                        <configuration>
+                            <descriptor>src/assembly/src.xml</descriptor>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <archive>
+                                <manifest>
+                                    <mainClass>com.redhat.thermostat.gateway.server.Start</mainClass>
+                                </manifest>
+                            </archive>
+                        </configuration>
                         <phase>package</phase>
                         <goals>
-                            <goal>copy-dependencies</goal>
+                            <goal>single</goal>
                         </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/thirdparty-libs</outputDirectory>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                            <includeScope>runtime</includeScope>
-                            <excludeGroupIds>${project.groupId}</excludeGroupIds>
-                            <excludeArtifactIds>...</excludeArtifactIds>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.7</source>
+                    <target>1.7</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
     <dependencies>
-        <!-- Jetty deps -->
         <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-server</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.jetty</groupId>
-            <artifactId>jetty-webapp</artifactId>
-            <version>${jetty.version}</version>
-        </dependency>
-
-        <!-- test scoped deps -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito-core.version}</version>
-            <scope>test</scope>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-server</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
-

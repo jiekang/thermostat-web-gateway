@@ -34,43 +34,70 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.gateway.common.mongodb.response;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+import org.bson.Document;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
+import com.mongodb.Block;
+import com.mongodb.client.FindIterable;
 
-@Path("/{fileName: .+}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler {
+public class MongoResponseBuilder {
 
-    @GET
-    public javax.ws.rs.core.Response getPage(
-            @PathParam("fileName") String fileName) throws IOException {
-        InputStream stream = HtmlResourceHandler.class.getClassLoader()
-                .getResourceAsStream(fileName);
-        String responseContent = read(stream);
-        return javax.ws.rs.core.Response.ok(responseContent).build();
+    /**
+     * JSON Response format
+     * {
+     *   "response" : {
+     *       [ {...}, ... ]
+     *   }
+     * }
+     *
+     * Timed JSON Response format
+     * {
+     *   "response" : {
+     *       [ {...}, ... ]
+     *   },
+     *   "time" : elapsed
+     * }
+     */
+
+    public static String buildJsonResponse(String documents) {
+        return "{" +
+                documents +
+                "}";
     }
 
-    private String read(InputStream stream) throws IOException {
-        try (BufferedReader buffer = new BufferedReader(
-                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            String line;
-            StringBuffer b = new StringBuffer();
-            while ((line = buffer.readLine()) != null) {
-                b.append(line);
-                b.append("\n");
+    public static String buildJsonResponseWithTime(String documents, long elapsed) {
+        return "{" +
+                documents +
+                buildKeyAddition("time", "" + elapsed) +
+                "}";
+    }
+
+    public static String buildJsonDocuments(FindIterable<Document> documents) {
+        final StringBuilder s = new StringBuilder();
+
+        s.append("\"response\" : [");
+
+        final int[] i = {0};
+
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                s.append(document.toJson()).append(",");
+                i[0]++;
             }
-            return b.toString();
+        });
+
+        if (i[0] != 0) {
+            s.deleteCharAt(s.length() - 1);
         }
+
+        s.append("]");
+
+        return s.toString();
+    }
+
+    private static String buildKeyAddition(String key, String value) {
+        return ",\"" + key + "\" : \"" + value + "\"";
     }
 }

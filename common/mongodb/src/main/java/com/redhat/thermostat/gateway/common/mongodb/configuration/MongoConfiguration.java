@@ -34,43 +34,14 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.gateway.common.mongodb.configuration;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
+public enum MongoConfiguration {
+    MONGO_URL,
+    MONGO_DB,
+    MONGO_USERNAME,
+    MONGO_PASSWORD,
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
-@Path("/{fileName: .+}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler {
-
-    @GET
-    public javax.ws.rs.core.Response getPage(
-            @PathParam("fileName") String fileName) throws IOException {
-        InputStream stream = HtmlResourceHandler.class.getClassLoader()
-                .getResourceAsStream(fileName);
-        String responseContent = read(stream);
-        return javax.ws.rs.core.Response.ok(responseContent).build();
-    }
-
-    private String read(InputStream stream) throws IOException {
-        try (BufferedReader buffer = new BufferedReader(
-                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-            String line;
-            StringBuffer b = new StringBuffer();
-            while ((line = buffer.readLine()) != null) {
-                b.append(line);
-                b.append("\n");
-            }
-            return b.toString();
-        }
-    }
+    MONGO_SERVER_TIMEOUT,
+    ;
 }
