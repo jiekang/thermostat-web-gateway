@@ -1,0 +1,153 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "version": "0.0.1",
+        "title": "Thermostat Web Gateway JVM GC API",
+        "license": {
+            "name": "GPL v2 with Classpath Exception",
+            "url": "http://www.gnu.org/licenses"
+        }
+    },
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json",
+        "text/html; charset=utf-8"
+    ],
+    "basePath": "/0.0.1",
+    "paths": {
+        "/": {
+            "get": {
+                "description": "Get jvm gc information.",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/limit"
+                    },
+                    {
+                        "$ref": "#/parameters/offset"
+                    },
+                    {
+                        "$ref": "#/parameters/sort"
+                    },
+                    {
+                        "$ref": "#/parameters/projections"
+                    },
+                    {
+                        "$ref": "#/parameters/queries"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jvm-gc-stats"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Create jvm gc information.",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/tags"
+                    },
+                    {
+                        "$ref": "#/parameters/jvm-gc-stats"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "post": {
+                "description": "Update jvm gc information",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/tags"
+                    },
+                    {
+                        "$ref": "#/parameters/jvm-gc-stats"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete jvm information.",
+                "parameters": [
+                    {
+                        "$ref": "#/parameters/queries"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "jvm-gc-stats": {
+            "type": "object"
+        }
+    },
+    "parameters": {
+        "jvm-gc-stats": {
+            "name": "jvm-gc-stats",
+            "in": "body",
+            "description": "The jvm gc statistics",
+            "required": true,
+            "schema": {
+                "$ref": "#/definitions/jvm-gc-stats"
+            }
+        },
+        "tags": {
+            "name": "t",
+            "in": "query",
+            "description": "CSV Tags string",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "limit": {
+            "name": "l",
+            "in": "query",
+            "description": "Limit of items to return.",
+            "type": "integer",
+            "default": 100
+        },
+        "offset": {
+            "name": "o",
+            "in": "query",
+            "description": "Offset of items to return.",
+            "type": "integer",
+            "default": 0
+        },
+        "sort": {
+            "name": "s",
+            "in": "query",
+            "description": "CSV Sort string",
+            "type": "string"
+        },
+        "projections": {
+            "name": "p",
+            "in": "query",
+            "description": "Comma separated fields to filter the data",
+            "type": "string"
+        },
+        "queries": {
+            "name": "q",
+            "in": "query",
+            "description": "Comma separated Key, Comparator, Value trios to query the data",
+            "type": "string"
+        }
+    }
+}
