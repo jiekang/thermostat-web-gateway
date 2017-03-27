@@ -10,6 +10,3 @@ addons:
     packages:
       - mongodb-org-server
       - mongodb-org-shell
-
-before_install: 
-  - cd server
