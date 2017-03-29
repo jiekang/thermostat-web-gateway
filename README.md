@@ -2,7 +2,7 @@
 
 # Thermostat Web Gateway
 
-This is a Microservice-Architecture prototype for Thermostat Web Gateway.
+This is a RESTful API server for [Thermostat](http://icedtea.classpath.org/thermostat).
 
 * core: Contains packages used by other modules.
 * distribution: Contains build assembly and default configuration files to create runnable program.
