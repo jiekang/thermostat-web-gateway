@@ -36,7 +36,7 @@ $ mvn clean verify
 To run:
 
 ```
-$ java -jar distribution/target/thermostat-web-gateway-distribution-1.99.12-SNAPSHOT.jar distribution/src/config/services.properties
+$ ./distribution/target/image/bin/thermostat-web-gateway.sh
 ```
 
 The jvm-memory and jvm-gc services expect mongodb to be running with db 'thermostat', username 'mongodevuser' and password 'mongodevpassword'.

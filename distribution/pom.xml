@@ -49,15 +49,21 @@
     <artifactId>thermostat-web-gateway-distribution</artifactId>
     <name>Thermostat Web Gateway Distribution</name>
 
+    <packaging>pom</packaging>
+
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <configuration>
-                            <descriptor>src/assembly/src.xml</descriptor>
+                            <descriptors>
+                                <descriptor>src/assembly/distribution-assembly.xml</descriptor>
+                            </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
+                            <outputDirectory>${project.build.directory}/image/libs</outputDirectory>
                             <archive>
                                 <manifest>
                                     <mainClass>com.redhat.thermostat.gateway.server.Start</mainClass>
@@ -72,11 +78,93 @@
                 </executions>
             </plugin>
             <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.0.2</version>
+                <executions>
+                    <execution>
+                        <id>copy-bin</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/image/bin</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/bin</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-etc</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/image/etc</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/etc</directory>
+                                    <filtering>true</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>chmod</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <chmod file="${project.build.directory}/image/bin/thermostat-web-gateway.sh" perm="755" />
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>copy</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <artifactItems>
+                        <artifactItem>
+                            <groupId>com.redhat.thermostat</groupId>
+                            <artifactId>thermostat-web-gateway-jvm-memory-service</artifactId>
+                            <version>${project.version}</version>
+                            <type>war</type>
+                            <overWrite>false</overWrite>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>com.redhat.thermostat</groupId>
+                            <artifactId>thermostat-web-gateway-jvm-gc-service</artifactId>
+                            <version>${project.version}</version>
+                            <type>war</type>
+                            <overWrite>false</overWrite>
+                        </artifactItem>
+                    </artifactItems>
+                    <outputDirectory>${project.build.directory}/image/services</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
@@ -86,6 +174,18 @@
             <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-server</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-jvm-gc-service</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-jvm-memory-service</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
         </dependency>
     </dependencies>
 </project>

@@ -9,28 +9,10 @@
 
   <artifactId>thermostat-web-gateway-jvm-gc-service</artifactId>
 
-  <packaging>jar</packaging>
+  <packaging>war</packaging>
 
   <name>Thermostat Web Gateway JVM GC Service</name>
 
-  <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-war-plugin</artifactId>
-        <version>3.0.0</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>war</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
   <dependencies>
     <!-- Thermostat Web Gateway Dependencies -->
     <dependency>
