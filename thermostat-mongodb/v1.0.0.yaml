@@ -1,0 +1,205 @@
+swagger: '2.0'
+info:
+  version: 1.0.0
+  title: Thermostat Mongodb Gateway API
+  license:
+    name: GPL v2 with Classpath Exception
+    url: 'http://www.gnu.org/licenses'
+consumes:
+  - application/json
+produces:
+  - application/json
+  - text/html; charset=utf-8
+basePath: /api/v100
+paths:
+  '/{namespace}/systems/{systemId}':
+    parameters:
+      - $ref: '#/parameters/namespace'
+      - $ref: '#/parameters/system-id'
+    get:
+      description: Get information with matching system id. Use '*' to match against all id's.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/projection'        
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/system-info'
+    put:
+      description: Add information with provided system id. Do not use '*' for systemId.
+      parameters:
+        - $ref: '#/parameters/system-info'
+      responses:
+        '200':
+          description: OK
+    delete:
+      description: Delete information with matching system id. Use '*' to match against all id's
+      parameters:
+        - $ref: '#/parameters/system-ids'
+      responses:
+        '200':
+          description: OK
+  '/{namespace}/systems/{systemId}/agents/{agentId}':
+    parameters:
+      - $ref: '#/parameters/namespace'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/agent-id'
+    get:
+      description: Get information with matching system/agent id. Use '*' to match against all id's.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/projection'    
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/agent-info'
+        '401':
+          $ref: '#/responses/unauthorized'
+    put:
+      description: Adds information with provided system/agent id. Do not use '*' for agentId.
+      parameters:
+        - $ref: '#/parameters/agent-info'
+      responses:
+        '200':
+          $ref: '#/responses/ok'
+    delete:
+      description: Delete information with matching system/agent id. Use '*' to match againts all id's
+      responses:
+        '200':
+          $ref: '#/responses/ok'
+  '/{namespace}/system/{systemId}/agents/{agentId}/jvms/{jvmId}':
+    parameters:
+      - $ref: '#/parameters/namespace'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/agent-id'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get information with matching system/agent/jvm id. Use '*' to match against all id's.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/projection'    
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-info'
+        '401':
+          $ref: '#/responses/unauthorized'
+    put:
+      description: Adds information with provided system/agent/jvm id. Do not use '*' for jvmId.
+      parameters:
+        - $ref: '#/parameters/jvm-info'
+      responses:
+        '200':
+          $ref: '#/responses/ok'
+    delete:
+      description: Delete information with matching system id. Use '*' to match against all id's
+      responses:
+        '200':
+          $ref: '#/responses/ok'
+definitions:
+  system-info:
+    type: array
+    items:
+      type: object
+  agent-info:
+    type: array
+    items:
+      type: object
+  jvm-info:
+    type: array
+    items:
+      type: object
+parameters:
+  namespace:
+    name: namespace
+    in: path
+    description: The namespace
+    type: string
+    required: true
+  system-ids:
+    name: systemIds
+    in: query
+    description: A list of system identities
+    type: string
+    required: true
+  system-id:
+    name: systemId
+    in: path
+    description: The system identity
+    type: string
+    required: true
+  agent-id:
+    name: agentId
+    in: path
+    description: The agent identity
+    type: string
+    required: true
+  jvm-id:
+    name: jvmId
+    in: path
+    description: The JVM identity
+    type: string
+    required: true
+  system-info:
+    name: systemInfo
+    in: body
+    description: The system information
+    required: true
+    schema:
+      $ref: '#/definitions/system-info'
+  agent-info:
+    name: agentInfo
+    in: body
+    description: The agent information
+    required: true
+    schema:
+      $ref: '#/definitions/agent-info'
+  jvm-info:
+    name: jvmInfo
+    in: body
+    description: The jvm information
+    required: true
+    schema:
+      $ref: '#/definitions/jvm-info'
+  limit:
+    name: l
+    in: query
+    description: Limit of items to return. Example '1'
+    type: integer
+  offset:
+    name: o
+    in: query
+    description: Offset of items to return. Example '0'
+    type: integer
+  sort:
+    name: s
+    in: query
+    description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?s=+a,-b'
+    type: string
+  query:
+    name: q
+    in: query
+    description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?q=a=b,c=d'
+    type: string
+  projection:
+    name: p
+    in: query
+    description: Projection string. Comma separated list of fields to include in the response. Example '?p=a,b'
+    type: string
+responses:
+  ok:
+    description: OK
+  unauthorized:
+    description: Access prohibited.
