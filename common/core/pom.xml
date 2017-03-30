@@ -41,19 +41,38 @@
 
     <parent>
         <groupId>com.redhat.thermostat</groupId>
-        <artifactId>thermostat-web-gateway</artifactId>
+        <artifactId>thermostat-web-gateway-common</artifactId>
         <version>1.99.12-SNAPSHOT</version>
     </parent>
 
-    <artifactId>thermostat-web-gateway-common</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>thermostat-web-gateway-common-core</artifactId>
 
-    <name>Thermostat Web Gateway Common Packages</name>
+    <packaging>jar</packaging>
 
-    <modules>
-        <module>mongodb</module>
-        <module>core</module>
-    </modules>
+    <name>Thermostat Web Gateway Common Core Package</name>
 
+    <dependencies>
+        <!-- Servlet API deps -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>${javax.servlet.version}</version>
+            <scope>provided</scope>
+    	</dependency>
+        
+        <!-- test scoped deps -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockito-core.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>
 

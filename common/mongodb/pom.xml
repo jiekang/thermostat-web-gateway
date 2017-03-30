@@ -52,13 +52,26 @@
     <name>Thermostat Web Gateway Mongodb Package</name>
 
     <dependencies>
+        <!-- Thermostat Web Gateway Dependencies -->
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-common-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- MongoDB dependencies -->
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
             <version>${mongo-java-driver.version}</version>
         </dependency>
-
+        <!-- Servlet API deps -->
+        <dependency>
+      		<groupId>javax.servlet</groupId>
+      		<artifactId>servlet-api</artifactId>
+      		<version>${javax.servlet.version}</version>
+      		<scope>provided</scope>
+    	</dependency>
+        
         <!-- test scoped deps -->
         <dependency>
             <groupId>junit</groupId>
