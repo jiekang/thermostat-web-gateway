@@ -48,8 +48,10 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
+
 // Client endpoints; Initiators
-@ServerEndpoint(value = "/commands/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}")
+@ServerEndpoint(value = "/commands/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}")
 public class CommandChannelClientEndpointHandler
         extends CommandChannelEndpointHandler {
 

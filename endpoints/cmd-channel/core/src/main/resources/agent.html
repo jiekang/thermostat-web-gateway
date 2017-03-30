@@ -30,6 +30,21 @@
     //<![CDATA[
         var CmdChan = {};
 
+        var Response = {};
+
+        Response.asString = (function(sequence, resp) {
+            return '__rid__=' + sequence + '\n\n' +
+                   resp;
+        });
+
+        var Msg = {};
+
+        Msg.fromRequest = (function(rawMsg) {
+            var tokens = rawMsg.match(/__rid__=([^\n]+)\n\n(.*)/m);
+            Msg.sequence = tokens[1];
+            Msg.paramStr = tokens[2];
+        });
+
         CmdChan.socket = null;
 
         CmdChan.connect = (function(host) {
@@ -52,8 +67,11 @@
 
             CmdChan.socket.onmessage = function (message) {
                 Console.log('Got: ' + message.data);
+                // parse message
+                Msg.fromRequest(message.data);
+                
                 // send the always-ok reply
-                CmdChan.socket.send('OK');
+                CmdChan.socket.send(Response.asString(Msg.sequence, 'OK'));
                 Console.log('Info: OK reply sent.');
             };
         });

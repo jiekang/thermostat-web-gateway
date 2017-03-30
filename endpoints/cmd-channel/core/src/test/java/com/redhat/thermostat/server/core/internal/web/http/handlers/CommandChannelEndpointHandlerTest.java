@@ -41,13 +41,19 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.net.URI;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.junit.Test;
 
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.AgentRequest;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.AgentRequestFactory;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
 import com.redhat.thermostat.server.core.web.setup.BasicCoreServerTestSetup;
 
 public class CommandChannelEndpointHandlerTest
@@ -57,25 +63,27 @@ public class CommandChannelEndpointHandlerTest
     public void testHandshakeAllRoles() throws Exception {
         String agentUser = "foo-agent-user";
         String clientUser = "bar-client-user";
+        long clientSequence = 1L;
         String agentId = "testAgent";
         URI clientUri = new URI(
                 baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
-                        + "/jvms/abc");
+                        + "/jvms/abc/sequence/" + clientSequence);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
-                agentId);
+                clientSequence);
         CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
                 new CmdChannelAgentSocket.OnMessageCallBack() {
                     @Override
                     public void run(Session session, String msg) {
                         System.out.printf("Got cmd-channel request.");
-                        Request req = Request.fromMessage(msg);
+                        AgentRequest req = AgentRequestFactory.fromMessage(msg);
                         System.out.println("Got request for VM ID: "
                                 + req.getParam("vmId"));
                         System.out.println("Sending OK response.");
+                        Response resp = new Response(req.getSequenceId(), ResponseType.OK);
                         try {
                             session.getRemote().sendString(
-                                    Response.ResponseType.OK.name());
+                                    resp.asStringMesssage());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -99,15 +107,150 @@ public class CommandChannelEndpointHandlerTest
                 clientSocket.getResponse().getType());
     }
 
+    /**
+     * A client which tries to communicate with an agent that has not yet
+     * connected should fail.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testHandshakeNotAuthenticated() throws Exception {
+    public void testHandshakeAuthorizedMissingAgentConnect() throws Exception {
+        long sequenceId = 333L;
+        String clientUser = "bar-client-user";
         String agentId = "testAgent";
         URI clientUri = new URI(
                 baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
-                        + "/jvms/abc");
+                        + "/jvms/abc/sequence/" + sequenceId);
+        CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
+                sequenceId);
+        ClientUpgradeRequest clientRequest = new ClientUpgradeRequest();
+        clientRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
+                getBasicAuthHeaderValue(clientUser, "client-pwd"));
+        client.connect(clientSocket, clientUri, clientRequest);
+        // wait for closed socket connection.
+        clientSocket.awaitClose(2, TimeUnit.SECONDS);
+        assertNotNull(clientSocket.getResponse());
+        assertEquals(Response.ResponseType.ERROR,
+                clientSocket.getResponse().getType());
+    }
+
+    /**
+     * There is no guarantee in which order messages get processed on the server
+     * side. Multiple clients might connect before an agent responds. It's possible
+     * that one channel connect which happened later
+     * channel request is faster than another. This test simulates some of
+     * this behavior.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 2000)
+    public void testMultipleHandshakesInterleavedAllRoles() throws Exception {
+        final long clientSequenceFirst = 901l;
+        final long clientSequenceSecond = 902l;
+        String agentUser = "foo-agent-user";
+        String clientUser = "bar-client-user";
+        String clientPassword = "client-pwd";
+        String agentId = "testAgent";
+        URI firstClientUri = new URI(
+                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                        + "/jvms/abc/sequence/" + clientSequenceFirst);
+        URI secondClientUri = new URI(
+                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                        + "/jvms/abc/sequence/" + clientSequenceSecond);
+        URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
+        CountDownLatch clientsHaveSentMessages = new CountDownLatch(2);
+        CmdChannelClientSocket firstClientSocket = new CmdChannelClientSocket(clientSequenceFirst, clientsHaveSentMessages);
+        CmdChannelClientSocket secondClientSocket = new CmdChannelClientSocket(clientSequenceSecond, clientsHaveSentMessages);
+        final CountDownLatch waitForSecondClientConnect = new CountDownLatch(1);
+        final CountDownLatch waitForAgentConnect = new CountDownLatch(1);
+        final AtomicInteger agentRespCount = new AtomicInteger(0);
+        final CountDownLatch allResponsesSent = new CountDownLatch(2);
+        CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
+                new CmdChannelAgentSocket.OnMessageCallBack() {
+                    @Override
+                    public void run(Session session, String msg) {
+                        System.err.println("running callback");
+                        if (agentRespCount.get() == 0) {
+                            try {
+                                waitForSecondClientConnect.await(2, TimeUnit.SECONDS);
+                            } catch (InterruptedException e) {
+                                // ignore
+                            }
+                        }
+                        int count = agentRespCount.getAndAdd(1);
+                        System.out.printf("Got cmd-channel request.");
+                        AgentRequest req = AgentRequestFactory.fromMessage(msg);
+                        System.out.println("Got request " + count + " for VM ID: "
+                                + req.getParam("vmId"));
+                        try {
+                            if (req.getSequenceId() == clientSequenceFirst) {
+                                Response resp = new Response(req.getSequenceId(), ResponseType.OK);
+                                session.getRemote().sendString(
+                                        resp.asStringMesssage());
+                                session.getRemote().flush();
+                                allResponsesSent.countDown();
+                            } else if (req.getSequenceId() == clientSequenceSecond) {
+                                Response resp = new Response(req.getSequenceId(), ResponseType.ERROR);
+                                session.getRemote().sendString(
+                                        resp.asStringMesssage());
+                                session.getRemote().flush();
+                                allResponsesSent.countDown();
+                            } else {
+                                throw new AssertionError("Should not get here");
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        System.out.println("Bye now!");
+                    }
+                }, waitForAgentConnect);
+        ClientUpgradeRequest firstClientRequest = new ClientUpgradeRequest();
+        ClientUpgradeRequest secondClientRequest = new ClientUpgradeRequest();
+        ClientUpgradeRequest agentRequest = new ClientUpgradeRequest();
+        agentRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
+                getBasicAuthHeaderValue(agentUser, "agent-pwd"));
+        firstClientRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
+                getBasicAuthHeaderValue(clientUser, clientPassword));
+        secondClientRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
+                getBasicAuthHeaderValue(clientUser, clientPassword));
+        client.connect(agentSocket, agentUri, agentRequest);
+        waitForAgentConnect.await();
+
+        client.connect(firstClientSocket, firstClientUri, firstClientRequest);
+        client.connect(secondClientSocket, secondClientUri, secondClientRequest);
+
+        // There is no guarantee that the second client actually connected, but
+        // at least we know that we've called relevant code to do the connection.
+        waitForSecondClientConnect.countDown();
+
+        clientsHaveSentMessages.await();
+
+        // wait before clients have been processed before we close the agent
+        allResponsesSent.await();
+
+        // wait for closed socket connection.
+        secondClientSocket.awaitClose(2, TimeUnit.SECONDS);
+        firstClientSocket.awaitClose(2, TimeUnit.SECONDS);
+
+        agentSocket.closeSession();
+        agentSocket.awaitClose(2, TimeUnit.SECONDS);
+        assertNotNull(firstClientSocket.getResponse());
+        assertEquals(Response.ResponseType.OK,
+                firstClientSocket.getResponse().getType());
+        assertNotNull(secondClientSocket.getResponse());
+        assertEquals(Response.ResponseType.ERROR, secondClientSocket.getResponse().getType());
+    }
+
+    @Test
+    public void testHandshakeNotAuthenticated() throws Exception {
+        long clientSequence = 324L;
+        String agentId = "testAgent";
+        URI clientUri = new URI(
+                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                        + "/jvms/abc/sequence/" + clientSequence);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
-                agentId);
+                 clientSequence /* doesn't matter */);
         final String[] agentResponse = new String[1];
         CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
                 new CmdChannelAgentSocket.OnMessageCallBack() {
@@ -134,15 +277,16 @@ public class CommandChannelEndpointHandlerTest
 
     @Test
     public void testHandshakeNotAuthorized() throws Exception {
+        long clientSequence = 332l;
         String agentUser = "insufficient-roles-agent";
         String clientUser = "insufficient-roles-client";
         String agentId = "testAgent";
         URI clientUri = new URI(
                 baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
-                        + "/jvms/abc");
+                        + "/jvms/abc/sequence/" + clientSequence);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
-                agentId);
+                 clientSequence /* does not matter */);
         final String[] agentResponse = new String[1];
         CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
                 new CmdChannelAgentSocket.OnMessageCallBack() {

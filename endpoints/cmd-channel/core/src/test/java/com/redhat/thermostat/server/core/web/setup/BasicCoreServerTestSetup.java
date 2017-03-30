@@ -52,7 +52,7 @@ import com.redhat.thermostat.test.util.CoreServerTestUtil;
 
 public class BasicCoreServerTestSetup extends TimedTestSetup {
     private static CoreServer coreServer;
-    protected static WebSocketClient client;
+    protected WebSocketClient client;
     private static int port;
     protected final String baseUrl = "ws://localhost:" + port + "/commands/v1/";
     protected final String baseHttpUrl = "http://localhost:" + port
@@ -84,8 +84,6 @@ public class BasicCoreServerTestSetup extends TimedTestSetup {
         });
         thread.start();
 
-        client = new WebSocketClient();
-        client.start();
 
         port = coreServer.getPort();
     }
@@ -97,9 +95,11 @@ public class BasicCoreServerTestSetup extends TimedTestSetup {
     }
 
     @Before
-    public void setupProxyCoreServerTestSetup() {
+    public void setupProxyCoreServerTestSetup() throws Exception {
         while (!ready.get()) {
         }
+        client = new WebSocketClient();
+        client.start();
     }
 
     protected static Map<String, String> getUserConfig() {

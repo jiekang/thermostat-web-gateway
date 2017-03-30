@@ -42,7 +42,8 @@ import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.Session;
 
-import com.redhat.thermostat.server.core.internal.web.http.handlers.Response.ResponseType;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
 import com.redhat.thermostat.server.core.internal.web.security.authentication.basic.BasicWebUser;
 
 public class CommandChannelEndpointHandler {
@@ -53,6 +54,7 @@ public class CommandChannelEndpointHandler {
     private static final String PATH_PARAM_AGENT_ID = "agentId";
     private static final String PATH_PARAM_ACTION = "action";
     private static final String PATH_PARAM_JVM = "jvmId";
+    private static final Object PATH_PARAM_SEQUENCE_ID = "seqId";
 
     static final String HANDSHAKE_REQUEST_KEY = "handshake-request";
     static final String TYPE_PARAM_NAME = "type";
@@ -62,7 +64,7 @@ public class CommandChannelEndpointHandler {
     protected void onConnect(WebSocketType type, Session session)
             throws IOException {
         if (session.getUserPrincipal() == null) {
-            session.getBasicRemote().sendText(ResponseType.AUTH_FAIL.name());
+            sendAuthFail(session);
             session.close(
                     new CloseReason(CloseCodes.VIOLATED_POLICY,
                     "Not authenticated!"));
@@ -74,13 +76,25 @@ public class CommandChannelEndpointHandler {
         System.out.println("Checking roles for "
                 + session.getUserPrincipal().getName() + "... ");
         if (!checkRoles(type, session, agentId)) {
-            session.getBasicRemote().sendText(ResponseType.AUTH_FAIL.name());
+            sendAuthFail(session);
             session.close(new CloseReason(CloseCodes.VIOLATED_POLICY,
                     "Not authorized!"));
             return;
         }
         socket = new CommandChannelWebSocketImpl(user, type, agentId, session);
         socket.onConnect();
+    }
+
+    private void sendAuthFail(Session session) throws IOException {
+        String seqIdStr = session.getPathParameters().get(PATH_PARAM_SEQUENCE_ID);
+        long sequenceId = Response.UNKNOWN_SEQUENCE;
+        try {
+            sequenceId = Long.parseLong(seqIdStr);
+        } catch (NumberFormatException e) {
+            // fall-through
+        }
+        Response resp = new Response(sequenceId, ResponseType.AUTH_FAIL);
+        session.getBasicRemote().sendText(resp.asStringMesssage());
     }
 
     private boolean checkRoles(WebSocketType type, Session session,

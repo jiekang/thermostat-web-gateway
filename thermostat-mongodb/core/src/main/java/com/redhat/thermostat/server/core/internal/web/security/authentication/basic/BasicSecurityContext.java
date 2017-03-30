@@ -34,28 +34,43 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.server.core.internal.web.security.authentication.basic;
 
-class Response {
+import java.security.Principal;
 
-    private final Response.ResponseType type;
+import javax.ws.rs.core.SecurityContext;
 
-    private Response(Response.ResponseType type) {
-        this.type = type;
+import com.redhat.thermostat.server.core.internal.web.security.WebUser;
+
+class BasicSecurityContext implements SecurityContext {
+    private final WebUser user;
+
+    public BasicSecurityContext(WebUser user) {
+        this.user = user;
     }
 
-    static Response fromMessage(String msg) {
-        Response.ResponseType t = ResponseType.valueOf(msg);
-        return new Response(t);
+    @Override
+    public Principal getUserPrincipal() {
+        return new Principal() {
+            @Override
+            public String getName() {
+                return user.getUsername();
+            }
+        };
     }
 
-    Response.ResponseType getType() {
-        return type;
+    @Override
+    public boolean isUserInRole(String role) {
+        return user.isUserInRole(role);
     }
 
-    enum ResponseType {
-        OK,
-        ERROR,
-        AUTH_FAIL
+    @Override
+    public boolean isSecure() {
+        return true;
+    }
+
+    @Override
+    public String getAuthenticationScheme() {
+        return "Basic";
     }
 }

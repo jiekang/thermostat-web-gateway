@@ -32,6 +32,7 @@
         var CmdChan = {};
 
         CmdChan.socket = null;
+        CmdChan.sequence = 1;
 
         CmdChan.connect = (function(host) {
             if ('WebSocket' in window) {
@@ -59,24 +60,34 @@
 
             CmdChan.socket.onmessage = function (message) {
                 Console.log(message.data);
+                CmdChan.socket.close();
+                CmdChan.socket = null;
+                CmdChan.connect( CmdChan.getConnectUrl() );
             };
         });
 
-        CmdChan.initialize = function() {
+        CmdChan.getConnectUrl = (function() {
+            return CmdChan.url + CmdChan.sequence++;
+        });
+
+        CmdChan.initialize = (function() {
             if (window.location.protocol == 'http:') {
-                CmdChan.connect('ws://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc');
+                CmdChan.url = 'ws://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc/sequence/';
             } else {
-                CmdChan.connect('wss://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc');
+                CmdChan.url = 'wss://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc/sequence/';
             }
-        };
+            CmdChan.connect( CmdChan.getConnectUrl() );
+        });
 
         CmdChan.sendMessage = (function() {
             var message = document.getElementById('cmd-chan').value;
             if (message != '') {
-                CmdChan.socket.send('__agentId__=testAgent\n\nvmId=' + message);
+                CmdChan.socket.send('param1=' + message);
                 document.getElementById('cmd-chan').value = '';
             }
         });
+
+        CmdChan.initialize();
 
         var Console = {};
 
@@ -91,9 +102,6 @@
             }
             console.scrollTop = console.scrollHeight;
         });
-
-        CmdChan.initialize();
-
 
         document.addEventListener("DOMContentLoaded", function() {
             // Remove elements with "noscript" class - <noscript> is not allowed in XHTML

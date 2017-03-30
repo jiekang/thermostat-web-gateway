@@ -58,12 +58,18 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 public class CmdChannelAgentSocket {
 
     private final CountDownLatch closeLatch;
+    private final CountDownLatch connectLatch;
     private final OnMessageCallBack onMessage;
     private Session session;
 
-    public CmdChannelAgentSocket(OnMessageCallBack onMessage) {
+    public CmdChannelAgentSocket(OnMessageCallBack onMessage, CountDownLatch connect) {
         this.closeLatch = new CountDownLatch(1);
         this.onMessage = onMessage;
+        this.connectLatch = connect;
+    }
+
+    public CmdChannelAgentSocket(OnMessageCallBack onMessage) {
+        this(onMessage, new CountDownLatch(1));
     }
 
     public boolean awaitClose(int duration, TimeUnit unit)
@@ -81,6 +87,7 @@ public class CmdChannelAgentSocket {
     public void onConnect(Session session) {
         System.out.printf("Got connect: %s%n", session);
         this.session = session;
+        this.connectLatch.countDown();
     }
 
     @OnWebSocketError
@@ -100,7 +107,7 @@ public class CmdChannelAgentSocket {
     }
 
     @OnWebSocketMessage
-    public void onMessage(Session session, String msg) {
+    public void onMessage(final Session session, final String msg) {
         onMessage.run(session, msg);
     }
 
