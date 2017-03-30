@@ -57,6 +57,13 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
     @Override
     public void onConnect() throws IOException {
         super.onConnect();
+        // NOTE:  There is a slight window where the agent has connected
+        //        and signaled so by sending back the "connected" event,
+        //        yet, the agent socket is not yet ready in the registry.
+        //        Server side is busy doing the role checks. If a client
+        //        connects in that window it will get an error back,
+        //        believing that the agent it wants to talk to has not
+        //        connected.
         AgentSocketsRegistry.addSocket(agentId, this.session);
     }
 

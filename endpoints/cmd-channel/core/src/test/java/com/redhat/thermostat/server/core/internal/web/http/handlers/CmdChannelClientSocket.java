@@ -37,7 +37,6 @@
 package com.redhat.thermostat.server.core.internal.web.http.handlers;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -74,20 +73,19 @@ public class CmdChannelClientSocket {
         this(sequenceId, new CountDownLatch(1));
     }
 
-    public boolean awaitClose(int duration, TimeUnit unit)
-            throws InterruptedException {
-        return this.closeLatch.await(duration, unit);
+    public void awaitClose() throws InterruptedException {
+        this.closeLatch.await();
     }
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        System.out.printf("Connection closed: %d - %s%n", statusCode, reason);
+        System.out.printf("Connection closed: %d - %s, %d\n", statusCode, reason, requestId);
         this.closeLatch.countDown(); // trigger latch
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        System.out.printf("Got connect: %s%n", session);
+        System.out.printf("Got connect %d\n", requestId);
         try {
             ClientRequest req = new ClientRequest(requestId);
             req.setParam("vmId", "someval");
