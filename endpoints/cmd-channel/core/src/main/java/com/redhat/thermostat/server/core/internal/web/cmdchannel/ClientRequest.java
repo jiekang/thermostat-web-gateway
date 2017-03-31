@@ -42,7 +42,7 @@ import java.util.TreeMap;
 /**
  * A Command Channel request initiated by a client (a.k.a initiator)
  */
-public class ClientRequest extends Request {
+public class ClientRequest extends WebSocketRequest {
 
     ClientRequest(long sequence, SortedMap<String, String> params) {
         super(sequence, params);

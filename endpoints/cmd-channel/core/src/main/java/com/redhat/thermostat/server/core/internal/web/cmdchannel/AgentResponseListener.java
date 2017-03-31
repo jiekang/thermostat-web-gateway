@@ -41,5 +41,5 @@ package com.redhat.thermostat.server.core.internal.web.cmdchannel;
  * the agent channel.
  */
 public interface AgentResponseListener {
-    void responseReceived(Response resp);
+    void responseReceived(WebSocketResponse resp);
 }

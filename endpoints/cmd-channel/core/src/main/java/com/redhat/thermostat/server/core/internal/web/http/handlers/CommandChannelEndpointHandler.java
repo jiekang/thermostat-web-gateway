@@ -38,91 +38,19 @@ package com.redhat.thermostat.server.core.internal.web.http.handlers;
 
 import java.io.IOException;
 
-import javax.websocket.CloseReason;
-import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.Session;
 
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
-import com.redhat.thermostat.server.core.internal.web.security.authentication.basic.BasicWebUser;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.socket.CommandChannelSocketFactory;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.socket.CommandChannelWebSocket;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.socket.WebSocketType;
 
-public class CommandChannelEndpointHandler {
-
-    private static final String CLIENT_GRANT_ACTION_PREFIX = "thermostat-commands-grant-";
-    private static final String CLIENT_GRANT_JVM_PREFIX = "thermostat-commands-grant-jvm-";
-    private static final String AGENT_PROVIDER_PREFIX = "thermostat-commands-provider-";
-    private static final String PATH_PARAM_AGENT_ID = "agentId";
-    private static final String PATH_PARAM_ACTION = "action";
-    private static final String PATH_PARAM_JVM = "jvmId";
-    private static final Object PATH_PARAM_SEQUENCE_ID = "seqId";
-
-    static final String HANDSHAKE_REQUEST_KEY = "handshake-request";
-    static final String TYPE_PARAM_NAME = "type";
+class CommandChannelEndpointHandler {
 
     private CommandChannelWebSocket socket;
 
-    protected void onConnect(WebSocketType type, Session session)
-            throws IOException {
-        if (session.getUserPrincipal() == null) {
-            sendAuthFail(session);
-            session.close(
-                    new CloseReason(CloseCodes.VIOLATED_POLICY,
-                    "Not authenticated!"));
-            return;
-        }
-        String user = session.getUserPrincipal().getName();
-        System.out.println("User principal: " + session.getUserPrincipal());
-        String agentId = session.getPathParameters().get(PATH_PARAM_AGENT_ID);
-        System.out.println("Checking roles for "
-                + session.getUserPrincipal().getName() + "... ");
-        if (!checkRoles(type, session, agentId)) {
-            sendAuthFail(session);
-            session.close(new CloseReason(CloseCodes.VIOLATED_POLICY,
-                    "Not authorized!"));
-            return;
-        }
-        socket = new CommandChannelWebSocketImpl(user, type, agentId, session);
+    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
+        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
         socket.onConnect();
-    }
-
-    private void sendAuthFail(Session session) throws IOException {
-        String seqIdStr = session.getPathParameters().get(PATH_PARAM_SEQUENCE_ID);
-        long sequenceId = Response.UNKNOWN_SEQUENCE;
-        try {
-            sequenceId = Long.parseLong(seqIdStr);
-        } catch (NumberFormatException e) {
-            // fall-through
-        }
-        Response resp = new Response(sequenceId, ResponseType.AUTH_FAIL);
-        session.getBasicRemote().sendText(resp.asStringMesssage());
-    }
-
-    private boolean checkRoles(WebSocketType type, Session session,
-            String agentId) throws IOException {
-        // FIXME: relies on BasicWebUser - i.e. specific auth scheme.
-        BasicWebUser user = (BasicWebUser) session.getUserPrincipal();
-        switch (type) {
-        case AGENT:
-            String roleToCheck = AGENT_PROVIDER_PREFIX + agentId;
-            if (!user.isUserInRole(roleToCheck)) {
-                return false;
-            }
-            return true;
-        case CLIENT:
-            String action = session.getPathParameters().get(PATH_PARAM_ACTION);
-            String actionAllowedRole = CLIENT_GRANT_ACTION_PREFIX + action;
-            if (!user.isUserInRole(actionAllowedRole)) {
-                return false;
-            }
-            String jvm = session.getPathParameters().get(PATH_PARAM_JVM);
-            String jvmAllowedRole = CLIENT_GRANT_JVM_PREFIX + jvm;
-            if (!user.isUserInRole(jvmAllowedRole)) {
-                return false;
-            }
-            return true;
-        default:
-            throw new AssertionError("Must not happen. Code changed?");
-        }
     }
 
     protected void onMessage(String msg) {

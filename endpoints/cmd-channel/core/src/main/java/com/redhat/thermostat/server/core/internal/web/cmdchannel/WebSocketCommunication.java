@@ -39,7 +39,13 @@ package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 public interface WebSocketCommunication {
 
     /**
+     * Timeout in seconds after which an already relayed request
+     * to a receiver times out waiting for a response.
+     */
+    public static final int TIMEOUT_SECONDS = 30;
+
+    /**
      * Performs the web sockets communication
      */
-    Response perform();
+    WebSocketResponse perform();
 }

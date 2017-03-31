@@ -37,27 +37,45 @@
 package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
 import java.util.SortedMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class AgentRequestFactory extends WebSocketRequestFactory {
+class WebSocketRequest implements Sequential {
 
-    private static final Pattern REGEX_PATTERN = Pattern.compile(AgentRequest.RID_PARAM + "=([^\\n]+)\\n\\n(.*)");
+    protected final long id;
+    private final SortedMap<String, String> params;
 
-    public static AgentRequest fromMessage(String msg) {
-        Matcher m = REGEX_PATTERN.matcher(msg);
-        if (!m.matches()) {
-            throw new IllegalArgumentException("Not a request in properly serilized format. Got: " + msg);
+    protected WebSocketRequest(long sequence, SortedMap<String, String> params) {
+        this.params = params;
+        this.id = sequence;
+    }
+
+    public String getParam(String name) {
+        return params.get(name);
+    }
+
+    public void setParam(String key, String value) {
+        params.put(key, value);
+    }
+
+    @Override
+    public long getSequenceId() {
+        return id;
+    }
+
+    protected String asStringMessage() {
+        StringBuilder builder = new StringBuilder();
+        for (String key : params.keySet()) {
+            builder.append(key);
+            builder.append("=");
+            builder.append(params.get(key));
+            builder.append(",");
         }
-        String rid = m.group(1);
-        long sequence;
-        try {
-            sequence = Long.parseLong(rid);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Not a request in properly serilized format. Got: " + msg, e);
+        if (!params.isEmpty()) {
+            builder.setLength(builder.length() - 1);
         }
-        String paramStr = m.group(2);
-        SortedMap<String, String> paramMap = parseParams(paramStr);
-        return new AgentRequest(sequence, paramMap);
+        return builder.toString();
+    }
+
+    SortedMap<String, String> getParams() {
+        return params;
     }
 }

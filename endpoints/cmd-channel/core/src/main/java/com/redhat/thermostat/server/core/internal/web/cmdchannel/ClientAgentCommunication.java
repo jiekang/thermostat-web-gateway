@@ -37,8 +37,9 @@
 package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketResponse.ResponseType;
 
 /**
  * Full abstracted channel between client and agent.
@@ -57,20 +58,28 @@ public class ClientAgentCommunication implements WebSocketCommunication, AgentRe
     }
 
     @Override
-    public Response perform() {
+    public WebSocketResponse perform() {
         PerformThread thread = new PerformThread(agentGateway);
         thread.start();
         try {
-            agentResponseLatch.await();
+            boolean isExpired = !agentResponseLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            // Agent response timed out.
+            if (isExpired) {
+                return error();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
-            return new Response(clientRequest.getSequenceId(), ResponseType.ERROR);
+            return error();
         }
         return thread.getResponse();
     }
 
+    private WebSocketResponse error() {
+        return new WebSocketResponse(clientRequest.getSequenceId(), ResponseType.ERROR);
+    }
+
     @Override
-    public void responseReceived(Response resp) {
+    public void responseReceived(WebSocketResponse resp) {
         agentGateway.responseReceived(resp);
         agentResponseLatch.countDown();
     }
@@ -79,7 +88,7 @@ public class ClientAgentCommunication implements WebSocketCommunication, AgentRe
 
         private final CountDownLatch latch = new CountDownLatch(1);
         private final AgentGatewayCommunication delegate;
-        private Response resp;
+        private WebSocketResponse resp;
 
         private PerformThread(AgentGatewayCommunication delegate) {
             this.delegate = delegate;
@@ -91,7 +100,7 @@ public class ClientAgentCommunication implements WebSocketCommunication, AgentRe
             latch.countDown();
         }
 
-        public Response getResponse() {
+        public WebSocketResponse getResponse() {
             try {
                 latch.await();
             } catch (InterruptedException e) {

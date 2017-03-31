@@ -36,46 +36,22 @@
 
 package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
+import java.util.Collections;
 import java.util.SortedMap;
+import java.util.TreeMap;
 
-class Request implements Sequential {
+abstract class WebSocketRequestFactory {
 
-    protected final long id;
-    private final SortedMap<String, String> params;
-
-    protected Request(long sequence, SortedMap<String, String> params) {
-        this.params = params;
-        this.id = sequence;
-    }
-
-    public String getParam(String name) {
-        return params.get(name);
-    }
-
-    public void setParam(String key, String value) {
-        params.put(key, value);
-    }
-
-    @Override
-    public long getSequenceId() {
-        return id;
-    }
-
-    protected String asStringMessage() {
-        StringBuilder builder = new StringBuilder();
-        for (String key : params.keySet()) {
-            builder.append(key);
-            builder.append("=");
-            builder.append(params.get(key));
-            builder.append(",");
+    protected static SortedMap<String, String> parseParams(String rawString) {
+        if (rawString.isEmpty()) {
+            return (SortedMap<String, String>)Collections.<String, String>emptyMap();
         }
-        if (!params.isEmpty()) {
-            builder.setLength(builder.length() - 1);
+        SortedMap<String, String> paramMap = new TreeMap<>(); // Tree map for sorted entries
+        String[] paramTokens = rawString.split(",");
+        for (String sParam : paramTokens) {
+            String[] keyVal = sParam.split("=");
+            paramMap.put(keyVal[0], keyVal[1]);
         }
-        return builder.toString();
-    }
-
-    SortedMap<String, String> getParams() {
-        return params;
+        return paramMap;
     }
 }

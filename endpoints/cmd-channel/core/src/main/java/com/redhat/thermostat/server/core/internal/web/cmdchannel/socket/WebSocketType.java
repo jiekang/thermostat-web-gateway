@@ -34,24 +34,11 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.cmdchannel;
+package com.redhat.thermostat.server.core.internal.web.cmdchannel.socket;
 
-import java.util.Collections;
-import java.util.SortedMap;
-import java.util.TreeMap;
+public enum WebSocketType {
 
-abstract class RequestFactory {
+    CLIENT,
+    AGENT,
 
-    protected static SortedMap<String, String> parseParams(String rawString) {
-        if (rawString.isEmpty()) {
-            return (SortedMap<String, String>)Collections.<String, String>emptyMap();
-        }
-        SortedMap<String, String> paramMap = new TreeMap<>(); // Tree map for sorted entries
-        String[] paramTokens = rawString.split(",");
-        for (String sParam : paramTokens) {
-            String[] keyVal = sParam.split("=");
-            paramMap.put(keyVal[0], keyVal[1]);
-        }
-        return paramMap;
-    }
 }

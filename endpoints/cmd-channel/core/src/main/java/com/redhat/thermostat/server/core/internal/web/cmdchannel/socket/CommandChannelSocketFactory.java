@@ -34,15 +34,20 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.server.core.internal.web.cmdchannel.socket;
 
-interface CommandChannelWebSocket {
+import javax.websocket.Session;
 
-    void onClose(int code, String message);
+public class CommandChannelSocketFactory {
 
-    void onConnect();
-
-    void onSocketMessage(String message);
-
-    void onError(Throwable cause);
+    public static CommandChannelWebSocket createWebSocketChannel(WebSocketType type, Session session, String agentId) {
+        switch (type) {
+        case AGENT:
+            return new CommandChannelAgentSocket(agentId, session);
+        case CLIENT:
+            return new CommandChannelClientSocket(agentId, session);
+        default:
+            throw new IllegalArgumentException("Unexpected type: " + type);
+        }
+    }
 }
