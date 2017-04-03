@@ -34,41 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.server.core.internal.web.http.handlers;
+package com.redhat.thermostat.server.core.internal.web.cmdchannel.socket;
 
-enum WebSocketType {
+import java.io.IOException;
 
-    CLIENT(1),
-    AGENT(2),
-    UNKNOWN(-1);
+public interface CommandChannelWebSocket {
 
-    private WebSocketType(int id) {
-        this.id = id;
-    };
+    void onClose(int code, String message);
 
-    private int id;
+    void onConnect() throws IOException;
 
-    int id() {
-        return id;
-    }
+    void onSocketMessage(String message);
 
-    /**
-     *
-     * @param id
-     *            The ID as String
-     * @return The type corresponding to the String ID
-     * @throws IllegalArgumentException
-     *             if the String ID cannot be converted to a type.
-     */
-    static WebSocketType fromString(String id) {
-        int intId = Integer.parseInt(id);
-        switch (intId) {
-        case 1:
-            return WebSocketType.CLIENT;
-        case 2:
-            return WebSocketType.AGENT;
-        default:
-            throw new IllegalArgumentException("Unknown type with id: " + id);
-        }
-    }
+    void onError(Throwable cause);
 }

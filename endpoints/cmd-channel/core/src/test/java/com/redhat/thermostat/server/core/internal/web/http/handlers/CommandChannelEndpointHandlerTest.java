@@ -52,8 +52,8 @@ import org.junit.Test;
 
 import com.redhat.thermostat.server.core.internal.web.cmdchannel.AgentRequest;
 import com.redhat.thermostat.server.core.internal.web.cmdchannel.AgentRequestFactory;
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketResponse;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketResponse.ResponseType;
 import com.redhat.thermostat.server.core.web.setup.BasicCoreServerTestSetup;
 
 public class CommandChannelEndpointHandlerTest
@@ -80,7 +80,7 @@ public class CommandChannelEndpointHandlerTest
                         System.out.println("Got request for VM ID: "
                                 + req.getParam("vmId"));
                         System.out.println("Sending OK response.");
-                        Response resp = new Response(req.getSequenceId(), ResponseType.OK);
+                        WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.OK);
                         try {
                             session.getRemote().sendString(
                                     resp.asStringMesssage());
@@ -103,7 +103,7 @@ public class CommandChannelEndpointHandlerTest
         agentSocket.closeSession();
         agentSocket.awaitClose(2, TimeUnit.SECONDS);
         assertNotNull(clientSocket.getResponse());
-        assertEquals(Response.ResponseType.OK,
+        assertEquals(WebSocketResponse.ResponseType.OK,
                 clientSocket.getResponse().getType());
     }
 
@@ -130,7 +130,7 @@ public class CommandChannelEndpointHandlerTest
         // wait for closed socket connection.
         clientSocket.awaitClose(2, TimeUnit.SECONDS);
         assertNotNull(clientSocket.getResponse());
-        assertEquals(Response.ResponseType.ERROR,
+        assertEquals(WebSocketResponse.ResponseType.ERROR,
                 clientSocket.getResponse().getType());
     }
 
@@ -184,13 +184,13 @@ public class CommandChannelEndpointHandlerTest
                                 + req.getParam("vmId"));
                         try {
                             if (req.getSequenceId() == clientSequenceFirst) {
-                                Response resp = new Response(req.getSequenceId(), ResponseType.OK);
+                                WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.OK);
                                 session.getRemote().sendString(
                                         resp.asStringMesssage());
                                 session.getRemote().flush();
                                 allResponsesSent.countDown();
                             } else if (req.getSequenceId() == clientSequenceSecond) {
-                                Response resp = new Response(req.getSequenceId(), ResponseType.ERROR);
+                                WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.ERROR);
                                 session.getRemote().sendString(
                                         resp.asStringMesssage());
                                 session.getRemote().flush();
@@ -235,10 +235,10 @@ public class CommandChannelEndpointHandlerTest
         agentSocket.closeSession();
         agentSocket.awaitClose(2, TimeUnit.SECONDS);
         assertNotNull(firstClientSocket.getResponse());
-        assertEquals(Response.ResponseType.OK,
+        assertEquals(WebSocketResponse.ResponseType.OK,
                 firstClientSocket.getResponse().getType());
         assertNotNull(secondClientSocket.getResponse());
-        assertEquals(Response.ResponseType.ERROR, secondClientSocket.getResponse().getType());
+        assertEquals(WebSocketResponse.ResponseType.ERROR, secondClientSocket.getResponse().getType());
     }
 
     @Test
@@ -269,9 +269,9 @@ public class CommandChannelEndpointHandlerTest
         agentSocket.closeSession();
         agentSocket.awaitClose(2, TimeUnit.SECONDS);
         assertNotNull(clientSocket.getResponse());
-        Response agentResp = Response.fromMessage(agentResponse[0]);
-        assertEquals(Response.ResponseType.AUTH_FAIL, agentResp.getType());
-        assertEquals(Response.ResponseType.AUTH_FAIL,
+        WebSocketResponse agentResp = WebSocketResponse.fromMessage(agentResponse[0]);
+        assertEquals(WebSocketResponse.ResponseType.AUTH_FAIL, agentResp.getType());
+        assertEquals(WebSocketResponse.ResponseType.AUTH_FAIL,
                 clientSocket.getResponse().getType());
     }
 
@@ -309,9 +309,9 @@ public class CommandChannelEndpointHandlerTest
         agentSocket.closeSession();
         agentSocket.awaitClose(2, TimeUnit.SECONDS);
         assertNotNull(clientSocket.getResponse());
-        Response agentResp = Response.fromMessage(agentResponse[0]);
-        assertEquals(Response.ResponseType.AUTH_FAIL, agentResp.getType());
-        assertEquals(Response.ResponseType.AUTH_FAIL,
+        WebSocketResponse agentResp = WebSocketResponse.fromMessage(agentResponse[0]);
+        assertEquals(WebSocketResponse.ResponseType.AUTH_FAIL, agentResp.getType());
+        assertEquals(WebSocketResponse.ResponseType.AUTH_FAIL,
                 clientSocket.getResponse().getType());
     }
 

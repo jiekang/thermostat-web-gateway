@@ -41,7 +41,7 @@ import java.util.SortedMap;
 /**
  * A Command Channel Request relayed to an agent (a.k.a receiver).
  */
-public class AgentRequest extends Request {
+public class AgentRequest extends WebSocketRequest {
 
     static final String RID_PARAM = "__rid__";
 

@@ -51,16 +51,19 @@ import com.mongodb.client.MongoDatabase;
 import com.redhat.thermostat.gateway.common.mongodb.configuration.MongoConfiguration;
 
 public class ThermostatMongoStorage {
-    private static MongoClient mongoClient;
 
-    private static String dbName = "thermostat";
+    private static final String DEFAULT_DB_NAME = "thermostat";
 
-    public static void start(Map<String, String> mongoConfiguration) {
+    private final MongoClient mongoClient;
+    private final String dbName;
+
+    public ThermostatMongoStorage(Map<String, String> mongoConfiguration) {
         String username = null;
         char[] password = null;
         String host = "127.0.0.1";
         int port = 27518;
         int timeout = 1000;
+        String dbName = DEFAULT_DB_NAME;
 
         if (mongoConfiguration.containsKey(MongoConfiguration.MONGO_DB.toString())) {
             dbName = mongoConfiguration.get(MongoConfiguration.MONGO_DB.toString());
@@ -94,9 +97,10 @@ public class ThermostatMongoStorage {
 
         Logger mongoLog = Logger.getLogger("org.mongodb.driver");
         mongoLog.setLevel(Level.OFF);
+        this.dbName = dbName;
     }
 
-    public static boolean isConnected() {
+    public boolean isConnected() {
         try {
             mongoClient.getAddress();
         } catch (Exception e) {
@@ -105,12 +109,11 @@ public class ThermostatMongoStorage {
         return true;
     }
 
-    public static void finish() {
+    public void finish() {
         mongoClient.close();
-        mongoClient = null;
     }
 
-    public static MongoDatabase getDatabase() {
-        return ThermostatMongoStorage.mongoClient.getDatabase(ThermostatMongoStorage.dbName);
+    public MongoDatabase getDatabase() {
+        return mongoClient.getDatabase(dbName);
     }
 }

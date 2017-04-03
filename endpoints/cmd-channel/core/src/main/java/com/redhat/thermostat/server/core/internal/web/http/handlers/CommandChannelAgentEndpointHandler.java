@@ -47,16 +47,16 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.socket.WebSocketType;
+
 // Agent endpoints; Receivers
 @ServerEndpoint(value = "/commands/v1/systems/{systemId}/agents/{agentId}")
-public class CommandChannelAgentEndpointHandler
-        extends CommandChannelEndpointHandler {
+public class CommandChannelAgentEndpointHandler extends CommandChannelEndpointHandler {
 
     @OnOpen
     public void onConnect(Session session,
-                          @PathParam("systemId") final String systemId,
                           @PathParam("agentId") final String agentId) throws IOException {
-        super.onConnect(WebSocketType.AGENT, session);
+        super.onConnect(WebSocketType.AGENT, agentId, session);
     }
 
     @OnMessage
@@ -67,7 +67,7 @@ public class CommandChannelAgentEndpointHandler
     @OnClose
     public void onClose(CloseReason reason) {
         super.onClose(reason.getCloseCode().getCode(),
-                reason.getReasonPhrase());
+                      reason.getReasonPhrase());
     }
 
     @OnError

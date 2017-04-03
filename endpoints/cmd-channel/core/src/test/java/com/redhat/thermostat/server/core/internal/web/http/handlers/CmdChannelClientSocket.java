@@ -50,7 +50,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
 import com.redhat.thermostat.server.core.internal.web.cmdchannel.ClientRequest;
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketResponse;
 
 /**
  * Handles the client initiated actions. E.g. triggering a cmd channel request
@@ -62,7 +62,7 @@ public class CmdChannelClientSocket {
     private final CountDownLatch closeLatch;
     private final CountDownLatch messageSentLatch;
     private final long requestId;
-    private Response resp;
+    private WebSocketResponse resp;
 
     public CmdChannelClientSocket(long requestId, CountDownLatch messageSentLatch) {
         this.closeLatch = new CountDownLatch(1);
@@ -119,7 +119,7 @@ public class CmdChannelClientSocket {
     @OnWebSocketMessage
     public void onMessage(Session session, String msg) {
         System.out.printf("Got msg: %s%n", msg);
-        Response r = Response.fromMessage(msg);
+        WebSocketResponse r = WebSocketResponse.fromMessage(msg);
         if (r.getSequenceId() == requestId) {
             this.resp = r;
         }
@@ -127,7 +127,7 @@ public class CmdChannelClientSocket {
         session.close();
     }
 
-    public Response getResponse() {
+    public WebSocketResponse getResponse() {
         return resp;
     }
 }

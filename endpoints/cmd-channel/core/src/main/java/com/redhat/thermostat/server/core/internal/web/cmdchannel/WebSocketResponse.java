@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 
 import jersey.repackaged.com.google.common.base.Objects;
 
-public class Response implements Sequential {
+public class WebSocketResponse implements Sequential {
 
     /**
      * Sequence id to use when it's not possible to determine it by other means.
@@ -50,15 +50,15 @@ public class Response implements Sequential {
 
     private static final String RID_PARAM = "__rid__";
     private static final Pattern REGEX_PATTERN = Pattern.compile(RID_PARAM + "=([^\\n]+)\\n\\n(.*)");
-    private final Response.ResponseType type;
+    private final WebSocketResponse.ResponseType type;
     private final long sequence;
 
-    public Response(long sequence, Response.ResponseType type) {
+    public WebSocketResponse(long sequence, WebSocketResponse.ResponseType type) {
         this.type = type;
         this.sequence = sequence;
     }
 
-    public static Response fromMessage(String msg) {
+    public static WebSocketResponse fromMessage(String msg) {
         Matcher m = REGEX_PATTERN.matcher(msg);
         if (!m.matches()) {
             throw new IllegalArgumentException("Not a response in properly serilized format. Got: " + msg);
@@ -71,8 +71,8 @@ public class Response implements Sequential {
             throw new IllegalArgumentException("Not a response in properly serilized format. Got: " + msg, e);
         }
         String responsePart = m.group(2);
-        Response.ResponseType t = ResponseType.valueOf(responsePart);
-        return new Response(sequence, t);
+        WebSocketResponse.ResponseType t = ResponseType.valueOf(responsePart);
+        return new WebSocketResponse(sequence, t);
     }
 
     public String asStringMesssage() {
@@ -80,7 +80,7 @@ public class Response implements Sequential {
                type.name();
     }
 
-    public Response.ResponseType getType() {
+    public WebSocketResponse.ResponseType getType() {
         return type;
     }
 
@@ -91,7 +91,7 @@ public class Response implements Sequential {
 
     @Override
     public String toString() {
-        return Response.class.getSimpleName() + "[" + sequence + ", " + type + "]";
+        return WebSocketResponse.class.getSimpleName() + "[" + sequence + ", " + type + "]";
     }
 
     @Override
@@ -99,10 +99,10 @@ public class Response implements Sequential {
         if (other == null) {
             return false;
         }
-        if (!(other instanceof Response)) {
+        if (!(other instanceof WebSocketResponse)) {
             return false;
         }
-        Response o = (Response)other;
+        WebSocketResponse o = (WebSocketResponse)other;
         return Objects.equal(sequence, o.sequence) &&
                 Objects.equal(type, o.type);
     }

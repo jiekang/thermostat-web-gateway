@@ -38,7 +38,7 @@ package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
 import java.util.SortedMap;
 
-public class ClientRequestFactory extends RequestFactory {
+public class ClientRequestFactory extends WebSocketRequestFactory {
 
     public static ClientRequest fromMessage(String msg, long sequenceId) {
         SortedMap<String, String> paramMap = parseParams(msg);

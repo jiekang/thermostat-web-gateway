@@ -42,37 +42,37 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketResponse.ResponseType;
 
 public class ResponseTest {
 
     @Test
     public void testFromMessage() {
         String msg = "__rid__=1\n\nOK";
-        Response expected = new Response(1, ResponseType.OK);
-        Response actual = Response.fromMessage(msg);
+        WebSocketResponse expected = new WebSocketResponse(1, ResponseType.OK);
+        WebSocketResponse actual = WebSocketResponse.fromMessage(msg);
         assertEquals(expected, actual);
     }
 
     @Test
     public void testToStringMsg() {
         String expected = "__rid__=3232\n\nAUTH_FAIL";
-        Response candidate = new Response(3232, ResponseType.AUTH_FAIL);
+        WebSocketResponse candidate = new WebSocketResponse(3232, ResponseType.AUTH_FAIL);
         assertEquals(expected, candidate.asStringMesssage());
     }
 
     @Test
     public void testEquals() {
-        Response first = new Response(1, ResponseType.AUTH_FAIL);
-        Response second = new Response(1, ResponseType.AUTH_FAIL);
+        WebSocketResponse first = new WebSocketResponse(1, ResponseType.AUTH_FAIL);
+        WebSocketResponse second = new WebSocketResponse(1, ResponseType.AUTH_FAIL);
         assertTrue(first.equals(second));
         assertTrue(second.equals(first));
         assertTrue("multiple calls", first.equals(second));
 
-        Response third = new Response(2, ResponseType.AUTH_FAIL);
+        WebSocketResponse third = new WebSocketResponse(2, ResponseType.AUTH_FAIL);
         assertFalse("sequence numbers don't match", third.equals(first));
 
-        Response fourth = new Response(1, ResponseType.ERROR);
+        WebSocketResponse fourth = new WebSocketResponse(1, ResponseType.ERROR);
         assertFalse("response type different", fourth.equals(first));
 
         // null case

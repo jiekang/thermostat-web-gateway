@@ -38,11 +38,12 @@ package com.redhat.thermostat.server.core.internal.web.cmdchannel;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
-import com.redhat.thermostat.server.core.internal.web.cmdchannel.Response.ResponseType;
+import com.redhat.thermostat.server.core.internal.web.cmdchannel.WebSocketResponse.ResponseType;
 
 /**
  * Gateway => Agent communication part of the Command Channel
@@ -54,7 +55,7 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
     private final Session agentSession;
     private final AgentRequest agentRequest;
     private final CountDownLatch agentResponseLatch;
-    private Response agentResponse;
+    private WebSocketResponse agentResponse;
 
     AgentGatewayCommunication(Session clientSession, Session agentSession, AgentRequest request) {
         this.clientSession = clientSession;
@@ -64,7 +65,7 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
     }
 
     @Override
-    public Response perform() {
+    public WebSocketResponse perform() {
         try {
             synchronized (agentSession) {
                 Basic remote = agentSession.getBasicRemote();
@@ -75,7 +76,11 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
             return error();
         }
         try {
-            agentResponseLatch.await();
+            boolean isExpired = !agentResponseLatch.await(TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            // Agent response timed out.
+            if (isExpired) {
+                return error();
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
             return error();
@@ -83,11 +88,11 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
         return sendResponseToClient();
     }
 
-    private Response error() {
-        return new Response(agentRequest.getSequenceId(), ResponseType.ERROR);
+    private WebSocketResponse error() {
+        return new WebSocketResponse(agentRequest.getSequenceId(), ResponseType.ERROR);
     }
 
-    private Response sendResponseToClient() {
+    private WebSocketResponse sendResponseToClient() {
         try {
             synchronized (clientSession) {
                 Basic remote = clientSession.getBasicRemote();
@@ -101,7 +106,7 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
     }
 
     @Override
-    public void responseReceived(Response resp) {
+    public void responseReceived(WebSocketResponse resp) {
         this.agentResponse = resp;
         agentResponseLatch.countDown();
     }

@@ -40,7 +40,7 @@ import java.util.SortedMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AgentRequestFactory extends RequestFactory {
+public class AgentRequestFactory extends WebSocketRequestFactory {
 
     private static final Pattern REGEX_PATTERN = Pattern.compile(AgentRequest.RID_PARAM + "=([^\\n]+)\\n\\n(.*)");
 
