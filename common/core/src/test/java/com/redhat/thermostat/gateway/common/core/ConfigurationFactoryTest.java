@@ -41,9 +41,17 @@ import static org.junit.Assert.assertEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 public class ConfigurationFactoryTest extends ConfigurationTest {
+
+    private ConfigurationFactory factory;
+
+    @Before
+    public void setup() {
+        factory = new ConfigurationFactory(getTestRoot());
+    }
 
     @Test
     public void canGetMergedConfigForService() {
@@ -51,9 +59,27 @@ public class ConfigurationFactoryTest extends ConfigurationTest {
         expected.put("foo", "service-value"); // override from service config
         expected.put("bar", "baz"); // global only config
         expected.put("test", "me"); // service only config
-        String root = getTestRoot();
-        ConfigurationFactory factory = new ConfigurationFactory(root);
-        Configuration config = factory.getConfigation("test-service");
+        expected.put("SERVICES_FILE", "services.properties");
+        Configuration config = factory.createServiceConfiguration("test-service");
         assertEquals(expected, config.asMap());
+    }
+
+    @Test
+    public void canGetGlobalServicesConfig() {
+        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
+        Map<String, String> expected = new HashMap<String, String>();
+        expected.put("/service1", "/path/to/microservice.war");
+
+        assertEquals(expected, globalServicesConfig.asMap());
+    }
+
+    @Test
+    public void canGetGlobalConfig() {
+        Map<String, String> expected = new HashMap<>();
+        expected.put("foo", "bar");
+        expected.put("bar", "baz");
+        expected.put("SERVICES_FILE", "services.properties");
+        Configuration globalConfig = factory.createGlobalConfiguration();
+        assertEquals(expected, globalConfig.asMap());
     }
 }

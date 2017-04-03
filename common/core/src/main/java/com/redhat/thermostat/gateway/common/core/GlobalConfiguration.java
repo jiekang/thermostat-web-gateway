@@ -39,11 +39,12 @@ package com.redhat.thermostat.gateway.common.core;
 import java.util.Collections;
 import java.util.Map;
 
-class GlobalConfiguration extends BasicConfiguration {
+public class GlobalConfiguration extends BasicConfiguration {
 
     private final CommonPaths paths;
     private final Map<String, String> map;
 
+    // This should remain package private. Use ConfigurationFactory to get an instance.
     GlobalConfiguration(String gatewayHome) {
         paths = new CommonPaths(gatewayHome);
         map = loadConfig(paths.getGlobalConfigFilePath());
@@ -52,6 +53,24 @@ class GlobalConfiguration extends BasicConfiguration {
     @Override
     public Map<String, String> asMap() {
         return Collections.unmodifiableMap(map);
+    }
+
+    public enum ConfigurationKey {
+        /**
+         * The listen address of the servlet container server.
+         */
+        IP,
+        /**
+         * The listen port of the servlet container server.
+         */
+        PORT,
+        /**
+         * The services file name (next to {@code global-config.properties})
+         * specifying which microservices the servlet container shall deploy.
+         *
+         * @see GlobalServicesConfiguration
+         */
+        SERVICES_FILE,
     }
 
 }

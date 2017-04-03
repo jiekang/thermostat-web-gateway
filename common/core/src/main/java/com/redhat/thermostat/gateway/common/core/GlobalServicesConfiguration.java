@@ -36,48 +36,24 @@
 
 package com.redhat.thermostat.gateway.common.core;
 
-/**
- * Configuration factory for creating relevant configuration instances.
- *
- */
-public class ConfigurationFactory {
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Map;
 
-    private final String gatewayHome;
+class GlobalServicesConfiguration extends BasicConfiguration {
 
-    public ConfigurationFactory(String gatewayHome) {
-        this.gatewayHome = gatewayHome;
+    private final Map<String, String> config;
+
+    public GlobalServicesConfiguration(String gatewayHome, GlobalConfiguration globalConfig) {
+        CommonPaths paths = new CommonPaths(gatewayHome);
+        String servicesFile = globalConfig.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES_FILE.name());
+        String services = Paths.get(paths.getConfigDir(), servicesFile.trim()).toFile().getAbsolutePath();
+        this.config = loadConfig(services);
     }
 
-    /**
-     * Creates the specific service configuration for the named service.
-     *
-     * @param serviceName The name of the service.
-     *
-     * @return The specific service configuration.
-     */
-    public Configuration createServiceConfiguration(String serviceName) {
-        Configuration global = new GlobalConfiguration(gatewayHome);
-        Configuration serviceConfig = new ServiceConfiguration(gatewayHome, serviceName);
-        return new ConfigurationMerger(global, serviceConfig);
+    @Override
+    public Map<String, String> asMap() {
+        return Collections.unmodifiableMap(config);
     }
 
-    /**
-     * Creates the global server (servlet container) configuration.
-     *
-     * @return The server configuration.
-     */
-    public Configuration createGlobalConfiguration() {
-        return new GlobalConfiguration(gatewayHome);
-    }
-
-    /**
-     * Creates the global configuration that specifies which services shall
-     * get deployed in the server.
-     *
-     * @return The to-be-deployed services configuration.
-     */
-    public Configuration createGlobalServicesConfig() {
-        GlobalConfiguration global = (GlobalConfiguration)createGlobalConfiguration();
-        return new GlobalServicesConfiguration(gatewayHome, global);
-    }
 }

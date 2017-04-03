@@ -71,7 +71,7 @@ public class StorageConnectionSettingListener implements ServletContextListener 
         String gatewayHome = ctx.getInitParameter(GlobalConstants.GATEWAY_HOME_KEY);
         String serviceName = ctx.getInitParameter(GlobalConstants.SERVICE_NAME_KEY);
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
-        Configuration serviceConfig = factory.getConfigation(serviceName);
+        Configuration serviceConfig = factory.createServiceConfiguration(serviceName);
         Configuration mongoConfiguration = new MongoConfigurationAdapter(serviceConfig);
         return mongoConfiguration.asMap();
     }

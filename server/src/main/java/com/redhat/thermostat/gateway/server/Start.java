@@ -36,50 +36,33 @@
 
 package com.redhat.thermostat.gateway.server;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Properties;
+import org.eclipse.jetty.server.Server;
+
+import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
 
 public class Start {
 
     public static void main(String[] args) {
-        assert args.length == 1;
-
-        CoreServer server = new CoreServer();
-
-        Path configPath = Paths.get(args[0]);
-        assert Files.isRegularFile(configPath);
-
-        Properties configProperties = new Properties();
-        try {
-            configProperties.load(new FileInputStream(configPath.toFile()));
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (args.length != 1) {
+            throw new RuntimeException("Expected 1 and only one init param: THERMOSTAT_GATEWAY_HOME");
         }
+        String gatewayHome = args[0];
 
-        for (Map.Entry<Object, Object> entry : configProperties.entrySet()) {
-            Path warPath = Paths.get(entry.getValue().toString());
+        ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
+        CoreServerBuilder serverBuilder = new CoreServerBuilder();
+        serverBuilder.configFactory(factory);
 
-            assert Files.isDirectory(warPath);
-
-            server = server.add(entry.getKey().toString(), warPath);
-        }
-
-        server.build();
+        Server server = serverBuilder.build();
 
         try {
-            server.getServer().start();
-            server.getServer().join();
+            server.start();
+            server.join();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            server.getServer().stop();
+            server.stop();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -57,7 +57,7 @@ public class CommonPaths {
         return getConfigDir() + File.separator + serviceName + File.separator + SERVICE_CONFIG_PROPERTIES;
     }
 
-    private String getConfigDir() {
+    String getConfigDir() {
         return gatewayHome + File.separator + "etc";
     }
 }

@@ -37,8 +37,11 @@
 package com.redhat.thermostat.gateway.server;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -48,13 +51,18 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-public class CoreServer {
+import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
+
+public class CoreServerBuilder {
 
     private Server server = new Server();
+    private Configuration serverConfig;
     private List<WebAppContext> webAppContextList = new ArrayList<>();
 
 
-    public CoreServer add(String contextPath, Path warPath) {
+    private void addWebapp(String contextPath, Path warPath) {
         WebAppContext webAppContext = new WebAppContext();
 
         webAppContext.setContextPath(contextPath);
@@ -62,14 +70,32 @@ public class CoreServer {
 
         webAppContextList.add(webAppContext);
 
+    }
+
+    public CoreServerBuilder configFactory(ConfigurationFactory factory) {
+        Objects.requireNonNull(factory);
+        this.serverConfig = factory.createGlobalConfiguration();
+        addServices(factory);
         return this;
     }
 
-    public CoreServer build() {
+    private void addServices(ConfigurationFactory factory) {
+        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
+
+        Map<String, String> configProperties = globalServicesConfig.asMap();
+
+        for (Map.Entry<String, String> entry : configProperties.entrySet()) {
+            Path warPath = Paths.get(entry.getValue());
+            addWebapp(entry.getKey(), warPath);
+        }
+
+    }
+
+    public Server build() {
         setupHandler();
         setupConnector();
 
-        return this;
+        return server;
     }
 
     private void setupHandler() {
@@ -88,15 +114,12 @@ public class CoreServer {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
-        httpConnector.setHost("localhost");
-        httpConnector.setPort(30000);
-
+        Map<String, String> serverConfigMap = serverConfig.asMap();
+        httpConnector.setHost(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString()));
+        int port = Integer.parseInt(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
+        httpConnector.setPort(port);
 
         server.setConnectors(new Connector[]{httpConnector});
-    }
-
-    public Server getServer() {
-        return this.server;
     }
 
 }
