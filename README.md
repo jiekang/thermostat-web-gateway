@@ -2,15 +2,15 @@
 
 This is a Microservice-Architecture prototype for Thermostat Web Gateway.
 
-* core: Contains packages used by other modules.
-* distribution: Contains build assembly and default configuration files to create runnable program.
-* s2: Contains CoreServer to handle deploying microservices
-* services: Contains microservices deployable via s2:CoreServer, or any Servlet supporting program
-            such as Wildfly, Jetty, Glassfish or Tomcat
+* common: Contains packages used by other modules
+* distribution: Contains build assembly and default configuration files to create runnable program
+* server: Contains CoreServer to handle deploying microservices
+* services: Contains microservices deployable via server:CoreServer, or any Servlet supporting server such as Wildfly, Jetty, Glassfish or Tomcat
 * services/jvm-gc: Contains microservice for accessing jvm-gc data from Mongodb backend
 * services/jvm-memory: Contains microservice for accessing jvm-memory data from Mongodb backend
 
-* server: Contains Maven project for Thermostat Web Gateway
+* thermostat-mongodb: Contains standalone Web Gateway to interface with Thermostat data placed in Mongodb
+* endpoints/cmd-channel: Contains standalone Command Channel via Web Sockets implementation for Client, Agent communication
 
 
 # Build Dependencies
