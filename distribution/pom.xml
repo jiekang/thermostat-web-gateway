@@ -180,12 +180,14 @@
             <artifactId>thermostat-web-gateway-jvm-gc-service</artifactId>
             <version>${project.version}</version>
             <type>war</type>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-jvm-memory-service</artifactId>
             <version>${project.version}</version>
             <type>war</type>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
