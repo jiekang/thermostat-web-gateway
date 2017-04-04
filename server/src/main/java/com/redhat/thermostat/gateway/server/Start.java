@@ -44,6 +44,7 @@ import org.eclipse.jetty.server.Server;
 
 import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
 
 public class Start {
 
@@ -55,7 +56,7 @@ public class Start {
 
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
         CoreServerBuilder serverBuilder = new CoreServerBuilder();
-        serverBuilder.configFactory(factory);
+        setListenConfig(serverBuilder, factory);
         addServices(serverBuilder, factory);
 
         Server server = serverBuilder.build();
@@ -72,6 +73,15 @@ public class Start {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void setListenConfig(CoreServerBuilder builder, ConfigurationFactory factory) {
+        Configuration globalConfig = factory.createGlobalConfiguration();
+        Map<String, String> serverConfigMap = globalConfig.asMap();
+        String listenAddress = serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
+        builder.setListenAddress(listenAddress);
+        int port = Integer.parseInt(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
+        builder.setListenPort(port);
     }
 
     private static void addServices(CoreServerBuilder builder, ConfigurationFactory factory) {

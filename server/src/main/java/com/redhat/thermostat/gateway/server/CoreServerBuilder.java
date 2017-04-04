@@ -39,7 +39,6 @@ package com.redhat.thermostat.gateway.server;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.eclipse.jetty.server.Connector;
@@ -50,14 +49,11 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.webapp.WebAppContext;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
-import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
-import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
-
 public class CoreServerBuilder {
 
     private Server server = new Server();
-    private Configuration serverConfig;
+    private int listenPort;
+    private String listenAddress;
     private List<WebAppContext> webAppContextList = new ArrayList<>();
 
 
@@ -71,9 +67,13 @@ public class CoreServerBuilder {
         return this;
     }
 
-    public CoreServerBuilder configFactory(ConfigurationFactory factory) {
-        Objects.requireNonNull(factory);
-        this.serverConfig = factory.createGlobalConfiguration();
+    public CoreServerBuilder setListenPort(int port) {
+        this.listenPort = port;
+        return this;
+    }
+
+    public CoreServerBuilder setListenAddress(String address) {
+        this.listenAddress = Objects.requireNonNull(address);
         return this;
     }
 
@@ -100,10 +100,9 @@ public class CoreServerBuilder {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
-        Map<String, String> serverConfigMap = serverConfig.asMap();
-        httpConnector.setHost(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString()));
-        int port = Integer.parseInt(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
-        httpConnector.setPort(port);
+        httpConnector.setHost(listenAddress);
+
+        httpConnector.setPort(listenPort);
 
         server.setConnectors(new Connector[]{httpConnector});
     }
