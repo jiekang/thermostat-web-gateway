@@ -36,10 +36,7 @@
 
 package com.redhat.thermostat.gateway.server;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -47,33 +44,26 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+
+import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
+import com.redhat.thermostat.gateway.server.services.CoreService;
+import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 
 public class CoreServerBuilder {
 
     private Server server = new Server();
-    private int listenPort;
-    private String listenAddress;
-    private List<WebAppContext> webAppContextList = new ArrayList<>();
+    private CoreServiceBuilder coreServiceBuilder;
+    private Configuration serverConfig;
 
-
-    public CoreServerBuilder addWebapp(String contextPath, Path warPath) {
-        WebAppContext webAppContext = new WebAppContext();
-
-        webAppContext.setContextPath(contextPath);
-        webAppContext.setWar(warPath.toAbsolutePath().toString());
-
-        webAppContextList.add(webAppContext);
+    public CoreServerBuilder setServiceBuilder(CoreServiceBuilder builder) {
+        this.coreServiceBuilder = builder;
         return this;
     }
 
-    public CoreServerBuilder setListenPort(int port) {
-        this.listenPort = port;
-        return this;
-    }
-
-    public CoreServerBuilder setListenAddress(String address) {
-        this.listenAddress = Objects.requireNonNull(address);
+    public CoreServerBuilder setServerConfiguration(Configuration config) {
+        this.serverConfig = config;
         return this;
     }
 
@@ -87,8 +77,9 @@ public class CoreServerBuilder {
     private void setupHandler() {
         ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
 
-        for (WebAppContext webAppContext : webAppContextList) {
-            contextHandlerCollection.addHandler(webAppContext);
+        for (CoreService service: coreServiceBuilder.build()) {
+            ServletContextHandler handler = service.createServletContextHandler(server);
+            contextHandlerCollection.addHandler(handler);
         }
 
         server.setHandler(contextHandlerCollection);
@@ -100,8 +91,11 @@ public class CoreServerBuilder {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
-        httpConnector.setHost(listenAddress);
+        Map<String, String> serverConfigMap = serverConfig.asMap();
+        String listenAddress = serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
+        int listenPort = Integer.parseInt(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
 
+        httpConnector.setHost(listenAddress);
         httpConnector.setPort(listenPort);
 
         server.setConnectors(new Connector[]{httpConnector});
