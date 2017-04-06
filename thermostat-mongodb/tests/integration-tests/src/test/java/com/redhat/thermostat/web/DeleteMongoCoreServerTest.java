@@ -113,4 +113,30 @@ public class DeleteMongoCoreServerTest extends MongoCoreServerTestSetup {
         assertEquals(Response.Status.OK.getStatusCode(), getAfterResponse.getStatus());
         assertTrue(getAfterResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"otherStuff\" : \"c\", \"agentId\" : \"two\" },\\{ \"otherStuff\" : \"d\", \"agentId\" : \"two\" }],\"time\" : \"[0-9]*\"}"));
     }
+    @Test
+    public void testDeleteQueries() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/testDeleteQueries/systems/*/agents/one";
+
+        String oneInput = "[{\"agentStuff\":\"a\", \"item\":1},{\"agentStuff\":\"b\", \"item\":2}]";
+
+        ContentResponse putOneResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(oneInput), "application/json").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), putOneResponse.getStatus());
+        assertEquals("PUT: true", putOneResponse.getContentAsString());
+
+        ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"a\", \"item\" : 1, \"agentId\" : \"one\" },\\{ \"agentStuff\" : \"b\", \"item\" : 2, \"agentId\" : \"one\" }],\"time\" : \"[0-9]*\"}"));
+
+        ContentResponse deleteResponse = client.newRequest(url).method(HttpMethod.DELETE).param("q","item==1").send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), deleteResponse.getStatus());
+        assertEquals("DELETE: true", deleteResponse.getContentAsString());
+
+        ContentResponse getAfterResponse = client.newRequest(url).method(HttpMethod.GET).send();
+
+        assertEquals(Response.Status.OK.getStatusCode(), getAfterResponse.getStatus());
+        assertTrue(getAfterResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"agentStuff\" : \"b\", \"item\" : 2, \"agentId\" : \"one\" }],\"time\" : \"[0-9]*\"}"));
+    }
 }

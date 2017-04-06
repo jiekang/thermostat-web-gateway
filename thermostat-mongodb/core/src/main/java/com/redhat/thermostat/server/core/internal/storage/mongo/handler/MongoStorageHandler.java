@@ -41,7 +41,6 @@ import static com.mongodb.client.model.Projections.excludeId;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -123,14 +122,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void deleteSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId) {
+    public void deleteSystems(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String queries) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                deleteAll(systemId, null, null, namespace, asyncResponse, systemCollectionSuffix);
+                deleteAll(systemId, null, null, namespace, asyncResponse, systemCollectionSuffix, queries);
             }
         }).start();
     }
@@ -182,14 +181,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId) {
+    public void deleteAgents(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String queries) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                deleteAll(systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix);
+                deleteAll(systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix, queries);
             }
         }).start();
     }
@@ -240,14 +239,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void deleteJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String jvmId) {
+    public void deleteJvms(String body, SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String jvmId, final String queries) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                deleteAll(systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix);
+                deleteAll(systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix, queries);
             }
         }).start();
     }
@@ -282,14 +281,14 @@ public class MongoStorageHandler implements StorageHandler {
             if (queries != null) {
                 queriesList = Arrays.asList(queries.split(","));
             } else {
-                queriesList = Collections.EMPTY_LIST;
+                queriesList = Collections.emptyList();
             }
 
             final List<String> projectionsList;
             if (projections != null) {
                 projectionsList = Arrays.asList(projections.split(","));
             } else {
-                projectionsList = Collections.EMPTY_LIST;
+                projectionsList = Collections.emptyList();
             }
 
             final int o = Integer.valueOf(offset);
@@ -371,21 +370,35 @@ public class MongoStorageHandler implements StorageHandler {
         }
     }
 
-    private void deleteAll(final String systemId, final String agentId, final String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix) {
-        TimedRequest<Boolean> timedRequest = new TimedRequest<>();
+    private void deleteAll(final String systemId, final String agentId, final String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix, String queries) {
+        try {
 
-        Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
-            @Override
-            public Boolean run() {
-                try {
-                    ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).deleteMany(MongoRequestFilters.buildDeleteFilter(systemId, agentId, jvmId));
-                } catch (Exception e) {
-                    return Boolean.FALSE;
-                }
-                return Boolean.TRUE;
+            final List<String> queriesList;
+            if (queries != null) {
+                queriesList = Arrays.asList(queries.split(","));
+            } else {
+                queriesList = Collections.emptyList();
             }
-        });
-        asyncResponse.resume(Response.status(Response.Status.OK).entity("DELETE: " + response.toString()).build());
+
+
+            TimedRequest<Boolean> timedRequest = new TimedRequest<>();
+
+            Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
+                @Override
+                public Boolean run() {
+                    try {
+                        ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).deleteMany(MongoRequestFilters.buildDeleteFilter(systemId, agentId, jvmId, queriesList));
+                    } catch (Exception e) {
+                        return Boolean.FALSE;
+                    }
+                    return Boolean.TRUE;
+                }
+            });
+            asyncResponse.resume(Response.status(Response.Status.OK).entity("DELETE: " + response.toString()).build());
+        } catch (Exception e) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+
     }
 
 }

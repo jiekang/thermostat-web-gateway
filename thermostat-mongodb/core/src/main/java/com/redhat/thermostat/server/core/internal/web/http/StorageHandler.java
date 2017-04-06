@@ -46,7 +46,7 @@ public interface StorageHandler {
 
     void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
 
-    void deleteSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
+    void deleteSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String queries);
 
     void getAgents(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort, String queries, String projections);
 
@@ -54,7 +54,7 @@ public interface StorageHandler {
 
     void postAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
 
-    void deleteAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
+    void deleteAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String queries);
 
     void getJvms(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId, String offset, String limit, String sort, String queries, String projections);
 
@@ -62,5 +62,5 @@ public interface StorageHandler {
 
     void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
 
-    void deleteJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
+    void deleteJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId, String queries);
 }
