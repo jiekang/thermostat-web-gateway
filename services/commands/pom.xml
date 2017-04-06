@@ -44,55 +44,63 @@
     <version>1.99.12-SNAPSHOT</version>
   </parent>
 
-  <artifactId>thermostat-web-gateway-service-jvm-memory</artifactId>
+  <artifactId>thermostat-web-gateway-service-commands</artifactId>
 
   <packaging>war</packaging>
 
-  <name>Thermostat Web Gateway JVM Memory Service</name>
-  
-  <properties>
-    <com.redhat.thermostat.gateway.SERVICE_NAME>jvm-memory</com.redhat.thermostat.gateway.SERVICE_NAME>
-    <com.redhat.thermostat.gateway.HOME>${project.parent.parent.basedir}/distribution/target/image</com.redhat.thermostat.gateway.HOME>
-  </properties>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-war-plugin</artifactId>
-          <configuration>
-          <webResources>
-            <resource>
-              <directory>src/main/webapp</directory>
-              <filtering>true</filtering>
-            </resource>
-          </webResources>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+  <name>Thermostat Web Gateway Command Channel Service</name>
 
   <dependencies>
+  
     <!-- Thermostat Web Gateway Dependencies -->
     <dependency>
       <groupId>com.redhat.thermostat</groupId>
-      <artifactId>thermostat-web-gateway-common-mongodb</artifactId>
+      <artifactId>thermostat-web-gateway-common-core</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
-    
+        
+    <!-- Websockets deps -->
+    <dependency>
+      <groupId>javax.websocket</groupId>
+      <artifactId>javax.websocket-api</artifactId>
+      <version>1.0</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- Servlet API deps -->
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>${javax.servlet.version}</version>
-      <scope>provided</scope>
+    	<groupId>javax.servlet</groupId>
+    	<artifactId>javax.servlet-api</artifactId>
+    	<version>${javax.servlet.version}</version>
+    	<scope>provided</scope>
     </dependency>
 
     <!-- JAX-RS Dependencies -->
     <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>${javax-rs-api.version}</version>
-      <scope>provided</scope>
+    	<groupId>javax.ws.rs</groupId>
+    	<artifactId>javax.ws.rs-api</artifactId>
+    	<version>2.0.1</version>
     </dependency>
 
+    <!-- test scoped deps -->
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>${junit.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${mockito-core.version}</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.redhat.thermostat</groupId>
+      <artifactId>thermostat-web-gateway-server</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

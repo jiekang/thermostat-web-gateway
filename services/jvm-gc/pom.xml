@@ -82,7 +82,7 @@
     <!-- Servlet API deps -->
     <dependency>
       <groupId>javax.servlet</groupId>
-      <artifactId>servlet-api</artifactId>
+      <artifactId>javax.servlet-api</artifactId>
       <version>${javax.servlet.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -94,6 +94,5 @@
       <version>${javax-rs-api.version}</version>
       <scope>provided</scope>
     </dependency>
-
   </dependencies>
 </project>

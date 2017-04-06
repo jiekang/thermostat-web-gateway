@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
  Copyright 2012-2017 Red Hat, Inc.
@@ -36,25 +35,47 @@
  to do so, delete this exception statement from your version.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+         http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+    <servlet>
+      <servlet-name>StaticResourcesServlet</servlet-name>
+      <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
+      <init-param>
+        <param-name>
+          jersey.config.server.provider.packages
+        </param-name>
+        <param-value>
+          com.redhat.thermostat.service.commands.http.handlers,
+        </param-value>
+      </init-param>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>StaticResourcesServlet</servlet-name>
+      <url-pattern>/v1/static/*</url-pattern>
+    </servlet-mapping>
+    <!-- Listener for setting up the websocket handlers -->
+    <listener>
+      <listener-class>com.redhat.thermostat.service.commands.servlet.SocketRegistrationListener</listener-class>
+    </listener>
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>All of commands API</web-resource-name>
+        <url-pattern>/*</url-pattern>
+      </web-resource-collection>
+      <auth-constraint>
+        <role-name>thermostat-realm</role-name>
+      </auth-constraint>
+    </security-constraint>
 
-    <parent>
-        <groupId>com.redhat.thermostat</groupId>
-        <artifactId>thermostat-web-gateway</artifactId>
-        <version>1.99.12-SNAPSHOT</version>
-    </parent>
+    <login-config>
+      <auth-method>BASIC</auth-method>
+      <realm-name>Thermostat Realm</realm-name>
+    </login-config>
 
-    <artifactId>thermostat-web-gateway-services</artifactId>
-    <packaging>pom</packaging>
-
-    <name>Thermostat Services</name>
-
-    <modules>
-        <module>jvm-memory</module>
-        <module>jvm-gc</module>
-        <module>commands</module>
-    </modules>
-
-</project>
-
+    <security-role>
+      <role-name>thermostat-realm</role-name>
+    </security-role>
+</web-app>

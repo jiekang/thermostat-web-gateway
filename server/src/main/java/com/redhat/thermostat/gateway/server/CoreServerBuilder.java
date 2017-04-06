@@ -38,6 +38,8 @@ package com.redhat.thermostat.gateway.server;
 
 import java.util.Map;
 
+import javax.servlet.ServletException;
+
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -45,6 +47,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
@@ -80,6 +83,13 @@ public class CoreServerBuilder {
         for (CoreService service: coreServiceBuilder.build()) {
             ServletContextHandler handler = service.createServletContextHandler(server);
             contextHandlerCollection.addHandler(handler);
+            // Initialize javax.websocket layer
+            try {
+                handler.setServer(server);
+                WebSocketServerContainerInitializer.configureContext(handler);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         server.setHandler(contextHandlerCollection);
