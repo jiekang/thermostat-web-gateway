@@ -34,35 +34,41 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.io.IOException;
+import javax.websocket.DecodeException;
+import javax.websocket.Decoder;
+import javax.websocket.EndpointConfig;
 
-import javax.websocket.Session;
-
+import com.google.gson.Gson;
 import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
 
-class CommandChannelEndpointHandler {
+public class MessageDecoder implements Decoder.Text<Message> {
 
-    private CommandChannelWebSocket socket;
+    private final Gson gson = GsonFactory.createGsonInstance();
 
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    @Override
+    public void init(EndpointConfig config) {
+        // nothing
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
+    @Override
+    public void destroy() {
+        // nothing
     }
 
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
+    @Override
+    public Message decode(String s) throws DecodeException {
+        try {
+            return gson.fromJson(s, Message.class);
+        } catch (Exception e) {
+            throw new DecodeException(s, e.getMessage(), e);
+        }
     }
 
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
+    @Override
+    public boolean willDecode(String s) {
+        return true;
     }
+
 }

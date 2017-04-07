@@ -34,35 +34,33 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.coders.typeadapters;
 
-import java.io.IOException;
-
-import javax.websocket.Session;
-
+import com.google.gson.Gson;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
+import com.google.gson.reflect.TypeToken;
+import com.redhat.thermostat.service.commands.channel.model.AgentRequest;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
 import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
 
-class CommandChannelEndpointHandler {
+public class MessageTypeAdapterFactory implements TypeAdapterFactory {
 
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
+        Class<?> clazz = type.getRawType();
+        if (AgentRequest.class.isAssignableFrom(clazz)) {
+            return (TypeAdapter<T>)new AgentRequestTypeAdapter(gson);
+        } else if (WebSocketResponse.class.isAssignableFrom(clazz)) {
+            return (TypeAdapter<T>)new WebSocketResponseTypeAdapter(gson);
+        } else if (ClientRequest.class.isAssignableFrom(clazz)) {
+            return (TypeAdapter<T>)new ClientRequestTypeAdapter(gson);
+        } else if (Message.class.isAssignableFrom(clazz)) {
+            return (TypeAdapter<T>)new MessageTypeAdapter(gson);
+        }
+        return null;
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
 }

@@ -38,13 +38,15 @@ package com.redhat.thermostat.service.commands.socket;
 
 import java.io.IOException;
 
+import com.redhat.thermostat.service.commands.channel.model.Message;
+
 public interface CommandChannelWebSocket {
 
     void onClose(int code, String message);
 
     void onConnect() throws IOException;
 
-    void onSocketMessage(String message);
+    void onSocketMessage(Message msg);
 
     void onError(Throwable cause);
 }

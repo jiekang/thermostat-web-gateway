@@ -34,26 +34,23 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.redhat.thermostat.service.commands.channel.coders.typeadapters.MessageTypeAdapterFactory;
 
-/**
- * A Command Channel request initiated by a client (a.k.a initiator)
- */
-public class ClientRequest extends WebSocketRequest {
+class GsonFactory {
 
-    ClientRequest(long sequence, SortedMap<String, String> params) {
-        super(sequence, params);
-    }
-
-    public ClientRequest(long sequence) {
-        super(sequence, new TreeMap<String, String>());
-    }
-
-    @Override
-    public String asStringMessage() {
-        return super.asStringMessage();
+    static Gson createGsonInstance() {
+        // Disable HTML escaping as this would produce escaped characters, e.g.
+        // '\u003cb\u003e' for '<b>' which might be a problem if parameters are more
+        // involved. For example entire byteman rules. This also means that HTML
+        // clients need to handle this appropriately so as to not allow HTML injection.
+        return new GsonBuilder()
+                      .serializeNulls()
+                      .disableHtmlEscaping()
+                      .registerTypeAdapterFactory(new MessageTypeAdapterFactory())
+                      .create();
     }
 }

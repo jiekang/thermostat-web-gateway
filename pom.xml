@@ -64,7 +64,6 @@
         <jersey.version>2.25</jersey.version>
         <jetty.version>9.2.19.v20160908</jetty.version>
         <mongo-java-driver.version>3.2.1</mongo-java-driver.version>
-        <gson.version>2.2.2</gson.version>
         <!-- Jetty needs 3.1+ servlet API for HttpSessionIdListener -->
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <javax-rs-api.version>2.0.1</javax-rs-api.version>
@@ -73,6 +72,7 @@
 
         <junit.version>4.12</junit.version>
         <mockito-core.version>2.7.11</mockito-core.version>
+        <google-gson.version>2.3.1</google-gson.version>
 
         <license.skip>false</license.skip>
 

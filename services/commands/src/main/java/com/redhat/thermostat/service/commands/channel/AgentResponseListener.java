@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.service.commands.channel;
 
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+
 /**
  * Response listener called when messages come back from
  * the agent channel.

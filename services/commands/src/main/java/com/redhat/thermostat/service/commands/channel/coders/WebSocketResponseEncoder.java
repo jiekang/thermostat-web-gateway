@@ -34,29 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.util.SortedMap;
+import javax.websocket.EncodeException;
 
-/**
- * A Command Channel Request relayed to an agent (a.k.a receiver).
- */
-public class AgentRequest extends WebSocketRequest {
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
 
-    static final String RID_PARAM = "__rid__";
-
-    AgentRequest(long sequence, SortedMap<String, String> params) {
-        super(sequence, params);
-    }
+public class WebSocketResponseEncoder extends BasicMessageEncoder<WebSocketResponse> {
 
     @Override
-    public String asStringMessage() {
-        StringBuilder builder = new StringBuilder();
-        builder.append(RID_PARAM);
-        builder.append("=");
-        builder.append(id);
-        builder.append("\n\n");
-        builder.append(super.asStringMessage());
-        return builder.toString();
+    public String encode(WebSocketResponse response) throws EncodeException {
+        return super.encodeMessage(response);
     }
+
 }

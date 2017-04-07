@@ -32,17 +32,21 @@
 
         var Response = {};
 
-        Response.asString = (function(sequence, resp) {
-            return '__rid__=' + sequence + '\n\n' +
-                   resp;
+        Response.asJson = (function(sequence, resp) {
+            var r = {};
+            r.type = 100;
+            r.sequence = sequence;
+            r.payload = {};
+            r.payload.respType = resp;
+            return JSON.stringify(r);
         });
 
         var Msg = {};
 
         Msg.fromRequest = (function(rawMsg) {
-            var tokens = rawMsg.match(/__rid__=([^\n]+)\n\n(.*)/m);
-            Msg.sequence = tokens[1];
-            Msg.paramStr = tokens[2];
+            var jsonObj = JSON.parse(rawMsg);
+            Msg.sequence = jsonObj.sequence;
+            Msg.paramStr = jsonObj.payload.param1;
         });
 
         CmdChan.socket = null;
@@ -71,7 +75,7 @@
                 Msg.fromRequest(message.data);
                 
                 // send the always-ok reply
-                CmdChan.socket.send(Response.asString(Msg.sequence, 'OK'));
+                CmdChan.socket.send(Response.asJson(Msg.sequence, 'OK'));
                 Console.log('Info: OK reply sent.');
             };
         });

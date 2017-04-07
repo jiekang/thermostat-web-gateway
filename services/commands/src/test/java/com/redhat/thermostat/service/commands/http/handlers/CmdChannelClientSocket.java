@@ -45,8 +45,13 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
-import com.redhat.thermostat.service.commands.channel.ClientRequest;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.redhat.thermostat.service.commands.channel.coders.typeadapters.MessageTypeAdapterFactory;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.channel.model.Message.MessageType;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
 
 /**
  * Handles the client initiated actions. E.g. triggering a cmd channel request
@@ -55,19 +60,26 @@ import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
  */
 @WebSocket(maxTextMessageSize = 64 * 1024)
 public class CmdChannelClientSocket {
+
+    private final Gson gson;
     private final CountDownLatch closeLatch;
     private final CountDownLatch messageSentLatch;
-    private final long requestId;
+    private final ClientRequest request;
     private WebSocketResponse resp;
 
-    public CmdChannelClientSocket(long requestId, CountDownLatch messageSentLatch) {
+    public CmdChannelClientSocket(ClientRequest request, CountDownLatch messageSentLatch) {
         this.closeLatch = new CountDownLatch(1);
-        this.requestId = requestId;
+        this.request = request;
         this.messageSentLatch = messageSentLatch;
+        this.gson = new GsonBuilder()
+                    .registerTypeAdapterFactory(new MessageTypeAdapterFactory())
+                    .serializeNulls()
+                    .disableHtmlEscaping()
+                    .create();
     }
 
-    public CmdChannelClientSocket(long sequenceId) {
-        this(sequenceId, new CountDownLatch(1));
+    public CmdChannelClientSocket(ClientRequest request) {
+        this(request, new CountDownLatch(1));
     }
 
     public void awaitClose() throws InterruptedException {
@@ -82,9 +94,8 @@ public class CmdChannelClientSocket {
     @OnWebSocketConnect
     public void onConnect(Session session) {
         try {
-            ClientRequest req = new ClientRequest(requestId);
-            req.setParam("vmId", "someval");
-            session.getRemote().sendString(req.asStringMessage());
+            String serializedMsg = gson.toJson(request);
+            session.getRemote().sendString(serializedMsg);
             session.getRemote().flush();
             messageSentLatch.countDown();
         } catch (Throwable t) {
@@ -103,8 +114,12 @@ public class CmdChannelClientSocket {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String msg) {
-        WebSocketResponse r = WebSocketResponse.fromMessage(msg);
-        if (r.getSequenceId() == requestId) {
+        Message message = gson.fromJson(msg, Message.class);
+        if (message.getMessageType() != MessageType.RESPONSE) {
+            throw new AssertionError("Illegal type. Got " + message.getMessageType());
+        }
+        WebSocketResponse r = (WebSocketResponse)message;
+        if (r.getSequenceId() == request.getSequenceId()) {
             this.resp = r;
         }
         session.close();

@@ -40,11 +40,13 @@ import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.websocket.EncodeException;
 import javax.websocket.RemoteEndpoint.Basic;
-
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
-
 import javax.websocket.Session;
+
+import com.redhat.thermostat.service.commands.channel.model.AgentRequest;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
 /**
  * Gateway => Agent communication part of the Command Channel
@@ -70,9 +72,9 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
         try {
             synchronized (agentSession) {
                 Basic remote = agentSession.getBasicRemote();
-                remote.sendText(agentRequest.asStringMessage());
+                remote.sendObject(agentRequest);
             }
-        } catch (IOException e) {
+        } catch (IOException|EncodeException e) {
             e.printStackTrace();
             return error();
         }
@@ -97,9 +99,9 @@ class AgentGatewayCommunication implements WebSocketCommunication, AgentResponse
         try {
             synchronized (clientSession) {
                 Basic remote = clientSession.getBasicRemote();
-                remote.sendText(agentResponse.asStringMesssage());
+                remote.sendObject(agentResponse);
             }
-        } catch (IOException e) {
+        } catch (IOException|EncodeException e) {
             e.printStackTrace();
             return error();
         }

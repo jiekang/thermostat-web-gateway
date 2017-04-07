@@ -34,35 +34,25 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.model;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
 
-import javax.websocket.Session;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+import org.junit.Test;
 
-class CommandChannelEndpointHandler {
+public class AgentRequestTest {
 
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    @Test
+    public void testGetParams() {
+        long sequence = 3321l;
+        SortedMap<String, String> params = new TreeMap<>();
+        params.put("foo-bar", "bar-baz");
+        AgentRequest request = new AgentRequest(sequence, params);
+        assertEquals("sanity", sequence, request.getSequenceId());
+        assertEquals("bar-baz", request.getParam("foo-bar"));
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
 }

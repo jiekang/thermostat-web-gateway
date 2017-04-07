@@ -34,24 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.util.Collections;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import javax.websocket.EncodeException;
 
-abstract class WebSocketRequestFactory {
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
 
-    protected static SortedMap<String, String> parseParams(String rawString) {
-        if (rawString.isEmpty()) {
-            return (SortedMap<String, String>)Collections.<String, String>emptyMap();
-        }
-        SortedMap<String, String> paramMap = new TreeMap<>(); // Tree map for sorted entries
-        String[] paramTokens = rawString.split(",");
-        for (String sParam : paramTokens) {
-            String[] keyVal = sParam.split("=");
-            paramMap.put(keyVal[0], keyVal[1]);
-        }
-        return paramMap;
+public class ClientRequestEncoder extends BasicMessageEncoder<ClientRequest> {
+
+    @Override
+    public String encode(ClientRequest request) throws EncodeException {
+        return super.encodeMessage(request);
     }
+
 }

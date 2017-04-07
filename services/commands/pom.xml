@@ -82,6 +82,13 @@
     	<artifactId>javax.ws.rs-api</artifactId>
     	<version>2.0.1</version>
     </dependency>
+    
+    <!-- Decoder/encoder deps -->
+    <dependency>
+        <groupId>com.google.code.gson</groupId>
+        <artifactId>gson</artifactId>
+        <version>${google-gson.version}</version>
+    </dependency>
 
     <!-- test scoped deps -->
     <dependency>

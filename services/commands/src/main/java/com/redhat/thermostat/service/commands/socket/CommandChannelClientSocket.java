@@ -38,18 +38,19 @@ package com.redhat.thermostat.service.commands.socket;
 
 import java.io.IOException;
 
+import javax.websocket.EncodeException;
 import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
 import com.redhat.thermostat.service.commands.channel.AgentSocketsRegistry;
 import com.redhat.thermostat.service.commands.channel.ClientAgentCommunication;
-import com.redhat.thermostat.service.commands.channel.ClientRequest;
-import com.redhat.thermostat.service.commands.channel.ClientRequestFactory;
 import com.redhat.thermostat.service.commands.channel.CommunicationsRegistry;
 import com.redhat.thermostat.service.commands.channel.WebSocketCommunicationBuilder;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
 class CommandChannelClientSocket extends CommandChannelSocket {
 
@@ -64,11 +65,11 @@ class CommandChannelClientSocket extends CommandChannelSocket {
     }
 
     @Override
-    public void performCommunication(String msg) throws IOException {
+    public void performCommunication(Message msg) throws IOException {
         // We take the sequence id from the path parameter. It's the only
         // place where this is available for client sockets.
         String seqPathParam = session.getPathParameters().get(PATH_PARAM_SEQ_ID);
-        long sequence = WebSocketResponse.UNKNOWN_SEQUENCE;
+        long sequence = Message.UNKNOWN_SEQUENCE;
         try {
             sequence = Long.parseLong(seqPathParam);
         } catch (NumberFormatException e) {
@@ -80,7 +81,11 @@ class CommandChannelClientSocket extends CommandChannelSocket {
             sendErrorResponse(sequence);
             return;
         }
-        ClientRequest req = ClientRequestFactory.fromMessage(msg, sequence);
+        if (!(msg instanceof ClientRequest)) {
+            throw new IllegalStateException("Received message of unknown type: " + msg.getClass().getName());
+        }
+        ClientRequest req = (ClientRequest)msg;
+        req.setSequenceId(sequence);
         ClientAgentCommunication clientAgentComm = new WebSocketCommunicationBuilder()
                             .setRequest(req)
                             .setAgentSession(agentSession)
@@ -96,9 +101,9 @@ class CommandChannelClientSocket extends CommandChannelSocket {
         try {
             synchronized(session) {
                 Basic remote = session.getBasicRemote();
-                remote.sendText(resp.asStringMesssage());
+                remote.sendObject(resp);
             }
-        } catch (IOException e) {
+        } catch (IOException|EncodeException e) {
             e.printStackTrace(); // cannot really do more. We've lost client connectivity
         }
     }
