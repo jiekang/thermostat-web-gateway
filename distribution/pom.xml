@@ -146,14 +146,14 @@
                     <artifactItems>
                         <artifactItem>
                             <groupId>com.redhat.thermostat</groupId>
-                            <artifactId>thermostat-web-gateway-jvm-memory-service</artifactId>
+                            <artifactId>thermostat-web-gateway-service-jvm-memory</artifactId>
                             <version>${project.version}</version>
                             <type>war</type>
                             <overWrite>false</overWrite>
                         </artifactItem>
                         <artifactItem>
                             <groupId>com.redhat.thermostat</groupId>
-                            <artifactId>thermostat-web-gateway-jvm-gc-service</artifactId>
+                            <artifactId>thermostat-web-gateway-service-jvm-gc</artifactId>
                             <version>${project.version}</version>
                             <type>war</type>
                             <overWrite>false</overWrite>
@@ -172,14 +172,14 @@
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-web-gateway-jvm-gc-service</artifactId>
+            <artifactId>thermostat-web-gateway-service-jvm-gc</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-web-gateway-jvm-memory-service</artifactId>
+            <artifactId>thermostat-web-gateway-service-jvm-memory</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>

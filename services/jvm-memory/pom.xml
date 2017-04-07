@@ -44,7 +44,7 @@
     <version>1.99.12-SNAPSHOT</version>
   </parent>
 
-  <artifactId>thermostat-web-gateway-jvm-memory-service</artifactId>
+  <artifactId>thermostat-web-gateway-service-jvm-memory</artifactId>
 
   <packaging>war</packaging>
 
