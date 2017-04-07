@@ -137,7 +137,13 @@ public class MongoRequestFilters {
         return and(filters);
     }
 
-    public static Bson buildDeleteFilter(String systemId, String agentId, String jvmId) {
-        return buildIdFilters(systemId, agentId, jvmId);
+    public static Bson buildDeleteFilter(String systemId, String agentId, String jvmId, List<String> queries) {
+        List<Bson> filters = new ArrayList<>();
+
+        filters.add(buildIdFilters(systemId, agentId, jvmId));
+
+        filters.add(buildQueriesFilter(queries));
+
+        return and(filters);
     }
 }

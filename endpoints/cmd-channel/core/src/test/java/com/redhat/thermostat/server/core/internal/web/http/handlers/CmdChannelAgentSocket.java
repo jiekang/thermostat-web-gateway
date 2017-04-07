@@ -37,7 +37,6 @@
 package com.redhat.thermostat.server.core.internal.web.http.handlers;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -72,9 +71,8 @@ public class CmdChannelAgentSocket {
         this(onMessage, new CountDownLatch(1));
     }
 
-    public boolean awaitClose(int duration, TimeUnit unit)
-            throws InterruptedException {
-        return this.closeLatch.await(duration, unit);
+    public void awaitClose() throws InterruptedException {
+        this.closeLatch.await();
     }
 
     @OnWebSocketClose
@@ -85,7 +83,7 @@ public class CmdChannelAgentSocket {
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        System.out.printf("Got connect: %s%n", session);
+        System.out.println("Got connect (agent)");
         this.session = session;
         this.connectLatch.countDown();
     }

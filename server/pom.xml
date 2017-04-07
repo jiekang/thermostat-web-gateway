@@ -63,7 +63,12 @@
             <artifactId>jetty-webapp</artifactId>
             <version>${jetty.version}</version>
         </dependency>
-
+        <!-- Thermostat Web Gateway Dependencies -->
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-common-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- test scoped deps -->
         <dependency>
             <groupId>junit</groupId>

@@ -43,17 +43,17 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class ServiceConfigurationTest extends ConfigurationTest {
+public class GlobalServicesConfigurationTest extends ConfigurationTest {
 
     @Test
-    public void canReadServiceConfig() {
-        String serviceName = "test-service";
+    public void canReadGlobalServicesConfig() {
         Map<String, String> expected = new HashMap<String, String>();
-        expected.put("foo", "service-value");
-        expected.put("test", "me");
+        expected.put("/service1", "/path/to/microservice.war");
         String root = getTestRoot();
-        ServiceConfiguration config = new ServiceConfiguration(root, serviceName);
+        GlobalConfiguration global = new GlobalConfiguration(root);
+        GlobalServicesConfiguration config = new GlobalServicesConfiguration(root, global);
         Map<String, String> actual = config.asMap();
         assertEquals(expected, actual);
     }
+
 }

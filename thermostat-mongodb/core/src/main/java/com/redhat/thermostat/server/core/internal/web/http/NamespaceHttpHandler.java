@@ -98,8 +98,9 @@ public class NamespaceHttpHandler {
                               @Context SecurityContext context,
                               @Suspended final AsyncResponse asyncResponse,
                               @PathParam("namespace") String namespace,
-                              @PathParam("systemId") String systemId) {
-        handler.deleteSystems(body, context, asyncResponse, namespace, systemId);
+                              @PathParam("systemId") String systemId,
+                              @QueryParam("q") String queries) {
+        handler.deleteSystems(body, context, asyncResponse, namespace, systemId, queries);
     }
 
     @GET
@@ -150,8 +151,9 @@ public class NamespaceHttpHandler {
                              @Suspended final AsyncResponse asyncResponse,
                              @PathParam("namespace") String namespace,
                              @PathParam("systemId") String systemId,
-                             @PathParam("agentId") String agentId) {
-        handler.deleteAgents(body, context, asyncResponse, namespace, systemId, agentId);
+                             @PathParam("agentId") String agentId,
+                             @QueryParam("q") String queries) {
+        handler.deleteAgents(body, context, asyncResponse, namespace, systemId, agentId, queries);
     }
 
     @GET
@@ -206,8 +208,9 @@ public class NamespaceHttpHandler {
                            @PathParam("namespace") String namespace,
                            @PathParam("systemId") String systemId,
                            @PathParam("agentId") String agentId,
-                           @PathParam("jvmId") String jvmId) {
-        handler.deleteJvms(body, context, asyncResponse, namespace, systemId, agentId, jvmId);
+                           @PathParam("jvmId") String jvmId,
+                           @QueryParam("q") String queries) {
+        handler.deleteJvms(body, context, asyncResponse, namespace, systemId, agentId, jvmId, queries);
     }
 
 }

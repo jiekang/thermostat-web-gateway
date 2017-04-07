@@ -1,7 +1,6 @@
 #!/bin/bash
-
 #
-# Copyright 2012-2015 Red Hat, Inc.
+# Copyright 2012-2017 Red Hat, Inc.
 #
 # This file is part of Thermostat.
 #
@@ -35,7 +34,6 @@
 # library, but you are not obligated to do so.  If you do not wish
 # to do so, delete this exception statement from your version.
 #
-#####################################################################
 
 _find_thermostat_gateway_home() {
   # Compute THERMOSTAT_GATEWAY_HOME by finding the (symlink-resolved) location of the
@@ -65,4 +63,4 @@ THERMOSTAT_GATEWAY_SERVICES=${THERMOSTAT_GATEWAY_HOME}/services
 
 sed -i -e "s|__SERVICES__|${THERMOSTAT_GATEWAY_SERVICES}|g" ${THERMOSTAT_GATEWAY_CONFIG}
 
-java -jar ${THERMOSTAT_GATEWAY_LIBS}/thermostat-web-gateway-distribution-@project.version@.jar ${THERMOSTAT_GATEWAY_CONFIG}
+java -jar ${THERMOSTAT_GATEWAY_LIBS}/thermostat-web-gateway-distribution-@project.version@.jar ${THERMOSTAT_GATEWAY_HOME}

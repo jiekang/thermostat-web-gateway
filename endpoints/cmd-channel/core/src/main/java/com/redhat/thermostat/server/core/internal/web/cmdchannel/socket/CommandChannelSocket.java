@@ -61,16 +61,20 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
         System.err.println(toString() + " connected.");
         if (session.getUserPrincipal() == null) {
             sendAuthFail(getSequence());
-            session.close(new CloseReason(CloseCodes.VIOLATED_POLICY,
-                          "Not authenticated!"));
+            synchronized (session) {
+                session.close(new CloseReason(CloseCodes.VIOLATED_POLICY,
+                                              "Not authenticated!"));
+            }
             return;
         }
         System.out.println("User principal: " + session.getUserPrincipal());
         System.out.println("Checking roles for " + session.getUserPrincipal().getName() + "... ");
         if (!checkRoles()) {
             sendAuthFail(getSequence());
-            session.close(new CloseReason(CloseCodes.VIOLATED_POLICY,
-                          "Not authorized!"));
+            synchronized (session) {
+                session.close(new CloseReason(CloseCodes.VIOLATED_POLICY,
+                                              "Not authorized!"));
+            }
             return;
         }
     }

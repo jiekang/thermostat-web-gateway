@@ -36,24 +36,24 @@
 
 package com.redhat.thermostat.gateway.common.core;
 
-import static org.junit.Assert.assertEquals;
-
-import java.util.HashMap;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Test;
+class GlobalServicesConfiguration extends BasicConfiguration {
 
-public class ServiceConfigurationTest extends ConfigurationTest {
+    private final Map<String, String> config;
 
-    @Test
-    public void canReadServiceConfig() {
-        String serviceName = "test-service";
-        Map<String, String> expected = new HashMap<String, String>();
-        expected.put("foo", "service-value");
-        expected.put("test", "me");
-        String root = getTestRoot();
-        ServiceConfiguration config = new ServiceConfiguration(root, serviceName);
-        Map<String, String> actual = config.asMap();
-        assertEquals(expected, actual);
+    public GlobalServicesConfiguration(String gatewayHome, GlobalConfiguration globalConfig) {
+        CommonPaths paths = new CommonPaths(gatewayHome);
+        String servicesFile = globalConfig.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES_FILE.name());
+        String services = Paths.get(paths.getConfigDir(), servicesFile.trim()).toFile().getAbsolutePath();
+        this.config = loadConfig(services);
     }
+
+    @Override
+    public Map<String, String> asMap() {
+        return Collections.unmodifiableMap(config);
+    }
+
 }
