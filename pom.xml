@@ -66,6 +66,7 @@
         <mongo-java-driver.version>3.2.1</mongo-java-driver.version>
         <gson.version>2.2.2</gson.version>
         <javax.servlet.version>2.5</javax.servlet.version>
+        <javax-rs-api.version>2.0.1</javax-rs-api.version>
 
         <junit.version>4.12</junit.version>
         <mockito-core.version>2.7.11</mockito-core.version>
