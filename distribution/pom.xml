@@ -59,16 +59,11 @@
                 <executions>
                     <execution>
                         <configuration>
+                            <finalName>image/libs</finalName>
                             <descriptors>
                                 <descriptor>src/assembly/distribution-assembly.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>false</appendAssemblyId>
-                            <outputDirectory>${project.build.directory}/image/libs</outputDirectory>
-                            <archive>
-                                <manifest>
-                                    <mainClass>com.redhat.thermostat.gateway.server.Start</mainClass>
-                                </manifest>
-                            </archive>
                         </configuration>
                         <phase>package</phase>
                         <goals>
