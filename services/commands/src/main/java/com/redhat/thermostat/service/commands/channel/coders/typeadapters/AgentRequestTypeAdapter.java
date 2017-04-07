@@ -34,27 +34,36 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.coders.typeadapters;
 
-import static org.junit.Assert.assertEquals;
+import java.io.IOException;
 
-import java.util.SortedMap;
-import java.util.TreeMap;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import com.redhat.thermostat.service.commands.channel.model.AgentRequest;
+import com.redhat.thermostat.service.commands.channel.model.Message;
 
-import org.junit.Test;
+class AgentRequestTypeAdapter extends BasicMessageTypeAdapter<AgentRequest> {
 
-public class AgentRequestTest {
-
-    @Test
-    public void testAsStringMessage() {
-        long sequence = 3321l;
-        SortedMap<String, String> params = new TreeMap<>();
-        params.put("foo-bar", "bar-baz");
-        AgentRequest toBeSerialized = new AgentRequest(sequence, params);
-        assertEquals("sanity", sequence, toBeSerialized.getSequenceId());
-        String actual = toBeSerialized.asStringMessage();
-        String expected = "__rid__=" + sequence + "\n\n" +
-                          "foo-bar=bar-baz";
-        assertEquals(expected, actual);
+    AgentRequestTypeAdapter(Gson gson) {
+        super(gson);
     }
+
+    @Override
+    public void write(JsonWriter out, AgentRequest request) throws IOException {
+        JsonObject object = getEnvelopeWithTypeAndSequence(request, request.getSequenceId());
+        JsonElement parms = gson.toJsonTree(request.getParams());
+        object.add(Message.PAYLOAD_KEY, parms);
+        gson.toJson(object, out);
+    }
+
+    @Override
+    public AgentRequest read(JsonReader in) throws IOException {
+        Message msg = parseJsonMessage(in);
+        return (AgentRequest)msg;
+    }
+
 }

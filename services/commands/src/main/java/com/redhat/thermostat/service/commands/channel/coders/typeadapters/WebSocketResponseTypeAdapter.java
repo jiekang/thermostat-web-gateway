@@ -34,35 +34,45 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.coders.typeadapters;
 
 import java.io.IOException;
 
-import javax.websocket.Session;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
-class CommandChannelEndpointHandler {
+class WebSocketResponseTypeAdapter extends BasicMessageTypeAdapter<WebSocketResponse> {
 
-    private CommandChannelWebSocket socket;
+    private static final String RESPONSE_TYPE_KEY = "respType";
 
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    WebSocketResponseTypeAdapter(Gson gson) {
+        super(gson);
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
+    @Override
+    public void write(JsonWriter out, WebSocketResponse response) throws IOException {
+        JsonObject object = getEnvelopeWithTypeAndSequence(response, response.getSequenceId());
+        ResponseType type = response.getResponseType();
+        if (type == null) {
+            throw new IllegalStateException("Web socket response type must be set!");
+        }
+        JsonObject payload = new JsonObject();
+        JsonElement responseType = gson.toJsonTree(type.name());
+        payload.add(RESPONSE_TYPE_KEY, responseType);
+        object.add(Message.PAYLOAD_KEY, payload);
+        gson.toJson(object, out);
     }
 
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
+    @Override
+    public WebSocketResponse read(JsonReader in) throws IOException {
+        Message msg = parseJsonMessage(in);
+        return (WebSocketResponse)msg;
     }
 
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
 }

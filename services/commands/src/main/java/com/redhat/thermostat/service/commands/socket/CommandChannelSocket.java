@@ -41,10 +41,12 @@ import java.security.Principal;
 
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
+import javax.websocket.EncodeException;
 import javax.websocket.Session;
 
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
 abstract class CommandChannelSocket implements CommandChannelWebSocket {
 
@@ -82,7 +84,7 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
     }
 
     @Override
-    public void onSocketMessage(String msg) {
+    public void onSocketMessage(Message msg) {
         try {
             performCommunication(msg);
         } catch (IOException e) {
@@ -108,7 +110,7 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
     }
 
     protected void sendAuthFail(String sequenceIdStr) throws IOException {
-        long sequenceId = WebSocketResponse.UNKNOWN_SEQUENCE;
+        long sequenceId = Message.UNKNOWN_SEQUENCE;
         if (sequenceIdStr != null) {
             try {
                 sequenceId = Long.parseLong(sequenceIdStr);
@@ -117,8 +119,12 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
             }
         }
         WebSocketResponse resp = new WebSocketResponse(sequenceId, ResponseType.AUTH_FAIL);
-        synchronized (session) {
-            session.getBasicRemote().sendText(resp.asStringMesssage());
+        try {
+            synchronized (session) {
+                session.getBasicRemote().sendObject(resp);
+            }
+        } catch (EncodeException e) {
+            throw new IOException(e);
         }
     }
 
@@ -127,7 +133,7 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
      * @param msg The received message.
      * @throws IOException
      */
-    protected abstract void performCommunication(String msg) throws IOException;
+    protected abstract void performCommunication(Message msg) throws IOException;
 
     /**
      * Performs role permission checks relevant for this socket

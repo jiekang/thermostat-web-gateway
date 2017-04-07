@@ -40,6 +40,7 @@ import java.io.IOException;
 
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
+import javax.websocket.EncodeException;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -48,12 +49,20 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
+import com.redhat.thermostat.service.commands.channel.coders.AgentRequestEncoder;
+import com.redhat.thermostat.service.commands.channel.coders.MessageDecoder;
+import com.redhat.thermostat.service.commands.channel.coders.WebSocketResponseEncoder;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 import com.redhat.thermostat.service.commands.socket.WebSocketType;
 
 // Client endpoints; Initiators
-@ServerEndpoint(value = "/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}")
+@ServerEndpoint(
+        value = "/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}",
+        encoders = { AgentRequestEncoder.class, WebSocketResponseEncoder.class },
+        decoders = { MessageDecoder.class }
+)
 public class CommandChannelClientEndpointHandler extends CommandChannelEndpointHandler {
 
     @OnOpen
@@ -63,7 +72,7 @@ public class CommandChannelClientEndpointHandler extends CommandChannelEndpointH
     }
 
     @OnMessage
-    public void onTextMessage(String msg) {
+    public void onMessage(Message msg) {
         super.onMessage(msg);
     }
 
@@ -80,11 +89,10 @@ public class CommandChannelClientEndpointHandler extends CommandChannelEndpointH
         try {
             // Let the client know something failed
             WebSocketResponse resp = new WebSocketResponse(seqId, ResponseType.ERROR);
-            session.getBasicRemote()
-                    .sendText(resp.asStringMesssage());
+            session.getBasicRemote().sendObject(resp);
             session.close(new CloseReason(CloseCodes.UNEXPECTED_CONDITION,
                     "Server error"));
-        } catch (IOException e) {
+        } catch (IOException|EncodeException e) {
             // Not much we can do
             e.printStackTrace();
         }

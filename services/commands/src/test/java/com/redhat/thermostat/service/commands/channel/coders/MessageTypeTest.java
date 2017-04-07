@@ -34,35 +34,33 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
 
-import javax.websocket.Session;
+import org.junit.Test;
 
-import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+import com.redhat.thermostat.service.commands.channel.model.Message.MessageType;
 
-class CommandChannelEndpointHandler {
+public class MessageTypeTest {
 
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    @Test
+    public void canGetMessageTypeFromInt() {
+       int[] types = new int[] { 100, 1, 2 };
+       MessageType[] expected = new MessageType[] {
+               MessageType.RESPONSE,
+               MessageType.AGENT_REQUEST,
+               MessageType.CLIENT_REQUEST,
+       };
+       for (int i = 0; i < types.length; i++) {
+           MessageType actual = MessageType.fromInt(types[i]);
+           assertEquals(expected[i], actual);
+       }
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
+    @Test(expected = IllegalArgumentException.class)
+    public void illegalIntThrowsException() {
+        int unknownType = 392;
+        MessageType.fromInt(unknownType);
     }
 }

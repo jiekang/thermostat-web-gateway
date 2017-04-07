@@ -34,8 +34,37 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.model;
 
-interface Sequential {
-    long getSequenceId();
+import static org.junit.Assert.assertEquals;
+
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import org.junit.Test;
+
+public class ClientRequestTest {
+
+    @Test
+    public void testGetSetParams() {
+        long sequence = 3321l;
+        ClientRequest toBeSerialized = new ClientRequest(sequence);
+        toBeSerialized.setParam("foo", "bar");
+        toBeSerialized.setParam("be", "nice");
+        assertEquals("sanity", sequence, toBeSerialized.getSequenceId());
+        assertEquals("bar", toBeSerialized.getParam("foo"));
+        assertEquals("nice", toBeSerialized.getParam("be"));
+    }
+
+    @Test
+    public void testGetAllParams() {
+        long sequence = 3321l;
+        ClientRequest toBeSerialized = new ClientRequest(sequence);
+        toBeSerialized.setParam("foo", "bar");
+        toBeSerialized.setParam("be", "nice");
+        SortedMap<String, String> expected = new TreeMap<>();
+        expected.put("foo", "bar");
+        expected.put("be", "nice");
+        assertEquals(expected, toBeSerialized.getParams());
+    }
 }

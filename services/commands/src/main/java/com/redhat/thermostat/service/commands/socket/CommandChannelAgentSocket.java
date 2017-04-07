@@ -44,7 +44,8 @@ import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
 import com.redhat.thermostat.service.commands.channel.AgentSocketsRegistry;
 import com.redhat.thermostat.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.service.commands.channel.CommunicationsRegistry;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
 
 class CommandChannelAgentSocket extends CommandChannelSocket {
 
@@ -74,8 +75,11 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
     }
 
     @Override
-    protected void performCommunication(String msg) throws IOException {
-        WebSocketResponse resp = WebSocketResponse.fromMessage(msg);
+    protected void performCommunication(Message msg) throws IOException {
+        if (!(msg instanceof WebSocketResponse)) {
+            throw new IllegalStateException("Unknown message of type: " + msg.getClass().getName());
+        }
+        WebSocketResponse resp = (WebSocketResponse)msg;
         String commId = agentId + resp.getSequenceId();
         ClientAgentCommunication comm = CommunicationsRegistry.get(commId);
         comm.responseReceived(resp);

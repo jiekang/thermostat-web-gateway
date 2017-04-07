@@ -34,35 +34,8 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.model;
 
-import java.io.IOException;
-
-import javax.websocket.Session;
-
-import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
-
-class CommandChannelEndpointHandler {
-
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
-    }
-
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
+interface Sequential {
+    long getSequenceId();
 }

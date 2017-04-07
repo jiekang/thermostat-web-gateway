@@ -34,14 +34,30 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.model;
 
 import java.util.SortedMap;
+import java.util.TreeMap;
 
-public class ClientRequestFactory extends WebSocketRequestFactory {
+/**
+ * A Command Channel request initiated by a client (a.k.a initiator)
+ */
+public class ClientRequest extends WebSocketRequest implements Message {
 
-    public static ClientRequest fromMessage(String msg, long sequenceId) {
-        SortedMap<String, String> paramMap = parseParams(msg);
-        return new ClientRequest(sequenceId, paramMap);
+    public ClientRequest(SortedMap<String, String> params) {
+        super(UNKNOWN_SEQUENCE, params);
+    }
+
+    public ClientRequest(long sequence) {
+        super(sequence, new TreeMap<String, String>());
+    }
+
+    @Override
+    public MessageType getMessageType() {
+        return MessageType.CLIENT_REQUEST;
+    }
+
+    public void setSequenceId(long sequence) {
+        this.id = sequence;
     }
 }

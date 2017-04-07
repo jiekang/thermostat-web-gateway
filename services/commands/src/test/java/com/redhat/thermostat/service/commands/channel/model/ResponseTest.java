@@ -34,35 +34,36 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.model;
 
-import java.io.IOException;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import javax.websocket.Session;
+import org.junit.Test;
 
-import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
-class CommandChannelEndpointHandler {
+public class ResponseTest {
 
-    private CommandChannelWebSocket socket;
+    @Test
+    public void testEquals() {
+        WebSocketResponse first = new WebSocketResponse(1, ResponseType.AUTH_FAIL);
+        WebSocketResponse second = new WebSocketResponse(1, ResponseType.AUTH_FAIL);
+        assertTrue(first.equals(second));
+        assertTrue(second.equals(first));
+        assertTrue("multiple calls", first.equals(second));
 
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+        WebSocketResponse third = new WebSocketResponse(2, ResponseType.AUTH_FAIL);
+        assertFalse("sequence numbers don't match", third.equals(first));
+
+        WebSocketResponse fourth = new WebSocketResponse(1, ResponseType.ERROR);
+        assertFalse("response type different", fourth.equals(first));
+
+        // null case
+        assertFalse(first.equals(null));
+
+        // unrelated object
+        assertFalse(first.equals("foobar"));
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
 }

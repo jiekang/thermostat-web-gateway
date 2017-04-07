@@ -39,7 +39,9 @@ package com.redhat.thermostat.service.commands.channel;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
 /**
  * Full abstracted channel between client and agent.

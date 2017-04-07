@@ -34,48 +34,35 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.util.SortedMap;
+import javax.websocket.EncodeException;
+import javax.websocket.Encoder;
+import javax.websocket.EndpointConfig;
 
-class WebSocketRequest implements Sequential {
+import com.google.gson.Gson;
+import com.redhat.thermostat.service.commands.channel.model.Message;
 
-    protected final long id;
-    private final SortedMap<String, String> params;
+abstract class BasicMessageEncoder<T extends Message> implements Encoder.Text<T> {
 
-    protected WebSocketRequest(long sequence, SortedMap<String, String> params) {
-        this.params = params;
-        this.id = sequence;
-    }
+    private final Gson gson = GsonFactory.createGsonInstance();
 
-    public String getParam(String name) {
-        return params.get(name);
-    }
-
-    public void setParam(String key, String value) {
-        params.put(key, value);
+    @Override
+    public void init(EndpointConfig config) {
+        // nothing
     }
 
     @Override
-    public long getSequenceId() {
-        return id;
+    public void destroy() {
+        // nothing
     }
 
-    protected String asStringMessage() {
-        StringBuilder builder = new StringBuilder();
-        for (String key : params.keySet()) {
-            builder.append(key);
-            builder.append("=");
-            builder.append(params.get(key));
-            builder.append(",");
+    protected String encodeMessage(Message message) throws EncodeException {
+        try {
+            return gson.toJson(message);
+        } catch (Exception e) {
+            throw new EncodeException(message, e.getMessage());
         }
-        if (!params.isEmpty()) {
-            builder.setLength(builder.length() - 1);
-        }
-        return builder.toString();
     }
 
-    SortedMap<String, String> getParams() {
-        return params;
-    }
 }

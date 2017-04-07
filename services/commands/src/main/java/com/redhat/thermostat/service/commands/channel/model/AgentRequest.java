@@ -34,30 +34,21 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.model;
 
 import java.util.SortedMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class AgentRequestFactory extends WebSocketRequestFactory {
+/**
+ * A Command Channel Request relayed to an agent (a.k.a receiver).
+ */
+public class AgentRequest extends WebSocketRequest implements Message {
 
-    private static final Pattern REGEX_PATTERN = Pattern.compile(AgentRequest.RID_PARAM + "=([^\\n]+)\\n\\n(.*)");
+    public AgentRequest(long sequence, SortedMap<String, String> params) {
+        super(sequence, params);
+    }
 
-    public static AgentRequest fromMessage(String msg) {
-        Matcher m = REGEX_PATTERN.matcher(msg);
-        if (!m.matches()) {
-            throw new IllegalArgumentException("Not a request in properly serilized format. Got: " + msg);
-        }
-        String rid = m.group(1);
-        long sequence;
-        try {
-            sequence = Long.parseLong(rid);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Not a request in properly serilized format. Got: " + msg, e);
-        }
-        String paramStr = m.group(2);
-        SortedMap<String, String> paramMap = parseParams(paramStr);
-        return new AgentRequest(sequence, paramMap);
+    @Override
+    public MessageType getMessageType() {
+        return MessageType.AGENT_REQUEST;
     }
 }

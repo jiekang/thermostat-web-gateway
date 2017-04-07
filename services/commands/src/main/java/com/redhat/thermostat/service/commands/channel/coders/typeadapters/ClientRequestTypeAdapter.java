@@ -34,35 +34,36 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.coders.typeadapters;
 
 import java.io.IOException;
 
-import javax.websocket.Session;
-
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
 import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
 
-class CommandChannelEndpointHandler {
+class ClientRequestTypeAdapter extends BasicMessageTypeAdapter<ClientRequest> {
 
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    ClientRequestTypeAdapter(Gson gson) {
+        super(gson);
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
+    @Override
+    public void write(JsonWriter out, ClientRequest request) throws IOException {
+        JsonObject object = getEnvelopeWithType(request);
+        JsonElement parms = gson.toJsonTree(request.getParams());
+        object.add(Message.PAYLOAD_KEY, parms);
+        gson.toJson(object, out);
     }
 
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
+    @Override
+    public ClientRequest read(JsonReader in) throws IOException {
+        Message msg = parseJsonMessage(in);
+        return (ClientRequest)msg;
     }
 
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
 }

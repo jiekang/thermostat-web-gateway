@@ -45,6 +45,9 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
+import com.google.gson.Gson;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+
 /**
  * Handles the agent connections from the Web endpoint.
  *
@@ -53,19 +56,21 @@ import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 @WebSocket(maxTextMessageSize = 64 * 1024)
 public class CmdChannelAgentSocket {
 
+    private final Gson gson;
     private final CountDownLatch closeLatch;
     private final CountDownLatch connectLatch;
     private final OnMessageCallBack onMessage;
     private Session session;
 
-    public CmdChannelAgentSocket(OnMessageCallBack onMessage, CountDownLatch connect) {
+    public CmdChannelAgentSocket(OnMessageCallBack onMessage, CountDownLatch connect, Gson gson) {
         this.closeLatch = new CountDownLatch(1);
         this.onMessage = onMessage;
         this.connectLatch = connect;
+        this.gson = gson;
     }
 
-    public CmdChannelAgentSocket(OnMessageCallBack onMessage) {
-        this(onMessage, new CountDownLatch(1));
+    public CmdChannelAgentSocket(OnMessageCallBack onMessage, Gson gson) {
+        this(onMessage, new CountDownLatch(1), gson);
     }
 
     public void awaitClose() throws InterruptedException {
@@ -94,7 +99,8 @@ public class CmdChannelAgentSocket {
 
     @OnWebSocketMessage
     public void onMessage(final Session session, final String msg) {
-        onMessage.run(session, msg);
+        final Message message = gson.fromJson(msg, Message.class);
+        onMessage.run(session, message);
     }
 
     public void closeSession() {
@@ -104,6 +110,6 @@ public class CmdChannelAgentSocket {
     }
 
     public interface OnMessageCallBack {
-        public void run(Session session, String msg);
+        public void run(Session session, Message msg);
     }
 }

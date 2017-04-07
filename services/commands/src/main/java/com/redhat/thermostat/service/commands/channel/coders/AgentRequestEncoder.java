@@ -34,35 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.coders;
 
-import java.io.IOException;
+import javax.websocket.EncodeException;
 
-import javax.websocket.Session;
+import com.redhat.thermostat.service.commands.channel.model.AgentRequest;
 
-import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+public class AgentRequestEncoder extends BasicMessageEncoder<AgentRequest> {
 
-class CommandChannelEndpointHandler {
-
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    @Override
+    public String encode(AgentRequest request) throws EncodeException {
+        return super.encodeMessage(request);
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
 }

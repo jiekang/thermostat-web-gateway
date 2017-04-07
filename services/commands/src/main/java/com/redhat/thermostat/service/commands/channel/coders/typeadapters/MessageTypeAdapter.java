@@ -34,51 +34,30 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.coders.typeadapters;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import java.io.IOException;
 
-import org.junit.Test;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
+import com.redhat.thermostat.service.commands.channel.model.Message;
 
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
+class MessageTypeAdapter extends BasicMessageTypeAdapter<Message> {
 
-public class ResponseTest {
-
-    @Test
-    public void testFromMessage() {
-        String msg = "__rid__=1\n\nOK";
-        WebSocketResponse expected = new WebSocketResponse(1, ResponseType.OK);
-        WebSocketResponse actual = WebSocketResponse.fromMessage(msg);
-        assertEquals(expected, actual);
+    MessageTypeAdapter(Gson gson) {
+        super(gson);
     }
 
-    @Test
-    public void testToStringMsg() {
-        String expected = "__rid__=3232\n\nAUTH_FAIL";
-        WebSocketResponse candidate = new WebSocketResponse(3232, ResponseType.AUTH_FAIL);
-        assertEquals(expected, candidate.asStringMesssage());
+    @Override
+    public void write(JsonWriter out, Message value) throws IOException {
+        // More specific impls, such as AgentRequestTypeAdapter, should be called instead
+        throw new IllegalStateException("Encoding routine must not be called on raw messages!");
     }
 
-    @Test
-    public void testEquals() {
-        WebSocketResponse first = new WebSocketResponse(1, ResponseType.AUTH_FAIL);
-        WebSocketResponse second = new WebSocketResponse(1, ResponseType.AUTH_FAIL);
-        assertTrue(first.equals(second));
-        assertTrue(second.equals(first));
-        assertTrue("multiple calls", first.equals(second));
-
-        WebSocketResponse third = new WebSocketResponse(2, ResponseType.AUTH_FAIL);
-        assertFalse("sequence numbers don't match", third.equals(first));
-
-        WebSocketResponse fourth = new WebSocketResponse(1, ResponseType.ERROR);
-        assertFalse("response type different", fourth.equals(first));
-
-        // null case
-        assertFalse(first.equals(null));
-
-        // unrelated object
-        assertFalse(first.equals("foobar"));
+    @Override
+    public Message read(JsonReader in) throws IOException {
+        return parseJsonMessage(in);
     }
+
 }

@@ -34,35 +34,48 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.commands.channel.model;
 
-import java.io.IOException;
+public interface Message {
 
-import javax.websocket.Session;
+    /**
+     * The unknown sequence ID.
+     */
+    public static final long UNKNOWN_SEQUENCE = -1L;
+    public static final String PAYLOAD_KEY = "payload";
+    public static final String TYPE_KEY = "type";
+    public static final String SEQUENCE_KEY = "sequence";
 
-import com.redhat.thermostat.service.commands.channel.model.Message;
-import com.redhat.thermostat.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.service.commands.socket.WebSocketType;
+    public MessageType getMessageType();
 
-class CommandChannelEndpointHandler {
+    public static enum MessageType {
 
-    private CommandChannelWebSocket socket;
+        RESPONSE(100),
+        AGENT_REQUEST(1),
+        CLIENT_REQUEST(2),
 
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
-    }
+        ;
+        private final int intVal;
+        private MessageType(int intVal) {
+            this.intVal = intVal;
+        }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
+        public int intValue() {
+            return intVal;
+        }
 
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
+        public static MessageType fromInt(int num) {
+            switch(num) {
+            case 100:
+                return RESPONSE;
+            case 1:
+                return AGENT_REQUEST;
+            case 2:
+                return CLIENT_REQUEST;
+            default:
+                throw new IllegalArgumentException("Unknown message type: " + num);
+            }
 
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
+        }
     }
 }

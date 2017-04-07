@@ -47,10 +47,18 @@ import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 
+import com.redhat.thermostat.service.commands.channel.coders.AgentRequestEncoder;
+import com.redhat.thermostat.service.commands.channel.coders.MessageDecoder;
+import com.redhat.thermostat.service.commands.channel.coders.WebSocketResponseEncoder;
+import com.redhat.thermostat.service.commands.channel.model.Message;
 import com.redhat.thermostat.service.commands.socket.WebSocketType;
 
 // Agent endpoints; Receivers
-@ServerEndpoint(value = "/v1/systems/{systemId}/agents/{agentId}")
+@ServerEndpoint(
+        value = "/v1/systems/{systemId}/agents/{agentId}",
+        encoders = { AgentRequestEncoder.class, WebSocketResponseEncoder.class },
+        decoders = { MessageDecoder.class }
+)
 public class CommandChannelAgentEndpointHandler extends CommandChannelEndpointHandler {
 
     @OnOpen
@@ -60,8 +68,8 @@ public class CommandChannelAgentEndpointHandler extends CommandChannelEndpointHa
     }
 
     @OnMessage
-    public void onTextMessage(String msg) {
-        super.onMessage(msg);
+    public void onMessage(Message message) {
+        super.onMessage(message);
     }
 
     @OnClose

@@ -34,25 +34,62 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.channel.model;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Objects;
 
-import org.junit.Test;
+public class WebSocketResponse implements Sequential, Message {
 
-public class AgentRequestFactoryTest {
+    private final WebSocketResponse.ResponseType type;
+    private final long sequence;
 
-    @Test
-    public void testFromMessageToMessage() {
-        long sequence = 12;
-        String request = "__rid__=" + sequence + "\n\n" +
-                         "param 3 4 5=param 3 4 5 value," +
-                         "param1=paramVal1";
-        AgentRequest req = AgentRequestFactory.fromMessage(request);
-        assertEquals(sequence, req.getSequenceId());
-        assertEquals("paramVal1", req.getParam("param1"));
-        assertEquals("param 3 4 5 value", req.getParam("param 3 4 5"));
-
-        assertEquals(request, req.asStringMessage());
+    public WebSocketResponse(long sequence, WebSocketResponse.ResponseType type) {
+        this.type = Objects.requireNonNull(type);
+        this.sequence = sequence;
     }
+
+    public WebSocketResponse.ResponseType getResponseType() {
+        return type;
+    }
+
+    @Override
+    public long getSequenceId() {
+        return sequence;
+    }
+
+    @Override
+    public String toString() {
+        return WebSocketResponse.class.getSimpleName() + "[" + sequence + ", " + type + "]";
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other == null) {
+            return false;
+        }
+        if (!(other instanceof WebSocketResponse)) {
+            return false;
+        }
+        WebSocketResponse o = (WebSocketResponse)other;
+        return Objects.equals(sequence, o.sequence) &&
+                Objects.equals(type, o.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(sequence) + Objects.hashCode(type);
+    }
+
+    @Override
+    public MessageType getMessageType() {
+        return MessageType.RESPONSE;
+    }
+
+    public enum ResponseType {
+        OK,
+        ERROR,
+        AUTH_FAIL
+    }
+
+
 }

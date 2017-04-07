@@ -82,7 +82,11 @@
         CmdChan.sendMessage = (function() {
             var message = document.getElementById('cmd-chan').value;
             if (message != '') {
-                CmdChan.socket.send('param1=' + message);
+                var clientRequest = {};
+                clientRequest.type = 2;
+                clientRequest.payload = {};
+                clientRequest.payload.param1 = message;
+                CmdChan.socket.send(JSON.stringify(clientRequest));
                 document.getElementById('cmd-chan').value = '';
             }
         });

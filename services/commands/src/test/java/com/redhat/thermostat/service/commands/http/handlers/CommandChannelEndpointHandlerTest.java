@@ -49,42 +49,64 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
+import org.junit.Before;
 import org.junit.Test;
 
-import com.redhat.thermostat.service.commands.channel.AgentRequest;
-import com.redhat.thermostat.service.commands.channel.AgentRequestFactory;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
-import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.redhat.thermostat.service.commands.channel.coders.typeadapters.MessageTypeAdapterFactory;
+import com.redhat.thermostat.service.commands.channel.model.AgentRequest;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
+import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.channel.model.Message.MessageType;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse.ResponseType;
 
 public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
+
+    private Gson gson;
+    private ClientRequest clientRequest;
+
+    @Before
+    public void setUp() {
+        gson = new GsonBuilder()
+                .registerTypeAdapterFactory(new MessageTypeAdapterFactory())
+                .serializeNulls()
+                .create();
+        clientRequest = new ClientRequest(Message.UNKNOWN_SEQUENCE);
+    }
 
     @Test(timeout = 2000)
     public void testHandshakeAllRoles() throws Exception {
         String agentUser = "foo-agent-user";
         String clientUser = "bar-client-user";
         long clientSequence = 144L;
+        clientRequest.setSequenceId(clientSequence);
         String agentId = "testAgent";
         URI clientUri = new URI(
                 baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + clientSequence);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         final CountDownLatch clientHasSentMessages = new CountDownLatch(1);
-        CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(clientSequence, clientHasSentMessages);
+        CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(clientRequest, clientHasSentMessages);
         final CountDownLatch waitForAgentConnect = new CountDownLatch(1);
         CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
                 new CmdChannelAgentSocket.OnMessageCallBack() {
                     @Override
-                    public void run(Session session, String msg) {
-                        AgentRequest req = AgentRequestFactory.fromMessage(msg);
+                    public void run(Session session, Message msg) {
+                        if (msg.getMessageType() != MessageType.AGENT_REQUEST) {
+                            throw new AssertionError("Wrong message type. Got: " + msg.getClass().getName());
+                        }
+                        AgentRequest req = (AgentRequest)msg;
                         WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.OK);
+                        String jsonResp = gson.toJson(resp);
                         try {
-                            session.getRemote().sendString(
-                                    resp.asStringMesssage());
+                            session.getRemote().sendString(jsonResp);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                }, waitForAgentConnect);
+                }, waitForAgentConnect, gson);
         ClientUpgradeRequest clientRequest = new ClientUpgradeRequest();
         ClientUpgradeRequest agentRequest = new ClientUpgradeRequest();
         agentRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
@@ -110,7 +132,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
 
         assertNotNull(clientSocket.getResponse());
         assertEquals(WebSocketResponse.ResponseType.OK,
-                clientSocket.getResponse().getType());
+                clientSocket.getResponse().getResponseType());
     }
 
     /**
@@ -122,14 +144,14 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
     @Test(timeout = 2000)
     public void testHandshakeAuthorizedMissingAgentConnect() throws Exception {
         long sequenceId = 333L;
+        clientRequest.setSequenceId(sequenceId);
         String clientUser = "bar-client-user";
         String agentId = "testAgent";
         URI clientUri = new URI(
                 baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + sequenceId);
         final CountDownLatch clientHasSentMessages = new CountDownLatch(1);
-        CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
-                sequenceId, clientHasSentMessages);
+        CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(clientRequest, clientHasSentMessages);
         ClientUpgradeRequest clientRequest = new ClientUpgradeRequest();
         clientRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
                 getBasicAuthHeaderValue(clientUser, "client-pwd"));
@@ -144,7 +166,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         clientSocket.awaitClose();
         assertNotNull(clientSocket.getResponse());
         assertEquals(WebSocketResponse.ResponseType.ERROR,
-                clientSocket.getResponse().getType());
+                clientSocket.getResponse().getResponseType());
     }
 
     /**
@@ -160,6 +182,9 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
     public void testMultipleHandshakesInterleavedAllRoles() throws Exception {
         final long clientSequenceFirst = 901l;
         final long clientSequenceSecond = 902l;
+        ClientRequest r1 = new ClientRequest(clientSequenceFirst);
+        ClientRequest r2 = new ClientRequest(clientSequenceSecond);
+
         String agentUser = "foo-agent-user";
         String clientUser = "bar-client-user";
         String clientPassword = "client-pwd";
@@ -172,8 +197,8 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                         + "/jvms/abc/sequence/" + clientSequenceSecond);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         CountDownLatch clientsHaveSentMessages = new CountDownLatch(2);
-        CmdChannelClientSocket firstClientSocket = new CmdChannelClientSocket(clientSequenceFirst, clientsHaveSentMessages);
-        CmdChannelClientSocket secondClientSocket = new CmdChannelClientSocket(clientSequenceSecond, clientsHaveSentMessages);
+        CmdChannelClientSocket firstClientSocket = new CmdChannelClientSocket(r1, clientsHaveSentMessages);
+        CmdChannelClientSocket secondClientSocket = new CmdChannelClientSocket(r2, clientsHaveSentMessages);
         final CountDownLatch waitForSecondClientConnect = new CountDownLatch(1);
         final CountDownLatch waitForAgentConnect = new CountDownLatch(1);
         final AtomicInteger agentRespCount = new AtomicInteger(0);
@@ -181,7 +206,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
                 new CmdChannelAgentSocket.OnMessageCallBack() {
                     @Override
-                    public void run(Session session, String msg) {
+                    public void run(Session session, Message msg) {
                         if (agentRespCount.get() == 0) {
                             try {
                                 waitForSecondClientConnect.await(2, TimeUnit.SECONDS);
@@ -189,19 +214,20 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                                 // ignore
                             }
                         }
-                        int count = agentRespCount.getAndAdd(1);
-                        AgentRequest req = AgentRequestFactory.fromMessage(msg);
+                        if (msg.getMessageType() != MessageType.AGENT_REQUEST) {
+                            throw new AssertionError("Wrong message type. Got: " + msg.getClass().getName());
+                        }
+                        AgentRequest req = (AgentRequest)msg;
+                        agentRespCount.getAndAdd(1);
                         try {
                             if (req.getSequenceId() == clientSequenceFirst) {
                                 WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.OK);
-                                session.getRemote().sendString(
-                                        resp.asStringMesssage());
+                                session.getRemote().sendString(gson.toJson(resp));
                                 session.getRemote().flush();
                                 allResponsesSent.countDown();
                             } else if (req.getSequenceId() == clientSequenceSecond) {
                                 WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.ERROR);
-                                session.getRemote().sendString(
-                                        resp.asStringMesssage());
+                                session.getRemote().sendString(gson.toJson(resp));
                                 session.getRemote().flush();
                                 allResponsesSent.countDown();
                             } else {
@@ -211,7 +237,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                             e.printStackTrace();
                         }
                     }
-                }, waitForAgentConnect);
+                }, waitForAgentConnect, gson);
         ClientUpgradeRequest firstClientRequest = new ClientUpgradeRequest();
         ClientUpgradeRequest secondClientRequest = new ClientUpgradeRequest();
         ClientUpgradeRequest agentRequest = new ClientUpgradeRequest();
@@ -252,9 +278,9 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
 
         assertNotNull(firstClientSocket.getResponse());
         assertEquals(WebSocketResponse.ResponseType.OK,
-                firstClientSocket.getResponse().getType());
+                firstClientSocket.getResponse().getResponseType());
         assertNotNull(secondClientSocket.getResponse());
-        assertEquals(WebSocketResponse.ResponseType.ERROR, secondClientSocket.getResponse().getType());
+        assertEquals(WebSocketResponse.ResponseType.ERROR, secondClientSocket.getResponse().getResponseType());
     }
 
     @Test(timeout = 2000)
@@ -288,12 +314,13 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
     }
 
     private void doNoAuthTestClient(long clientSequence, TestUser clientUser) throws Exception {
+        ClientRequest noMatter = new ClientRequest(clientSequence);
         String agentId = "testAgent";
         URI clientUri = new URI(
                 baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + clientSequence);
         CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
-                 clientSequence /* doesn't matter */);
+                 noMatter /* doesn't matter */);
         ClientUpgradeRequest clientRequest = new ClientUpgradeRequest();
         if (clientUser != null) {
             clientRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
@@ -313,24 +340,27 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         assumeTrue(resp != null);
         assertNotNull(resp);
         assertEquals(WebSocketResponse.ResponseType.AUTH_FAIL,
-                resp.getType());
+                resp.getResponseType());
         assertEquals(clientSequence, resp.getSequenceId());
     }
 
     private void doNoAuthTestAgent(TestUser agentUser) throws Exception {
         String agentId = "testAgent";
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
-        final String[] agentResponse = new String[1];
+        final WebSocketResponse[] agentResponse = new WebSocketResponse[1];
         final CountDownLatch agentResponseReady = new CountDownLatch(1);
         CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(
                 new CmdChannelAgentSocket.OnMessageCallBack() {
 
                     @Override
-                    public void run(Session session, String msg) {
-                        agentResponse[0] = msg;
+                    public void run(Session session, Message msg) {
+                        if (msg.getMessageType() != MessageType.RESPONSE) {
+                            throw new AssertionError("Wrong message type. Got: " + msg.getClass().getName());
+                        }
+                        agentResponse[0] = (WebSocketResponse)msg;
                         agentResponseReady.countDown();
                     }
-                }, agentResponseReady);
+                }, agentResponseReady, gson);
         ClientUpgradeRequest agentRequest = new ClientUpgradeRequest();
         if (agentUser != null) {
             agentRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
@@ -349,9 +379,8 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         // wait for the agent connection to get closed (by the server)
         agentSocket.awaitClose();
 
-        WebSocketResponse agentResp = WebSocketResponse.fromMessage(agentResponse[0]);
         assertEquals("There is no sequence for agent connections",
-                     WebSocketResponse.UNKNOWN_SEQUENCE, agentResp.getSequenceId());
+                     Message.UNKNOWN_SEQUENCE, agentResponse[0].getSequenceId());
     }
 
     private String getBasicAuthHeaderValue(String testUser, String password) {

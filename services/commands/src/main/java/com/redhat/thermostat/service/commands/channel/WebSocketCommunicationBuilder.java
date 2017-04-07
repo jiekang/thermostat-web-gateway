@@ -40,6 +40,9 @@ import java.util.Objects;
 
 import javax.websocket.Session;
 
+import com.redhat.thermostat.service.commands.channel.model.AgentRequest;
+import com.redhat.thermostat.service.commands.channel.model.ClientRequest;
+
 public class WebSocketCommunicationBuilder {
 
     private Session clientSession;
