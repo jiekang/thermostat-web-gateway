@@ -41,11 +41,10 @@ import java.security.Principal;
 
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
+import javax.websocket.Session;
 
 import com.redhat.thermostat.service.commands.channel.WebSocketResponse;
 import com.redhat.thermostat.service.commands.channel.WebSocketResponse.ResponseType;
-
-import javax.websocket.Session;
 
 abstract class CommandChannelSocket implements CommandChannelWebSocket {
 
@@ -59,7 +58,6 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
 
     @Override
     public void onConnect() throws IOException {
-        System.err.println(toString() + " connected.");
         if (session.getUserPrincipal() == null) {
             sendAuthFail(getSequence());
             synchronized (session) {
@@ -68,8 +66,6 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
             }
             return;
         }
-        System.out.println("User principal: " + session.getUserPrincipal());
-        System.out.println("Checking roles for " + session.getUserPrincipal().getName() + "... ");
         if (!checkRoles()) {
             sendAuthFail(getSequence());
             synchronized (session) {
@@ -82,12 +78,11 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
 
     @Override
     public void onClose(int closeCode, String reason) {
-        System.err.println(toString() + " closed session.");
+        // nothing
     }
 
     @Override
     public void onSocketMessage(String msg) {
-        System.err.println(toString() + " got message: '" + msg + "'");
         try {
             performCommunication(msg);
         } catch (IOException e) {

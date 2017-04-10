@@ -88,8 +88,7 @@ class CommandChannelClientSocket extends CommandChannelSocket {
                             .build();
         String commId = agentId + req.getSequenceId();
         CommunicationsRegistry.add(commId, clientAgentComm);
-        WebSocketResponse resp = clientAgentComm.perform();
-        System.out.println("Server: sent response: " + resp);
+        clientAgentComm.perform();
     }
 
     private void sendErrorResponse(long sequence) {

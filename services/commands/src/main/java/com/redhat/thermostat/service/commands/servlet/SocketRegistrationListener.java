@@ -52,7 +52,6 @@ public class SocketRegistrationListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        System.out.println("Setting up websocket handlers");
         ServletContext ctxt = sce.getServletContext();
         ServerContainer container = (ServerContainer)ctxt.getAttribute(SERVER_CONTAINER_ATTR);
         try {
@@ -61,7 +60,6 @@ public class SocketRegistrationListener implements ServletContextListener {
         } catch (DeploymentException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("Websocket endpoints set up!");
     }
 
     @Override

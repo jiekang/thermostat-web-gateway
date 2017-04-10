@@ -73,8 +73,6 @@ public class BasicLoginService implements LoginService {
             if (user.getPassword().equals(pw)) {
                 String[] roles = new ArrayList<>(user.getRoles())
                         .toArray(new String[] {});
-                System.out.println(
-                        "user = " + username + ", roles = " + user.getRoles());
                 return new DefaultUserIdentity(new Subject(), user, roles);
             }
         }
