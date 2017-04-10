@@ -71,11 +71,11 @@ public class ConfigurationMergerTest {
     }
 
     private void mergedOneConfigOnlyTest(boolean globalOnly) {
-        Map<String, String> expected = new HashMap<>();
+        Map<String, Object> expected = new HashMap<>();
         expected.put("foo", "foo-val");
         expected.put("some", "value");
-        Map<String, String> global;
-        Map<String, String> service;
+        Map<String, Object> global;
+        Map<String, Object> service;
         if (globalOnly) {
             global = expected;
             service = Collections.emptyMap();
@@ -86,7 +86,7 @@ public class ConfigurationMergerTest {
         when(globalConfig.asMap()).thenReturn(global);
         when(serviceConfig.asMap()).thenReturn(service);
         Configuration config = new ConfigurationMerger(globalConfig, serviceConfig);
-        Map<String, String> actual = config.asMap();
+        Map<String, Object> actual = config.asMap();
         assertEquals(expected, actual);
     }
 
@@ -103,13 +103,13 @@ public class ConfigurationMergerTest {
     }
 
     private void mergedWithXOnlyKey(boolean globalHasOnlyKey, String overrideVal) {
-        Map<String, String> moreKeys = new HashMap<>();
+        Map<String, Object> moreKeys = new HashMap<>();
         moreKeys.put("foo", "foo-val");
         moreKeys.put("some", "value");
-        Map<String, String> lessKeysWithOverride = new HashMap<>();
+        Map<String, Object> lessKeysWithOverride = new HashMap<>();
         lessKeysWithOverride.put("foo", overrideVal);
-        Map<String, String> global;
-        Map<String, String> service;
+        Map<String, Object> global;
+        Map<String, Object> service;
         if (globalHasOnlyKey) {
             global = moreKeys;
             service = lessKeysWithOverride;
@@ -121,8 +121,8 @@ public class ConfigurationMergerTest {
         when(globalConfig.asMap()).thenReturn(global);
         when(serviceConfig.asMap()).thenReturn(service);
         Configuration config = new ConfigurationMerger(globalConfig, serviceConfig);
-        Map<String, String> actual = config.asMap();
-        Map<String, String> expected = new HashMap<>();
+        Map<String, Object> actual = config.asMap();
+        Map<String, Object> expected = new HashMap<>();
         expected.put("foo", overrideVal);
         expected.put("some", "value");
         assertEquals(expected, actual);

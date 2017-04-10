@@ -38,7 +38,11 @@ package com.redhat.thermostat.gateway.server;
 
 import org.eclipse.jetty.server.Server;
 
+import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
+import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory;
+import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.CoreServiceType;
 
 public class Start {
 
@@ -50,7 +54,8 @@ public class Start {
 
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
         CoreServerBuilder serverBuilder = new CoreServerBuilder();
-        serverBuilder.configFactory(factory);
+        setServerConfig(serverBuilder, factory);
+        setServiceBuilder(serverBuilder, factory);
 
         Server server = serverBuilder.build();
 
@@ -66,5 +71,18 @@ public class Start {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void setServerConfig(CoreServerBuilder builder, ConfigurationFactory factory) {
+        Configuration globalConfig = factory.createGlobalConfiguration();
+        builder.setServerConfiguration(globalConfig);
+    }
+
+    private static void setServiceBuilder(CoreServerBuilder builder, ConfigurationFactory factory) {
+        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
+        CoreServiceBuilderFactory builderFactory = new CoreServiceBuilderFactory(factory);
+        CoreServiceBuilder coreServiceBuilder = builderFactory.createBuilder(CoreServiceType.WEB_ARCHIVE);
+        coreServiceBuilder.setConfiguration(globalServicesConfig);
+        builder.setServiceBuilder(coreServiceBuilder);
     }
 }

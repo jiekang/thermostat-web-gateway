@@ -47,13 +47,15 @@ public class GlobalConfigurationTest extends ConfigurationTest {
 
     @Test
     public void canReadGlobalConfig() {
-        Map<String, String> expected = new HashMap<String, String>();
+        Map<String, Object> services = new HashMap<String, Object>();
+        services.put("/service1", "/path/to/microservice.war");
+        Map<String, Object> expected = new HashMap<String, Object>();
         expected.put("foo", "bar");
         expected.put("bar", "baz");
-        expected.put("SERVICES_FILE", "services.properties");
+        expected.put("SERVICES", services);
         String root = getTestRoot();
         GlobalConfiguration config = new GlobalConfiguration(root);
-        Map<String, String> actual = config.asMap();
+        Map<String, Object> actual = config.asMap();
         assertEquals(expected, actual);
     }
 

@@ -47,12 +47,12 @@ public class GlobalServicesConfigurationTest extends ConfigurationTest {
 
     @Test
     public void canReadGlobalServicesConfig() {
-        Map<String, String> expected = new HashMap<String, String>();
+        Map<String, Object> expected = new HashMap<String, Object>();
         expected.put("/service1", "/path/to/microservice.war");
         String root = getTestRoot();
         GlobalConfiguration global = new GlobalConfiguration(root);
-        GlobalServicesConfiguration config = new GlobalServicesConfiguration(root, global);
-        Map<String, String> actual = config.asMap();
+        @SuppressWarnings("unchecked")
+        Map<String, Object> actual = (Map<String, Object>)global.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
         assertEquals(expected, actual);
     }
 

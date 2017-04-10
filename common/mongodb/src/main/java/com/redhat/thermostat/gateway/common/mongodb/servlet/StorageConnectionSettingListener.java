@@ -36,7 +36,9 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.servlet;
 
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -73,7 +75,15 @@ public class StorageConnectionSettingListener implements ServletContextListener 
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
         Configuration serviceConfig = factory.createServiceConfiguration(serviceName);
         Configuration mongoConfiguration = new MongoConfigurationAdapter(serviceConfig);
-        return mongoConfiguration.asMap();
+        return convert(mongoConfiguration.asMap());
+    }
+
+    private Map<String, String> convert(Map<String, Object> orig) {
+        Map<String, String> converted = new HashMap<>();
+        for (Entry<String, Object> entry: orig.entrySet()) {
+            converted.put(entry.getKey(), (String)entry.getValue());
+        }
+        return converted;
     }
 
 }

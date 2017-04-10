@@ -47,19 +47,22 @@ import org.junit.Test;
 public class ConfigurationFactoryTest extends ConfigurationTest {
 
     private ConfigurationFactory factory;
+    private Map<String, Object> services;
 
     @Before
     public void setup() {
         factory = new ConfigurationFactory(getTestRoot());
+        services = new HashMap<String, Object>();
+        services.put("/service1", "/path/to/microservice.war");
     }
 
     @Test
     public void canGetMergedConfigForService() {
-        Map<String, String> expected = new HashMap<>();
+        Map<String, Object> expected = new HashMap<>();
         expected.put("foo", "service-value"); // override from service config
         expected.put("bar", "baz"); // global only config
         expected.put("test", "me"); // service only config
-        expected.put("SERVICES_FILE", "services.properties");
+        expected.put("SERVICES", services);
         Configuration config = factory.createServiceConfiguration("test-service");
         assertEquals(expected, config.asMap());
     }
@@ -67,7 +70,7 @@ public class ConfigurationFactoryTest extends ConfigurationTest {
     @Test
     public void canGetGlobalServicesConfig() {
         Configuration globalServicesConfig = factory.createGlobalServicesConfig();
-        Map<String, String> expected = new HashMap<String, String>();
+        Map<String, Object> expected = new HashMap<>();
         expected.put("/service1", "/path/to/microservice.war");
 
         assertEquals(expected, globalServicesConfig.asMap());
@@ -75,10 +78,10 @@ public class ConfigurationFactoryTest extends ConfigurationTest {
 
     @Test
     public void canGetGlobalConfig() {
-        Map<String, String> expected = new HashMap<>();
+        Map<String, Object> expected = new HashMap<>();
         expected.put("foo", "bar");
         expected.put("bar", "baz");
-        expected.put("SERVICES_FILE", "services.properties");
+        expected.put("SERVICES", services);
         Configuration globalConfig = factory.createGlobalConfiguration();
         assertEquals(expected, globalConfig.asMap());
     }

@@ -53,6 +53,7 @@
     <modules>
         <module>jvm-memory</module>
         <module>jvm-gc</module>
+        <module>commands</module>
     </modules>
 
 </project>

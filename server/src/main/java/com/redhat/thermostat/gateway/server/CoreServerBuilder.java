@@ -36,12 +36,9 @@
 
 package com.redhat.thermostat.gateway.server;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+
+import javax.servlet.ServletException;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -49,46 +46,28 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.redhat.thermostat.gateway.common.core.Configuration;
-import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
 import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
+import com.redhat.thermostat.gateway.server.services.CoreService;
+import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 
 public class CoreServerBuilder {
 
     private Server server = new Server();
+    private CoreServiceBuilder coreServiceBuilder;
     private Configuration serverConfig;
-    private List<WebAppContext> webAppContextList = new ArrayList<>();
 
-
-    private void addWebapp(String contextPath, Path warPath) {
-        WebAppContext webAppContext = new WebAppContext();
-
-        webAppContext.setContextPath(contextPath);
-        webAppContext.setWar(warPath.toAbsolutePath().toString());
-
-        webAppContextList.add(webAppContext);
-
-    }
-
-    public CoreServerBuilder configFactory(ConfigurationFactory factory) {
-        Objects.requireNonNull(factory);
-        this.serverConfig = factory.createGlobalConfiguration();
-        addServices(factory);
+    public CoreServerBuilder setServiceBuilder(CoreServiceBuilder builder) {
+        this.coreServiceBuilder = builder;
         return this;
     }
 
-    private void addServices(ConfigurationFactory factory) {
-        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
-
-        Map<String, String> configProperties = globalServicesConfig.asMap();
-
-        for (Map.Entry<String, String> entry : configProperties.entrySet()) {
-            Path warPath = Paths.get(entry.getValue());
-            addWebapp(entry.getKey(), warPath);
-        }
-
+    public CoreServerBuilder setServerConfiguration(Configuration config) {
+        this.serverConfig = config;
+        return this;
     }
 
     public Server build() {
@@ -101,8 +80,16 @@ public class CoreServerBuilder {
     private void setupHandler() {
         ContextHandlerCollection contextHandlerCollection = new ContextHandlerCollection();
 
-        for (WebAppContext webAppContext : webAppContextList) {
-            contextHandlerCollection.addHandler(webAppContext);
+        for (CoreService service: coreServiceBuilder.build()) {
+            ServletContextHandler handler = service.createServletContextHandler(server);
+            contextHandlerCollection.addHandler(handler);
+            // Initialize javax.websocket layer
+            try {
+                handler.setServer(server);
+                WebSocketServerContainerInitializer.configureContext(handler);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         server.setHandler(contextHandlerCollection);
@@ -114,10 +101,12 @@ public class CoreServerBuilder {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
-        Map<String, String> serverConfigMap = serverConfig.asMap();
-        httpConnector.setHost(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString()));
-        int port = Integer.parseInt(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
-        httpConnector.setPort(port);
+        Map<String, Object> serverConfigMap = serverConfig.asMap();
+        String listenAddress = (String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
+        int listenPort = Integer.parseInt((String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
+
+        httpConnector.setHost(listenAddress);
+        httpConnector.setPort(listenPort);
 
         server.setConnectors(new Connector[]{httpConnector});
     }

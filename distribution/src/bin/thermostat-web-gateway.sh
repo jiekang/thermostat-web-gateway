@@ -63,4 +63,4 @@ THERMOSTAT_GATEWAY_SERVICES=${THERMOSTAT_GATEWAY_HOME}/services
 
 sed -i -e "s|__SERVICES__|${THERMOSTAT_GATEWAY_SERVICES}|g" ${THERMOSTAT_GATEWAY_CONFIG}
 
-java -jar ${THERMOSTAT_GATEWAY_LIBS}/thermostat-web-gateway-distribution-@project.version@.jar ${THERMOSTAT_GATEWAY_HOME}
+java -cp "${THERMOSTAT_GATEWAY_LIBS}/*" com.redhat.thermostat.gateway.server.Start ${THERMOSTAT_GATEWAY_HOME}

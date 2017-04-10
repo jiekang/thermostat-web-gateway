@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.gateway.common.core;
 
+import java.util.Map;
+
 /**
  * Configuration factory for creating relevant configuration instances.
  *
@@ -77,7 +79,15 @@ public class ConfigurationFactory {
      * @return The to-be-deployed services configuration.
      */
     public Configuration createGlobalServicesConfig() {
-        GlobalConfiguration global = (GlobalConfiguration)createGlobalConfiguration();
-        return new GlobalServicesConfiguration(gatewayHome, global);
+        final GlobalConfiguration global = (GlobalConfiguration)createGlobalConfiguration();
+        return new Configuration() {
+
+            @SuppressWarnings("unchecked")
+            @Override
+            public Map<String, Object> asMap() {
+                return (Map<String, Object>)global.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
+            }
+
+        };
     }
 }

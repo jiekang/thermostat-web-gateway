@@ -40,5 +40,5 @@ import java.util.Map;
 
 public interface Configuration {
 
-    Map<String, String> asMap();
+    Map<String, Object> asMap();
 }

@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,7 +48,18 @@ import java.util.Properties;
 
 abstract class BasicConfiguration implements Configuration {
 
-    protected static Map<String, String> loadConfig(String configFile) {
+    private static final String PROPERTIES_PREFIX = "properties|";
+
+    /**
+     * Load config into a map. If a key has a special value starting with {@link #PROPERTIES_PREFIX} its
+     * value is interpreted to be a properties file next to {@code configFile}. In that case
+     * that properties file is loaded in and the value replaced by the properties' contents.
+     *
+     * @param configFile The config file to read in.
+     * @param basePath The parent directory of {@code configFile}.
+     * @return The configuration as a map.
+     */
+    protected static Map<String, Object> loadConfig(String configFile, String basePath) {
         Properties props = new Properties();
         File globalConfig = new File(configFile);
         try (FileInputStream fis = new FileInputStream(globalConfig)) {
@@ -57,9 +69,21 @@ abstract class BasicConfiguration implements Configuration {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Map<String, String> config = new HashMap<>();
+        Map<String, Object> config = new HashMap<>();
         for (Entry<Object, Object> entry: props.entrySet()) {
-            config.put((String)entry.getKey(), (String)entry.getValue());
+            // If a key starts with the special prefix its value is interpreted
+            // as a file next to configFile. In that case we read the values in
+            // recursively.
+            String key = (String)entry.getKey();
+            String value = (String)entry.getValue();
+            if (key.startsWith(PROPERTIES_PREFIX) && key.length() > PROPERTIES_PREFIX.length()) {
+                String replaceKey = key.substring(PROPERTIES_PREFIX.length());
+                String recursiveConfigFile = Paths.get(basePath, value).toFile().getAbsolutePath();
+                Map<String, Object> replaceValue = loadConfig(recursiveConfigFile, basePath);
+                config.put(replaceKey, replaceValue);
+            } else {
+                config.put(key, entry.getValue());
+            }
         }
         return config;
     }
