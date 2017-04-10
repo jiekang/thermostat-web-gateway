@@ -45,9 +45,11 @@ import java.util.Map;
 public class ConfigurationFactory {
 
     private final String gatewayHome;
+    private final GlobalConfiguration globalConfig;
 
     public ConfigurationFactory(String gatewayHome) {
         this.gatewayHome = gatewayHome;
+        this.globalConfig = new GlobalConfiguration(gatewayHome);
     }
 
     /**
@@ -58,9 +60,8 @@ public class ConfigurationFactory {
      * @return The specific service configuration.
      */
     public Configuration createServiceConfiguration(String serviceName) {
-        Configuration global = new GlobalConfiguration(gatewayHome);
         Configuration serviceConfig = new ServiceConfiguration(gatewayHome, serviceName);
-        return new ConfigurationMerger(global, serviceConfig);
+        return new ConfigurationMerger(globalConfig, serviceConfig);
     }
 
     /**
@@ -69,7 +70,7 @@ public class ConfigurationFactory {
      * @return The server configuration.
      */
     public Configuration createGlobalConfiguration() {
-        return new GlobalConfiguration(gatewayHome);
+        return globalConfig;
     }
 
     /**
@@ -79,13 +80,12 @@ public class ConfigurationFactory {
      * @return The to-be-deployed services configuration.
      */
     public Configuration createGlobalServicesConfig() {
-        final GlobalConfiguration global = (GlobalConfiguration)createGlobalConfiguration();
         return new Configuration() {
 
             @SuppressWarnings("unchecked")
             @Override
             public Map<String, Object> asMap() {
-                return (Map<String, Object>)global.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
+                return (Map<String, Object>)globalConfig.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
             }
 
         };
