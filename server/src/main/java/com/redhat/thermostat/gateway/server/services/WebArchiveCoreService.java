@@ -36,18 +36,35 @@
 
 package com.redhat.thermostat.gateway.server.services;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.ServletException;
+
+import org.eclipse.jetty.security.LoginService;
+import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+
+import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.ServiceConfiguration;
+import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
+import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
 
 class WebArchiveCoreService implements CoreService {
 
     private final String contextPath;
     private final String warPath;
+    private final Configuration serviceConfig;
 
-    WebArchiveCoreService(String contextPath, String warPath) {
+    WebArchiveCoreService(String contextPath, String warPath, Configuration serviceConfig) {
         this.contextPath = contextPath;
         this.warPath = warPath;
+        this.serviceConfig = serviceConfig;
     }
 
     @Override
@@ -56,7 +73,49 @@ class WebArchiveCoreService implements CoreService {
 
         webAppContext.setContextPath(contextPath);
         webAppContext.setWar(warPath);
+        initializeWebSockets(server, webAppContext);
+        setupBasicAuthForContext(server, webAppContext);
         return webAppContext;
+    }
+
+    private void setupBasicAuthForContext(Server server, WebAppContext webAppContext) {
+        if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC)) {
+            Map<String, String> userConfig = getBasicAuthUserConfig();
+            SecurityHandler security = webAppContext.getSecurityHandler();
+            BasicUserStore userStore = new BasicUserStore(userConfig);
+            LoginService loginService = new BasicLoginService(userStore, security.getRealmName());
+            security.setLoginService(loginService);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, String> getBasicAuthUserConfig() {
+        if (serviceConfig.asMap().containsKey(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC_USERS.name())) {
+            Map<String, Object> rawConfig = (Map<String, Object>)serviceConfig.asMap().get(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC_USERS.name());
+            Map<String, String> userConfig = new HashMap<>();
+            for (Entry<String, Object> entry: rawConfig.entrySet()) {
+                userConfig.put(entry.getKey(), (String)entry.getValue());
+            }
+            return userConfig;
+        } else {
+            return Collections.emptyMap();
+        }
+    }
+
+    private void initializeWebSockets(Server server, ServletContextHandler contextHandler) {
+        if (isSet(ServiceConfiguration.ConfigurationKey.WEBSOCKETS)) {
+            try {
+                contextHandler.setServer(server);
+                WebSocketServerContainerInitializer.configureContext(contextHandler);
+            } catch (ServletException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private boolean isSet(ServiceConfiguration.ConfigurationKey configKey) {
+        Map<String, Object> map = serviceConfig.asMap();
+        return Boolean.parseBoolean((String)map.get(configKey.name()));
     }
 
 }

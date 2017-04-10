@@ -36,12 +36,20 @@
 
 package com.redhat.thermostat.gateway.server.services;
 
+import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+
 public class CoreServiceBuilderFactory {
+
+    private final ConfigurationFactory configFactory;
+
+    public CoreServiceBuilderFactory(ConfigurationFactory configFactory) {
+        this.configFactory = configFactory;
+    }
 
     public CoreServiceBuilder createBuilder(CoreServiceType type) {
         switch (type) {
         case WEB_ARCHIVE:
-            return new WebArchiveServiceBuilder();
+            return new WebArchiveServiceBuilder(configFactory);
         default:
             throw new IllegalArgumentException("Unknown type: " + type);
         }

@@ -80,7 +80,7 @@ public class Start {
 
     private static void setServiceBuilder(CoreServerBuilder builder, ConfigurationFactory factory) {
         Configuration globalServicesConfig = factory.createGlobalServicesConfig();
-        CoreServiceBuilderFactory builderFactory = new CoreServiceBuilderFactory();
+        CoreServiceBuilderFactory builderFactory = new CoreServiceBuilderFactory(factory);
         CoreServiceBuilder coreServiceBuilder = builderFactory.createBuilder(CoreServiceType.WEB_ARCHIVE);
         coreServiceBuilder.setConfiguration(globalServicesConfig);
         builder.setServiceBuilder(coreServiceBuilder);

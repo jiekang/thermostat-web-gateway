@@ -179,7 +179,8 @@ public class AuthBasicCoreServerTest {
             // FIXME: Filter for websockets does not seem to be called.
             //        Set up basic auth directly using jetty API
             ConstraintSecurityHandler security = new ConstraintSecurityHandler();
-            Constraint cons = new Constraint("Thermostat Realm", "thermostat-realm");
+            String realmName = "Thermostat Realm";
+            Constraint cons = new Constraint(realmName, "thermostat-realm");
             cons.setAuthenticate(true);
             ConstraintMapping mapping = new ConstraintMapping();
             mapping.setConstraint(cons);
@@ -187,7 +188,7 @@ public class AuthBasicCoreServerTest {
             mapping.setPathSpec("/*");
             security.setConstraintMappings(Collections.singletonList(mapping));
             security.setAuthenticator(new BasicAuthenticator());
-            security.setLoginService(new BasicLoginService(new BasicUserStore(userConfig)));
+            security.setLoginService(new BasicLoginService(new BasicUserStore(userConfig), realmName));
             contextHandler.setSecurityHandler(security);
         }
 

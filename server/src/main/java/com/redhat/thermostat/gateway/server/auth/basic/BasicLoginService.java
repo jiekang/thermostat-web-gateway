@@ -49,15 +49,17 @@ import org.eclipse.jetty.server.UserIdentity;
 public class BasicLoginService implements LoginService {
 
     private final BasicUserStore store;
+    private final String realmName;
     private IdentityService identityService = new DefaultIdentityService();
 
-    public BasicLoginService(BasicUserStore store) {
+    public BasicLoginService(BasicUserStore store, String realmName) {
         this.store = store;
+        this.realmName = realmName;
     }
 
     @Override
     public String getName() {
-        return "Thermostat Realm";
+        return realmName;
     }
 
     @Override

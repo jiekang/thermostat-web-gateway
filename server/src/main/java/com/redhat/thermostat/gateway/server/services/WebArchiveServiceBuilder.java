@@ -40,7 +40,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+
 class WebArchiveServiceBuilder extends BasicServiceBuilder {
+
+    private static final String CONTEXT_PREFIX = "/";
+    private final ConfigurationFactory configFactory;
+
+    public WebArchiveServiceBuilder(ConfigurationFactory configFactory) {
+        this.configFactory = configFactory;
+    }
 
     @Override
     public List<CoreService> build() {
@@ -49,11 +59,18 @@ class WebArchiveServiceBuilder extends BasicServiceBuilder {
         List<CoreService> serviceList = new ArrayList<>();
         for (Map.Entry<String, Object> entry : configProperties.entrySet()) {
             String contextPath = entry.getKey();
+            String serviceName = getServiceName(contextPath);
+            Configuration config = configFactory.createServiceConfiguration(serviceName);
             String warPath = entry.getValue().toString();
-            WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath);
+            WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath, config);
             serviceList.add(service);
         }
         return serviceList;
+    }
+
+    // FIXME: Heuristic => contextPath == /<servicename>
+    private String getServiceName(String contextPath) {
+        return contextPath.substring(CONTEXT_PREFIX.length());
     }
 
 }

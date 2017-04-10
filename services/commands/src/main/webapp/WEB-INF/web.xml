@@ -66,16 +66,16 @@
         <url-pattern>/*</url-pattern>
       </web-resource-collection>
       <auth-constraint>
-        <role-name>thermostat-realm</role-name>
+        <role-name>thermostat-commands-realm</role-name>
       </auth-constraint>
     </security-constraint>
 
     <login-config>
       <auth-method>BASIC</auth-method>
-      <realm-name>Thermostat Realm</realm-name>
+      <realm-name>Commands Realm</realm-name>
     </login-config>
 
     <security-role>
-      <role-name>thermostat-realm</role-name>
+      <role-name>thermostat-commands-realm</role-name>
     </security-role>
 </web-app>

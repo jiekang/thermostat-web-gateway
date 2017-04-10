@@ -39,7 +39,7 @@ package com.redhat.thermostat.gateway.common.core;
 import java.util.Collections;
 import java.util.Map;
 
-class ServiceConfiguration extends BasicConfiguration {
+public class ServiceConfiguration extends BasicConfiguration {
 
     private final CommonPaths paths;
     @SuppressWarnings("unused")
@@ -55,6 +55,23 @@ class ServiceConfiguration extends BasicConfiguration {
     @Override
     public Map<String, Object> asMap() {
         return Collections.unmodifiableMap(map);
+    }
+
+    public enum ConfigurationKey {
+        /**
+         * Set to {@code true} for basic authentication
+         */
+        SECURITY_BASIC,
+        /**
+         * Only useful together with SECURITY_BASIC.
+         * Specifies the users a service knows about.
+         */
+        SECURITY_BASIC_USERS,
+        /**
+         * Set to {@code true} if the service needs
+         * websockets functionality.
+         */
+        WEBSOCKETS,
     }
 
 }
