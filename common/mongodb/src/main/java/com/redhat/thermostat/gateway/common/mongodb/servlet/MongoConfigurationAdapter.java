@@ -52,14 +52,14 @@ class MongoConfigurationAdapter implements Configuration {
     }
 
     @Override
-    public Map<String, String> asMap() {
-        Map<String, String> adaptedConfig = adaptConfig();
+    public Map<String, Object> asMap() {
+        Map<String, Object> adaptedConfig = adaptConfig();
         return Collections.unmodifiableMap(adaptedConfig);
     }
 
-    private Map<String, String> adaptConfig() {
-        Map<String, String> result = new HashMap<>();
-        Map<String, String> totalConfig = config.asMap();
+    private Map<String, Object> adaptConfig() {
+        Map<String, Object> result = new HashMap<>();
+        Map<String, Object> totalConfig = config.asMap();
         for (MongoConfiguration item: MongoConfiguration.values()) {
             if (totalConfig.containsKey(item.name())) {
                 result.put(item.name(), totalConfig.get(item.name()));

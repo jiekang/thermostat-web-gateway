@@ -54,7 +54,11 @@ public class CommonPaths {
     }
 
     public String getServiceConfigFilePath(String serviceName) {
-        return getConfigDir() + File.separator + serviceName + File.separator + SERVICE_CONFIG_PROPERTIES;
+        return getServiceConfigDir(serviceName) + File.separator + SERVICE_CONFIG_PROPERTIES;
+    }
+
+    String getServiceConfigDir(String serviceName) {
+        return getConfigDir() + File.separator + serviceName;
     }
 
     String getConfigDir() {

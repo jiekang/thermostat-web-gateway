@@ -52,9 +52,9 @@ class ConfigurationMerger implements Configuration {
     }
 
     @Override
-    public Map<String, String> asMap() {
-        Map<String, String> mergedConfig = new HashMap<>(serviceConfig.asMap());
-        for (Entry<String, String> entry: globalConfig.asMap().entrySet()) {
+    public Map<String, Object> asMap() {
+        Map<String, Object> mergedConfig = new HashMap<>(serviceConfig.asMap());
+        for (Entry<String, Object> entry: globalConfig.asMap().entrySet()) {
             if (!mergedConfig.containsKey(entry.getKey())) {
                 mergedConfig.put(entry.getKey(), entry.getValue());
             }

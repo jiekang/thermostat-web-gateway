@@ -42,16 +42,16 @@ import java.util.Map;
 public class GlobalConfiguration extends BasicConfiguration {
 
     private final CommonPaths paths;
-    private final Map<String, String> map;
+    private final Map<String, Object> map;
 
     // This should remain package private. Use ConfigurationFactory to get an instance.
     GlobalConfiguration(String gatewayHome) {
         paths = new CommonPaths(gatewayHome);
-        map = loadConfig(paths.getGlobalConfigFilePath());
+        map = loadConfig(paths.getGlobalConfigFilePath(), paths.getConfigDir());
     }
 
     @Override
-    public Map<String, String> asMap() {
+    public Map<String, Object> asMap() {
         return Collections.unmodifiableMap(map);
     }
 
@@ -68,9 +68,8 @@ public class GlobalConfiguration extends BasicConfiguration {
          * The services file name (next to {@code global-config.properties})
          * specifying which microservices the servlet container shall deploy.
          *
-         * @see GlobalServicesConfiguration
          */
-        SERVICES_FILE,
+        SERVICES,
     }
 
 }

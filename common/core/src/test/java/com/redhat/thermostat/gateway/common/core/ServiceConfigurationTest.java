@@ -48,12 +48,12 @@ public class ServiceConfigurationTest extends ConfigurationTest {
     @Test
     public void canReadServiceConfig() {
         String serviceName = "test-service";
-        Map<String, String> expected = new HashMap<String, String>();
+        Map<String, Object> expected = new HashMap<String, Object>();
         expected.put("foo", "service-value");
         expected.put("test", "me");
         String root = getTestRoot();
         ServiceConfiguration config = new ServiceConfiguration(root, serviceName);
-        Map<String, String> actual = config.asMap();
+        Map<String, Object> actual = config.asMap();
         assertEquals(expected, actual);
     }
 }

@@ -44,12 +44,12 @@ class WebArchiveServiceBuilder extends BasicServiceBuilder {
 
     @Override
     public List<CoreService> build() {
-        Map<String, String> configProperties = configuration.asMap();
+        Map<String, Object> configProperties = configuration.asMap();
 
         List<CoreService> serviceList = new ArrayList<>();
-        for (Map.Entry<String, String> entry : configProperties.entrySet()) {
+        for (Map.Entry<String, Object> entry : configProperties.entrySet()) {
             String contextPath = entry.getKey();
-            String warPath = entry.getValue();
+            String warPath = entry.getValue().toString();
             WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath);
             serviceList.add(service);
         }

@@ -44,16 +44,16 @@ class ServiceConfiguration extends BasicConfiguration {
     private final CommonPaths paths;
     @SuppressWarnings("unused")
     private final String serviceName;
-    private final Map<String, String> map;
+    private final Map<String, Object> map;
 
     ServiceConfiguration(String gatewayHome, String serviceName) {
         this.paths = new CommonPaths(gatewayHome);
         this.serviceName = serviceName;
-        this.map = loadConfig(paths.getServiceConfigFilePath(serviceName));
+        this.map = loadConfig(paths.getServiceConfigFilePath(serviceName), paths.getServiceConfigDir(serviceName));
     }
 
     @Override
-    public Map<String, String> asMap() {
+    public Map<String, Object> asMap() {
         return Collections.unmodifiableMap(map);
     }
 

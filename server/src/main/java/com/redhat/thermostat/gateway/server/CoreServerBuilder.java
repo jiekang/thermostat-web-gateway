@@ -91,9 +91,9 @@ public class CoreServerBuilder {
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
 
-        Map<String, String> serverConfigMap = serverConfig.asMap();
-        String listenAddress = serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
-        int listenPort = Integer.parseInt(serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
+        Map<String, Object> serverConfigMap = serverConfig.asMap();
+        String listenAddress = (String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
+        int listenPort = Integer.parseInt((String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
 
         httpConnector.setHost(listenAddress);
         httpConnector.setPort(listenPort);

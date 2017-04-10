@@ -66,7 +66,7 @@ public class MongoConfigurationAdapterTest {
         expected.put(MongoConfiguration.MONGO_PASSWORD.name(), "foo-password");
         expected.put(MongoConfiguration.MONGO_URL.name(), "mongodb://127.0.0.1:23793");
 
-        Map<String, String> service = new HashMap<>();
+        Map<String, Object> service = new HashMap<>();
         service.put(MongoConfiguration.MONGO_DB.name(), "foo");
         service.put(MongoConfiguration.MONGO_USERNAME.name(), "foo-user");
         service.put(MongoConfiguration.MONGO_PASSWORD.name(), "foo-password");
