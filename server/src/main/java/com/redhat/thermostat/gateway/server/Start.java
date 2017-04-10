@@ -36,8 +36,13 @@
 
 package com.redhat.thermostat.gateway.server;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Map;
+
 import org.eclipse.jetty.server.Server;
 
+import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
 
 public class Start {
@@ -51,6 +56,7 @@ public class Start {
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
         CoreServerBuilder serverBuilder = new CoreServerBuilder();
         serverBuilder.configFactory(factory);
+        addServices(serverBuilder, factory);
 
         Server server = serverBuilder.build();
 
@@ -66,5 +72,17 @@ public class Start {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static void addServices(CoreServerBuilder builder, ConfigurationFactory factory) {
+        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
+
+        Map<String, String> configProperties = globalServicesConfig.asMap();
+
+        for (Map.Entry<String, String> entry : configProperties.entrySet()) {
+            Path warPath = Paths.get(entry.getValue());
+            builder.addWebapp(entry.getKey(), warPath);
+        }
+
     }
 }

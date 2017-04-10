@@ -37,7 +37,6 @@
 package com.redhat.thermostat.gateway.server;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -62,33 +61,20 @@ public class CoreServerBuilder {
     private List<WebAppContext> webAppContextList = new ArrayList<>();
 
 
-    private void addWebapp(String contextPath, Path warPath) {
+    public CoreServerBuilder addWebapp(String contextPath, Path warPath) {
         WebAppContext webAppContext = new WebAppContext();
 
         webAppContext.setContextPath(contextPath);
         webAppContext.setWar(warPath.toAbsolutePath().toString());
 
         webAppContextList.add(webAppContext);
-
+        return this;
     }
 
     public CoreServerBuilder configFactory(ConfigurationFactory factory) {
         Objects.requireNonNull(factory);
         this.serverConfig = factory.createGlobalConfiguration();
-        addServices(factory);
         return this;
-    }
-
-    private void addServices(ConfigurationFactory factory) {
-        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
-
-        Map<String, String> configProperties = globalServicesConfig.asMap();
-
-        for (Map.Entry<String, String> entry : configProperties.entrySet()) {
-            Path warPath = Paths.get(entry.getValue());
-            addWebapp(entry.getKey(), warPath);
-        }
-
     }
 
     public Server build() {
