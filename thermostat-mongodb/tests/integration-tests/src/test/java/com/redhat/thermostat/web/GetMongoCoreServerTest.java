@@ -56,11 +56,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     public void testGetSystems() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetSystems/systems/systemId";
 
-        String putInput = "[{\"systemStuff\":\"a\"},{\"systemStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"systemStuff\":\"a\"},{\"systemStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
@@ -70,11 +70,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgents/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
@@ -85,11 +85,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgentsLimit() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgentsLimit/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("l", "1").send();
 
@@ -100,11 +100,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgentsQuery() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgentsQuery/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getAResponse = client.newRequest(url).method(HttpMethod.GET).param("q", "agentStuff==a").send();
 
@@ -121,11 +121,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgentsProject() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgentsProject/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\",\"otherStuff\":\"blob\"},{\"agentStuff\":\"b\",\"otherStuff\":\"blob\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\",\"otherStuff\":\"blob\"},{\"agentStuff\":\"b\",\"otherStuff\":\"blob\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("p", "agentStuff").send();
 
@@ -136,11 +136,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgentsNotEqual() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgentsNotEqual/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("q","agentStuff!=a").send();
 
@@ -151,11 +151,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgentsSort() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgentsSort/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse sortDescResponse = client.newRequest(url).method(HttpMethod.GET).param("s", "-agentStuff").send();
 
@@ -171,11 +171,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetAgentsLimitSort() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetAgentsSortLimit/systems/*/agents/agentId";
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).param("l", "1").param("s", "-agentStuff").send();
 
@@ -186,11 +186,11 @@ public class GetMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
     public void testGetJvms() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/GetJvms/systems/*/agents/*/jvms/jvmId";
-        String putInput = "[{\"jvmStuff\":\"a\"},{\"jvmStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"jvmStuff\":\"a\"},{\"jvmStuff\":\"b\"}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 

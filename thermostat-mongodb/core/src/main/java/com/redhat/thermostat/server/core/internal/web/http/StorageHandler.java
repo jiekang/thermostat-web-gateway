@@ -42,7 +42,7 @@ import javax.ws.rs.core.SecurityContext;
 public interface StorageHandler {
     void getSystems(SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String offset, String limit, String sort, String queries, String projections);
 
-    void putSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
+    void putSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String queries, String systemId);
 
     void postSystems(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId);
 
@@ -50,7 +50,7 @@ public interface StorageHandler {
 
     void getAgents(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String offset, String limit, String sort, String queries, String projections);
 
-    void putAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
+    void putAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String queries, String systemId, String agentId);
 
     void postAgents(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId);
 
@@ -58,7 +58,7 @@ public interface StorageHandler {
 
     void getJvms(SecurityContext securityContext, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId, String offset, String limit, String sort, String queries, String projections);
 
-    void putJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
+    void putJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String queries, String systemId, String agentId, String jvmId);
 
     void postJvms(String body, SecurityContext context, AsyncResponse asyncResponse, String namespace, String systemId, String agentId, String jvmId);
 
