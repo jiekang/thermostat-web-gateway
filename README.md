@@ -10,9 +10,9 @@ This is a RESTful API server for [Thermostat](http://icedtea.classpath.org/therm
 * services: Contains microservices deployable via server:CoreServer, or any Servlet supporting server such as Wildfly, Jetty, Glassfish or Tomcat
 * services/jvm-gc: Contains microservice for accessing jvm-gc data from Mongodb backend
 * services/jvm-memory: Contains microservice for accessing jvm-memory data from Mongodb backend
+* services/commands: Contains microservice for a Command Channel
 
 * thermostat-mongodb: Contains standalone Web Gateway to interface with Thermostat data placed in Mongodb
-* endpoints/cmd-channel: Contains standalone Command Channel via Web Sockets implementation for Client, Agent communication
 
 
 # Build Dependencies
@@ -55,8 +55,8 @@ $ ./thermostat web-storage-service
 Try:
 
 ```
-$ curl "http://localhost:30000/jvm-memory/0.0.1
-$ curl "http://localhost:30000/jvm-gc/0.0.1
+$ curl http://localhost:30000/jvm-memory/0.0.1
+$ curl http://localhost:30000/jvm-gc/0.0.1
 ```
 
 For API see:

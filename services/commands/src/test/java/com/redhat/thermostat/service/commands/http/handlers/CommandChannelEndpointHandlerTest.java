@@ -75,11 +75,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                 new CmdChannelAgentSocket.OnMessageCallBack() {
                     @Override
                     public void run(Session session, String msg) {
-                        System.out.printf("Got cmd-channel request.");
                         AgentRequest req = AgentRequestFactory.fromMessage(msg);
-                        System.out.println("Got request for VM ID: "
-                                + req.getParam("vmId"));
-                        System.out.println("Sending OK response.");
                         WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.OK);
                         try {
                             session.getRemote().sendString(
@@ -87,7 +83,6 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        System.out.println("Bye now!");
                     }
                 }, waitForAgentConnect);
         ClientUpgradeRequest clientRequest = new ClientUpgradeRequest();
@@ -195,10 +190,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                             }
                         }
                         int count = agentRespCount.getAndAdd(1);
-                        System.out.printf("Got cmd-channel request.");
                         AgentRequest req = AgentRequestFactory.fromMessage(msg);
-                        System.out.println("Got request " + count + " for VM ID: "
-                                + req.getParam("vmId"));
                         try {
                             if (req.getSequenceId() == clientSequenceFirst) {
                                 WebSocketResponse resp = new WebSocketResponse(req.getSequenceId(), ResponseType.OK);
@@ -218,7 +210,6 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        System.out.println("Bye now!");
                     }
                 }, waitForAgentConnect);
         ClientUpgradeRequest firstClientRequest = new ClientUpgradeRequest();

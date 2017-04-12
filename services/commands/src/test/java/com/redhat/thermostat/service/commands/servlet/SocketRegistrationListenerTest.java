@@ -36,35 +36,42 @@
 
 package com.redhat.thermostat.service.commands.servlet;
 
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import com.redhat.thermostat.service.commands.http.handlers.CommandChannelAgentEndpointHandler;
 import com.redhat.thermostat.service.commands.http.handlers.CommandChannelClientEndpointHandler;
 
-public class SocketRegistrationListener implements ServletContextListener {
+public class SocketRegistrationListenerTest {
 
-    // javax.websocket.server.ServerContainer
-    private static final String SERVER_CONTAINER_ATTR = "javax.websocket.server.ServerContainer";
+    private ServletContextEvent event;
+    private ServletContext context;
+    private ServerContainer serverContainer;
 
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-        ServletContext ctxt = sce.getServletContext();
-        ServerContainer container = (ServerContainer)ctxt.getAttribute(SERVER_CONTAINER_ATTR);
-        try {
-            container.addEndpoint(CommandChannelAgentEndpointHandler.class);
-            container.addEndpoint(CommandChannelClientEndpointHandler.class);
-        } catch (DeploymentException e) {
-            throw new RuntimeException(e);
-        }
+    @Before
+    public void setUp() {
+        serverContainer = mock(ServerContainer.class);
+        context = mock(ServletContext.class);
+        when(context.getAttribute(eq("javax.websocket.server.ServerContainer"))).thenReturn(serverContainer);
+        event = mock(ServletContextEvent.class);
+        when(event.getServletContext()).thenReturn(context);
     }
 
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        // no-op
+    @Test
+    public void contextInitializedAddsSocketEndpoints() throws DeploymentException {
+        SocketRegistrationListener listener = new SocketRegistrationListener();
+        listener.contextInitialized(event);
+        verify(serverContainer).addEndpoint(CommandChannelAgentEndpointHandler.class);
+        verify(serverContainer).addEndpoint(CommandChannelClientEndpointHandler.class);
     }
-
 }

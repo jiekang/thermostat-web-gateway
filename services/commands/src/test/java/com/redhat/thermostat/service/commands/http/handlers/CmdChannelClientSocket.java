@@ -38,10 +38,7 @@ package com.redhat.thermostat.service.commands.http.handlers;
 
 import java.util.concurrent.CountDownLatch;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.UpgradeException;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
@@ -79,13 +76,11 @@ public class CmdChannelClientSocket {
 
     @OnWebSocketClose
     public void onClose(int statusCode, String reason) {
-        System.out.printf("Connection closed: %d - %s, %d\n", statusCode, reason, requestId);
         this.closeLatch.countDown(); // trigger latch
     }
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        System.out.printf("Got connect %d\n", requestId);
         try {
             ClientRequest req = new ClientRequest(requestId);
             req.setParam("vmId", "someval");
@@ -99,14 +94,6 @@ public class CmdChannelClientSocket {
 
     @OnWebSocketError
     public void onError(Throwable cause) {
-        if (cause instanceof UpgradeException) {
-            UpgradeException exptn = (UpgradeException) cause;
-            int statusCode = exptn.getResponseStatusCode();
-            System.err.println("Expected " + HttpServletResponse.SC_OK
-                    + " but got " + statusCode);
-            System.err.println("Request URI was: " + exptn.getRequestURI());
-            cause.printStackTrace();
-        }
         Throwable realCause = cause.getCause();
         while (realCause != null) {
             realCause.printStackTrace();
@@ -116,12 +103,10 @@ public class CmdChannelClientSocket {
 
     @OnWebSocketMessage
     public void onMessage(Session session, String msg) {
-        System.out.printf("Got msg: %s%n", msg);
         WebSocketResponse r = WebSocketResponse.fromMessage(msg);
         if (r.getSequenceId() == requestId) {
             this.resp = r;
         }
-        System.out.println("Bye now.");
         session.close();
     }
 
