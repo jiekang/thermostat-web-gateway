@@ -92,7 +92,21 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void putSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId) {
+    public void putSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String queries, final String systemId) {
+        if (!isMongoConnected(asyncResponse)) {
+            return;
+        }
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                putAll(body, context, systemId, null, null, namespace, asyncResponse, systemCollectionSuffix, queries);
+            }
+        }).start();
+    }
+
+    @Override
+    public void postSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
@@ -103,20 +117,7 @@ public class MongoStorageHandler implements StorageHandler {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, systemId, null, null, namespace, asyncResponse, systemCollectionSuffix);
-            }
-        }).start();
-    }
-
-    @Override
-    public void postSystems(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId) {
-        if (!isMongoConnected(asyncResponse)) {
-            return;
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                putAll(body, context, systemId, null, null, namespace, asyncResponse, systemCollectionSuffix);
+                postAll(body, context, systemId, null, null, namespace, asyncResponse, systemCollectionSuffix);
             }
         }).start();
     }
@@ -149,20 +150,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void putAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId) {
+    public void putAgents(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String queries, final String systemId, final String agentId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
-
-        if (agentId.equals("*")) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-            return;
-        }
-
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix);
+                putAll(body, context, systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix, queries);
             }
         }).start();
     }
@@ -172,10 +167,14 @@ public class MongoStorageHandler implements StorageHandler {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
+        if (agentId.equals("*")) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix);
+                postAll(body, context, systemId, agentId, null, namespace, asyncResponse, agentCollectionSuffix);
             }
         }).start();
     }
@@ -207,20 +206,14 @@ public class MongoStorageHandler implements StorageHandler {
     }
 
     @Override
-    public void putJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String systemId, final String agentId, final String jvmId) {
+    public void putJvms(final String body, final SecurityContext context, final AsyncResponse asyncResponse, final String namespace, final String queries, final String systemId, final String agentId, final String jvmId) {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
-
-        if (jvmId.equals("*")) {
-            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
-            return;
-        }
-
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix);
+                putAll(body, context, systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix, queries);
             }
         }).start();
     }
@@ -230,10 +223,14 @@ public class MongoStorageHandler implements StorageHandler {
         if (!isMongoConnected(asyncResponse)) {
             return;
         }
+        if (jvmId.equals("*")) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+            return;
+        }
         new Thread(new Runnable() {
             @Override
             public void run() {
-                putAll(body, context, systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix);
+                postAll(body, context, systemId, agentId, jvmId, namespace, asyncResponse, jvmCollectionSuffix);
             }
         }).start();
     }
@@ -273,6 +270,10 @@ public class MongoStorageHandler implements StorageHandler {
             }
         }
         return sortObject;
+    }
+
+    private Bson createSetObject() {
+        return null;
     }
 
     private void getAll(String offset, String limit, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, final String sort, AsyncResponse asyncResponse, final String collectionSuffix, String queries, String projections) {
@@ -319,8 +320,42 @@ public class MongoStorageHandler implements StorageHandler {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }
     }
+    
+    private void putAll(String body, SecurityContext context, final String systemId, final String agentId, final String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix, String queries) {
+        try {
+            BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
 
-    private void putAll(String body, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix) {
+            final List<String> queriesList;
+            if (queries != null) {
+                queriesList = Arrays.asList(queries.split(","));
+            } else {
+                queriesList = Collections.emptyList();
+            }
+
+            BasicDBObject setObject = (BasicDBObject) inputObject.get("set");
+            final Bson fields = new Document("$set", setObject);
+            TimedRequest<Boolean> timedRequest = new TimedRequest<>();
+
+            Boolean response = timedRequest.run(new TimedRequest.TimedRunnable<Boolean>() {
+                @Override
+                public Boolean run() {
+                    try {
+                        ThermostatMongoStorage.getDatabase().getCollection(namespace + collectionSuffix).updateMany(MongoRequestFilters.buildPutFilter(systemId, agentId, jvmId, queriesList), fields);
+                    } catch (Exception e) {
+                        return Boolean.FALSE;
+                    }
+                    return Boolean.TRUE;
+                }
+            });
+
+            asyncResponse.resume(Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build());
+        } catch (Exception e) {
+            asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
+        }
+    }
+
+
+    private void postAll(String body, SecurityContext context, String systemId, String agentId, String jvmId, final String namespace, AsyncResponse asyncResponse, final String collectionSuffix) {
         if (!namespaceSet.contains(namespace)) {
             namespaceSet.add(namespace);
         }
@@ -364,7 +399,7 @@ public class MongoStorageHandler implements StorageHandler {
                 }
             });
 
-            asyncResponse.resume(Response.status(Response.Status.OK).entity("PUT: " + response.toString()).build());
+            asyncResponse.resume(Response.status(Response.Status.OK).entity("POST: " + response.toString()).build());
         } catch (Exception e) {
             asyncResponse.resume(Response.status(Response.Status.BAD_REQUEST).build());
         }

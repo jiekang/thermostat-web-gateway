@@ -37,6 +37,7 @@
 package com.redhat.thermostat.web;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -52,35 +53,66 @@ import com.redhat.thermostat.web.setup.MongoCoreServerTestSetup;
 
 public class PutMongoCoreServerTest extends MongoCoreServerTestSetup {
     @Test
-    public void testPutAllSystems() throws InterruptedException, ExecutionException, TimeoutException {
-        String url = baseUrl + "/PutGetSystems/systems/*";
+    public void testPutNumber() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/testPutNumber/systems/systemId";
 
-        String putInput = "[{\"systemStuff\":\"a\"},{\"systemStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"systemStuff\":\"a\", \"otherStuff\":10},{\"systemStuff\":\"b\", \"otherStuff\":30}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResponse.getStatus());
-        assertEquals("", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
+
+        String putInput = "{\"set\":{\"otherStuff\":20}}";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").param("q", "systemStuff==a").send();
+        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
+        assertEquals("PUT: true", putResponse.getContentAsString());
+
+        ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"systemStuff\" : \"a\", \"otherStuff\" : 20, \"systemId\" : \"systemId\" },\\{ \"systemStuff\" : \"b\", \"otherStuff\" : 30, \"systemId\" : \"systemId\" }],\"time\" : \"[0-9]*\"}"));
     }
 
     @Test
-    public void testPutAllAgents() throws InterruptedException, ExecutionException, TimeoutException {
-        String url = baseUrl + "/PutGetSystems/systems/systemId/agents/*";
+    public void testPutJsonObject() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/testPutJsonObject/systems/systemId";
 
-        String putInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"systemStuff\":\"a\", \"otherStuff\":10},{\"systemStuff\":\"b\", \"otherStuff\":30}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResponse.getStatus());
-        assertEquals("", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
+
+        String putInput = "{\"set\":{\"otherStuff\":{\"item\":10}}}";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").param("q", "systemStuff==a").send();
+        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
+        assertEquals("PUT: true", putResponse.getContentAsString());
+
+        ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+
+        System.out.println(getResponse.getContentAsString());
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"systemStuff\" : \"a\", \"otherStuff\" : \\{ \"item\" : 10 }, \"systemId\" : \"systemId\" },\\{ \"systemStuff\" : \"b\", \"otherStuff\" : 30, \"systemId\" : \"systemId\" }],\"time\" : \"[0-9]*\"}"));
     }
 
     @Test
-    public void testPutAllJvms() throws InterruptedException, ExecutionException, TimeoutException {
-        String url = baseUrl + "/PutGetSystems/systems/systemId/agents/agentId/jvms/*";
+    public void testPutJsonArray() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = baseUrl + "/testPutJsonArray/systems/systemId";
 
-        String putInput = "[{\"jvmStuff\":\"a\"},{\"jvmStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").send();
+        String postInput = "[{\"systemStuff\":\"a\", \"otherStuff\":10},{\"systemStuff\":\"b\", \"otherStuff\":30}]";
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(postInput), "application/json").send();
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResponse.getStatus());
-        assertEquals("", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
+
+        String putInput = "{\"set\":{\"otherStuff\":[{\"item\":10}]}}";
+        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(putInput), "application/json").param("q", "systemStuff==a").send();
+        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
+        assertEquals("PUT: true", putResponse.getContentAsString());
+
+        ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+
+        assertTrue(getResponse.getContentAsString().matches("\\{\"response\" : \\[\\{ \"systemStuff\" : \"a\", \"otherStuff\" : \\[\\{ \"item\" : 10 }], \"systemId\" : \"systemId\" },\\{ \"systemStuff\" : \"b\", \"otherStuff\" : 30, \"systemId\" : \"systemId\" }],\"time\" : \"[0-9]*\"}"));
     }
 }

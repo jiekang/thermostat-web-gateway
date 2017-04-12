@@ -76,8 +76,9 @@ public class NamespaceHttpHandler {
                            @Context SecurityContext context,
                            @Suspended final AsyncResponse asyncResponse,
                            @PathParam("namespace") String namespace,
+                           @QueryParam("q") String queries,
                            @PathParam("systemId") String systemId) {
-        handler.putSystems(body, context, asyncResponse, namespace, systemId);
+        handler.putSystems(body, context, asyncResponse, namespace, queries, systemId);
     }
 
     @POST
@@ -126,9 +127,10 @@ public class NamespaceHttpHandler {
                           @Context SecurityContext context,
                           @Suspended final AsyncResponse asyncResponse,
                           @PathParam("namespace") String namespace,
+                          @QueryParam("q") String queries,
                           @PathParam("systemId") String systemId,
                           @PathParam("agentId") String agentId) {
-        handler.putAgents(body, context, asyncResponse, namespace, systemId, agentId);
+        handler.putAgents(body, context, asyncResponse, namespace, queries, systemId, agentId);
     }
 
     @POST
@@ -180,10 +182,11 @@ public class NamespaceHttpHandler {
                         @Context SecurityContext context,
                         @Suspended final AsyncResponse asyncResponse,
                         @PathParam("namespace") String namespace,
+                        @QueryParam("q") String queries,
                         @PathParam("systemId") String systemId,
                         @PathParam("agentId") String agentId,
                         @PathParam("jvmId") String jvmId) {
-        handler.putJvms(body, context, asyncResponse, namespace, systemId, agentId, jvmId);
+        handler.putJvms(body, context, asyncResponse, namespace, queries, systemId, agentId, jvmId);
     }
 
     @POST

@@ -146,4 +146,15 @@ public class MongoRequestFilters {
 
         return and(filters);
     }
+
+    public static Bson buildPutFilter(String systemId, String agentId, String jvmId, List<String> queries) {
+
+        List<Bson> filters = new ArrayList<>();
+
+        filters.add(buildIdFilters(systemId, agentId, jvmId));
+
+        filters.add(buildQueriesFilter(queries));
+
+        return and(filters);
+    }
 }

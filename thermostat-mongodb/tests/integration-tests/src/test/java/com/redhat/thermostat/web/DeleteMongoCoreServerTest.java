@@ -56,10 +56,10 @@ public class DeleteMongoCoreServerTest extends MongoCoreServerTestSetup {
     public void testDeleteAgents() throws InterruptedException, ExecutionException, TimeoutException {
         String url = baseUrl + "/DeleteAgents/systems/*/agents/agentId";
         String input = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
-        ContentResponse putResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(input), "application/json").send();
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(input), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putResponse.getStatus());
-        assertEquals("PUT: true", putResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postResponse.getStatus());
+        assertEquals("POST: true", postResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
@@ -87,16 +87,16 @@ public class DeleteMongoCoreServerTest extends MongoCoreServerTestSetup {
         String oneInput = "[{\"agentStuff\":\"a\"},{\"agentStuff\":\"b\"}]";
         String twoInput = "[{\"otherStuff\":\"c\"},{\"otherStuff\":\"d\"}]";
 
-        ContentResponse putOneResponse = client.newRequest(oneUrl).method(HttpMethod.PUT).content(new StringContentProvider(oneInput), "application/json").send();
+        ContentResponse postOneResponse = client.newRequest(oneUrl).method(HttpMethod.POST).content(new StringContentProvider(oneInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putOneResponse.getStatus());
-        assertEquals("PUT: true", putOneResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postOneResponse.getStatus());
+        assertEquals("POST: true", postOneResponse.getContentAsString());
 
 
-        ContentResponse putTwoResponse = client.newRequest(twoUrl).method(HttpMethod.PUT).content(new StringContentProvider(twoInput), "application/json").send();
+        ContentResponse postTwoResponse = client.newRequest(twoUrl).method(HttpMethod.POST).content(new StringContentProvider(twoInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putTwoResponse.getStatus());
-        assertEquals("PUT: true", putTwoResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postTwoResponse.getStatus());
+        assertEquals("POST: true", postTwoResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(allUrl).method(HttpMethod.GET).send();
 
@@ -119,10 +119,10 @@ public class DeleteMongoCoreServerTest extends MongoCoreServerTestSetup {
 
         String oneInput = "[{\"agentStuff\":\"a\", \"item\":1},{\"agentStuff\":\"b\", \"item\":2}]";
 
-        ContentResponse putOneResponse = client.newRequest(url).method(HttpMethod.PUT).content(new StringContentProvider(oneInput), "application/json").send();
+        ContentResponse postOneResponse = client.newRequest(url).method(HttpMethod.POST).content(new StringContentProvider(oneInput), "application/json").send();
 
-        assertEquals(Response.Status.OK.getStatusCode(), putOneResponse.getStatus());
-        assertEquals("PUT: true", putOneResponse.getContentAsString());
+        assertEquals(Response.Status.OK.getStatusCode(), postOneResponse.getStatus());
+        assertEquals("POST: true", postOneResponse.getContentAsString());
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
 
