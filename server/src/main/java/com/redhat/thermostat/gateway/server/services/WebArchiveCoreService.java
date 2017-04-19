@@ -37,18 +37,24 @@
 package com.redhat.thermostat.gateway.server.services;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
 
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
+import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
 import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.ServiceConfiguration;
@@ -74,18 +80,52 @@ class WebArchiveCoreService implements CoreService {
         webAppContext.setContextPath(contextPath);
         webAppContext.setWar(warPath);
         initializeWebSockets(server, webAppContext);
-        setupBasicAuthForContext(server, webAppContext);
+
+        setupAuthForContext(webAppContext);
+
         return webAppContext;
     }
 
-    private void setupBasicAuthForContext(Server server, WebAppContext webAppContext) {
+
+    private void setupAuthForContext(WebAppContext webAppContext) {
         if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC)) {
-            Map<String, String> userConfig = getBasicAuthUserConfig();
-            SecurityHandler security = webAppContext.getSecurityHandler();
-            BasicUserStore userStore = new BasicUserStore(userConfig);
-            LoginService loginService = new BasicLoginService(userStore, security.getRealmName());
-            security.setLoginService(loginService);
+            setupBasicAuthForContext(webAppContext);
+        } else if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_KEYCLOAK)) {
+            setupKeycloakAuthForContext(webAppContext);
         }
+    }
+
+    private void setupKeycloakAuthForContext(WebAppContext webAppContext) {
+        KeycloakJettyAuthenticator authenticator = new KeycloakJettyAuthenticator();
+        ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        securityHandler.setAuthenticator(authenticator);
+        securityHandler.setAuthMethod("BASIC");
+        securityHandler.setRealmName("prototype");
+
+        Constraint constraint = new Constraint();
+        constraint.setName(Constraint.__BASIC_AUTH);
+        constraint.setRoles(new String[]{"thermostat"});
+        constraint.setAuthenticate(true);
+
+        ConstraintMapping constraintMapping = new ConstraintMapping();
+        constraintMapping.setConstraint(constraint);
+        constraintMapping.setPathSpec("/*");
+
+        securityHandler.addConstraintMapping(constraintMapping);
+
+        String keycloakConfig = (String) serviceConfig.asMap().get(ServiceConfiguration.ConfigurationKey.KEYCLOAK_CONFIG.name());
+
+        webAppContext.setInitParameter("org.keycloak.json.adapterConfig", keycloakConfig);
+        webAppContext.setSecurityHandler(securityHandler);
+        webAppContext.addSystemClass("org.keycloak.");
+    }
+
+    private void setupBasicAuthForContext(WebAppContext webAppContext) {
+        Map<String, String> userConfig = getBasicAuthUserConfig();
+        SecurityHandler security = webAppContext.getSecurityHandler();
+        BasicUserStore userStore = new BasicUserStore(userConfig);
+        LoginService loginService = new BasicLoginService(userStore, security.getRealmName());
+        security.setLoginService(loginService);
     }
 
     @SuppressWarnings("unchecked")

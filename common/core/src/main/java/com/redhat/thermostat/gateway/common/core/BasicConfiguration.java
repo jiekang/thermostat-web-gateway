@@ -40,6 +40,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -49,11 +50,15 @@ import java.util.Properties;
 abstract class BasicConfiguration implements Configuration {
 
     private static final String PROPERTIES_PREFIX = "properties|";
+    private static final String FILE_PREFIX = "file|";
 
     /**
      * Load config into a map. If a key has a special value starting with {@link #PROPERTIES_PREFIX} its
      * value is interpreted to be a properties file next to {@code configFile}. In that case
      * that properties file is loaded in and the value replaced by the properties' contents.
+     * If a key has a special value starting with {@link #FILE_PREFIX} its value is interpreted
+     * as a String next to {@code configFile}. In this case the file is read and the value replaced
+     * by the contents of the file.
      *
      * @param configFile The config file to read in.
      * @param basePath The parent directory of {@code configFile}.
@@ -81,6 +86,17 @@ abstract class BasicConfiguration implements Configuration {
                 String recursiveConfigFile = Paths.get(basePath, value).toFile().getAbsolutePath();
                 Map<String, Object> replaceValue = loadConfig(recursiveConfigFile, basePath);
                 config.put(replaceKey, replaceValue);
+            } else if (key.startsWith(FILE_PREFIX) && key.length() > FILE_PREFIX.length()) {
+                String replaceKey = key.substring(FILE_PREFIX.length());
+                String replaceValue;
+                try {
+                    replaceValue = new String(Files.readAllBytes(Paths.get(basePath, value)));
+                    config.put(replaceKey, replaceValue);
+                } catch (FileNotFoundException e) {
+                    // ignore
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             } else {
                 config.put(key, entry.getValue());
             }
