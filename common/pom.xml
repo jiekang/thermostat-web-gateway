@@ -51,8 +51,8 @@
     <name>Thermostat Web Gateway Common Packages</name>
 
     <modules>
-        <module>mongodb</module>
         <module>core</module>
+        <module>mongodb</module>
     </modules>
 
 </project>

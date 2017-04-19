@@ -70,16 +70,22 @@
             <version>${jetty.version}</version>
         </dependency>
         <!-- To run javax.websocket in embedded server -->
-    	<dependency>
-	      <groupId>org.eclipse.jetty.websocket</groupId>
-	      <artifactId>javax-websocket-server-impl</artifactId>
-	      <version>${jetty.version}</version>
-	    </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>javax-websocket-server-impl</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
         <!-- Thermostat Web Gateway Dependencies -->
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-common-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <!-- Keycloak dependencies -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-jetty92-adapter</artifactId>
+            <version>${keycloak.version}</version>
         </dependency>
         <!-- test scoped deps -->
         <dependency>

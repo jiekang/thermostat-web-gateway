@@ -72,6 +72,19 @@ public class ServiceConfiguration extends BasicConfiguration {
          * websockets functionality.
          */
         WEBSOCKETS,
+
+        /**
+         * Set to {@code true} for keycloak authentication
+         * and authorization. Cannot be used along with
+         * {@link ConfigurationKey#SECURITY_BASIC}
+         */
+        SECURITY_KEYCLOAK,
+
+        /**
+         * Only useful together with SECURITY_KEYCLOAK.
+         * Specifies the keycloak configuration string
+         */
+        KEYCLOAK_CONFIG,
     }
 
 }
