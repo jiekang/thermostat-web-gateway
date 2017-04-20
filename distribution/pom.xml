@@ -165,6 +165,13 @@
                             <type>war</type>
                             <overWrite>false</overWrite>
                         </artifactItem>
+                        <artifactItem>
+                            <groupId>com.redhat.thermostat</groupId>
+                            <artifactId>thermostat-web-gateway-white-pages</artifactId>
+                            <version>${project.version}</version>
+                            <type>war</type>
+                            <overWrite>false</overWrite>
+                        </artifactItem>
                     </artifactItems>
                     <outputDirectory>${project.build.directory}/image/services</outputDirectory>
                 </configuration>
@@ -194,6 +201,13 @@
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-service-commands</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-white-pages</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>
