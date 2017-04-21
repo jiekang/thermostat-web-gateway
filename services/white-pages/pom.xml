@@ -45,10 +45,10 @@
     <version>1.99.12-SNAPSHOT</version>
   </parent>
 
-  <artifactId>thermostat-web-gateway-white-pages</artifactId>
+  <artifactId>thermostat-web-gateway-service-white-pages</artifactId>
   <packaging>war</packaging>
 
-  <name>Thermostat White Pages Service</name>
+  <name>Thermostat Web Gateway White Pages Service</name>
 
   <properties>
 
@@ -57,7 +57,7 @@
 
   </properties>
 
-    <!-- test stuff -->
+  <!-- test stuff -->
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -80,17 +80,13 @@
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
       <version>${javax-rs-api.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.glassfish.jersey.containers</groupId>
-      <artifactId>jersey-container-servlet</artifactId>
-      <version>${jersey.version}</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>${javax.servlet.version}</version>
     </dependency>
-      <dependency>
-          <groupId>javax.servlet</groupId>
-          <artifactId>javax.servlet-api</artifactId>
-          <version>${javax.servlet.version}</version>
-      </dependency>
     <dependency>
       <groupId>com.redhat.thermostat</groupId>
       <artifactId>thermostat-web-gateway-common-core</artifactId>
@@ -99,19 +95,19 @@
   </dependencies>
 
   <build>
-      <plugins>
-        <plugin>
-          <artifactId>maven-war-plugin</artifactId>
-          <configuration>
-            <webResources>
-              <resource>
-                <directory>src/main/webapp</directory>
-                <filtering>true</filtering>
-              </resource>
-            </webResources>
-          </configuration>
-        </plugin>
-      </plugins>
-    </build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <webResources>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
