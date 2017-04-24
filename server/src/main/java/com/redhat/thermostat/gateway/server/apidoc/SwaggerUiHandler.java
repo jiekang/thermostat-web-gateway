@@ -34,24 +34,27 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.server.apidoc;
 
-import java.io.IOException;
+import java.net.URL;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 
-@Path("{fileName: .+\\.html}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler extends BasicResourceHandler {
+public class SwaggerUiHandler {
 
-    @GET
-    public Response getPage(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(fileName);
+    private static final String API_CONTEXT_PATH = "/doc";
+
+    public ContextHandler createSwaggerResourceHandler() {
+        ContextHandler apiContext = new ContextHandler();
+        apiContext.setContextPath(API_CONTEXT_PATH);
+        ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setDirectoriesListed(false);
+        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
+        URL u = this.getClass().getResource("/swagger-ui");
+        resourceHandler.setResourceBase(u.toExternalForm());
+        apiContext.setHandler(resourceHandler);
+        return apiContext;
     }
 
 }

@@ -45,13 +45,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("{fileName: .+\\.html}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler extends BasicResourceHandler {
+@Path("doc/{fileName: .+\\.json}")
+@Produces(MediaType.TEXT_PLAIN)
+public class SwaggerSpecResourceHandler extends BasicResourceHandler {
 
     @GET
-    public Response getPage(@PathParam("fileName") String fileName) throws IOException {
+    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
         return getFileAsResponse(fileName);
     }
-
 }

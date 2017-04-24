@@ -45,12 +45,14 @@ import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
+import com.redhat.thermostat.gateway.server.apidoc.SwaggerUiHandler;
 import com.redhat.thermostat.gateway.server.services.CoreService;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 
@@ -92,6 +94,13 @@ public class CoreServerBuilder {
             }
         }
 
+        // Set up Swagger UI-based API doc handler together with the service handlers.
+        // It'll be able to generate API docs based on any URL accessible
+        // swagger spec (swagger.json/swagger.yaml). Hence, we set this up
+        // once in the deploying server and make the swagger spec available
+        // in the services themselves
+        ContextHandler swaggerHandler = new SwaggerUiHandler().createSwaggerResourceHandler();
+        contextHandlerCollection.addHandler(swaggerHandler);
         server.setHandler(contextHandlerCollection);
     }
 
