@@ -313,6 +313,77 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         doNoAuthTestAgent(agentUser);
     }
 
+    /**
+     * Tests whether the client can ping the server end-point. A server response is
+     * expected.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 2000)
+    public void testAgentPing() throws Exception {
+        String agentUser = "foo-agent-user";
+        String agentId = "testAgent";
+        URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
+        final CountDownLatch waitForAgentConnect = new CountDownLatch(1);
+        final CountDownLatch pongSignal = new CountDownLatch(1);
+        CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(waitForAgentConnect, pongSignal, false);
+        ClientUpgradeRequest agentRequest = new ClientUpgradeRequest();
+        agentRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
+                getBasicAuthHeaderValue(agentUser, "agent-pwd"));
+
+        // Ensure agent conneted before we actually do anything
+        client.connect(agentSocket, agentUri, agentRequest);
+        waitForAgentConnect.await();
+
+        // Initiate ping from client
+        String pingMsgPayload = "testAgent ping message";
+        agentSocket.sendPingToServer(pingMsgPayload);
+
+        // Wait for server pong to come back
+        pongSignal.await();
+
+        assertEquals(pingMsgPayload, agentSocket.getPongMsg());
+
+        // now we are ready to close the agent socket too
+        agentSocket.closeSession();
+        agentSocket.awaitClose();
+    }
+
+    /**
+     * Tests whether a server ping is properly responded to by the client by sending a
+     * pong response.
+     *
+     * Note: The service sends a ping onConnect() and then every subsequent X minutes
+     *       where X is strictly less than the currently set timeout value for the
+     *       agent/receiver sockets.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 2000)
+    public void testAgentPong() throws Exception {
+        String agentUser = "foo-agent-user";
+        String agentId = "testAgent";
+        URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
+        final CountDownLatch waitForAgentConnect = new CountDownLatch(1);
+        final CountDownLatch pongResponseSent = new CountDownLatch(1);
+        CmdChannelAgentSocket agentSocket = new CmdChannelAgentSocket(waitForAgentConnect, pongResponseSent, true);
+        ClientUpgradeRequest agentRequest = new ClientUpgradeRequest();
+        agentRequest.setHeader(HttpHeader.AUTHORIZATION.asString(),
+                getBasicAuthHeaderValue(agentUser, "agent-pwd"));
+
+        // Ensure agent conneted before we actually do anything
+        client.connect(agentSocket, agentUri, agentRequest);
+        waitForAgentConnect.await();
+
+        String expectedPingPayload = "1|" + agentId;
+        pongResponseSent.await();
+        assertEquals(expectedPingPayload, agentSocket.getPingMsg());
+
+        // now we are ready to close the agent socket too
+        agentSocket.closeSession();
+        agentSocket.awaitClose();
+    }
+
     private void doNoAuthTestClient(long clientSequence, TestUser clientUser) throws Exception {
         ClientRequest noMatter = new ClientRequest(clientSequence);
         String agentId = "testAgent";

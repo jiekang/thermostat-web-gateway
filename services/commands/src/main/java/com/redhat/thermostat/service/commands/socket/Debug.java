@@ -36,21 +36,9 @@
 
 package com.redhat.thermostat.service.commands.socket;
 
-import java.io.IOException;
+class Debug {
 
-import javax.websocket.PongMessage;
-
-import com.redhat.thermostat.service.commands.channel.model.Message;
-
-public interface CommandChannelWebSocket {
-
-    void onClose(int code, String message);
-
-    void onConnect() throws IOException;
-
-    void onSocketMessage(Message msg);
-
-    void onError(Throwable cause);
-
-    void onPongMessage(PongMessage pongMessage);
+    static boolean isOn() {
+        return false;
+    }
 }

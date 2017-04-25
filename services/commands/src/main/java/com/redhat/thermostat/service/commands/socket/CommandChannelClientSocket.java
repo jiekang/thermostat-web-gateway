@@ -43,7 +43,6 @@ import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
-import com.redhat.thermostat.service.commands.channel.AgentSocketsRegistry;
 import com.redhat.thermostat.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.service.commands.channel.CommunicationsRegistry;
 import com.redhat.thermostat.service.commands.channel.WebSocketCommunicationBuilder;
@@ -59,9 +58,11 @@ class CommandChannelClientSocket extends CommandChannelSocket {
     private static final String PATH_PARAM_ACTION = "action";
     private static final String PATH_PARAM_JVM = "jvmId";
     private static final String PATH_PARAM_SEQ_ID = "seqId";
+    private final long socketTimeout;
 
     CommandChannelClientSocket(String id, Session session) {
         super(id, session);
+        this.socketTimeout = session.getMaxIdleTimeout();
     }
 
     @Override
@@ -75,7 +76,11 @@ class CommandChannelClientSocket extends CommandChannelSocket {
         } catch (NumberFormatException e) {
             sendErrorResponse(sequence /* will be unknown */);
         }
-        Session agentSession = AgentSocketsRegistry.getSession(agentId);
+        // Note: agent/client session will have the same default timeout.
+        //       Thus, it's fine to use the client's set timeout value for
+        //       retrieving the agent registry.
+        AgentSocketsRegistry agentRegistry = AgentSocketsRegistry.getInstance(socketTimeout);
+        Session agentSession = agentRegistry.getSession(agentId);
         if (agentSession == null) {
             // the agent the client wants to talk to has not connected yet.
             sendErrorResponse(sequence);

@@ -36,14 +36,19 @@
 
 package com.redhat.thermostat.service.commands.http.handlers;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.CountDownLatch;
 
+import org.eclipse.jetty.websocket.api.RemoteEndpoint;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketError;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketFrame;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.extensions.Frame;
 
 import com.google.gson.Gson;
 import com.redhat.thermostat.service.commands.channel.model.Message;
@@ -59,22 +64,86 @@ public class CmdChannelAgentSocket {
     private final Gson gson;
     private final CountDownLatch closeLatch;
     private final CountDownLatch connectLatch;
+    private final CountDownLatch pongReceived;
+    private final CountDownLatch pingReceived;
     private final OnMessageCallBack onMessage;
     private Session session;
+    private String pongMsg;
+    private String pingMsg;
 
     public CmdChannelAgentSocket(OnMessageCallBack onMessage, CountDownLatch connect, Gson gson) {
-        this.closeLatch = new CountDownLatch(1);
-        this.onMessage = onMessage;
-        this.connectLatch = connect;
-        this.gson = gson;
+        this(onMessage, connect, new CountDownLatch(1), new CountDownLatch(1), gson);
     }
 
     public CmdChannelAgentSocket(OnMessageCallBack onMessage, Gson gson) {
         this(onMessage, new CountDownLatch(1), gson);
     }
 
+    public CmdChannelAgentSocket(CountDownLatch connect, CountDownLatch pingPongSignal, boolean isPing) {
+        this(new NoOpMsgCallback(), connect, isPing ? new CountDownLatch(1) : pingPongSignal, isPing ? pingPongSignal : new CountDownLatch(1), null);
+    }
+
+    private CmdChannelAgentSocket(OnMessageCallBack onMessage, CountDownLatch connect, CountDownLatch pongReceived, CountDownLatch pingReceived, Gson gson) {
+        this.closeLatch = new CountDownLatch(1);
+        this.onMessage = onMessage;
+        this.connectLatch = connect;
+        this.gson = gson;
+        this.pongReceived = pongReceived;
+        this.pingReceived = pingReceived;
+    }
+
+
     public void awaitClose() throws InterruptedException {
         this.closeLatch.await();
+    }
+
+    @OnWebSocketFrame
+    public void onFrame(Frame frame) {
+        switch (frame.getType()) {
+        case PONG:
+            handlePong(frame.getPayload());
+            break;
+        case PING:
+            ByteBuffer payload = null;
+            if (frame.hasPayload()) {
+                payload = frame.getPayload();
+            }
+            handlePing(payload);
+            break;
+        default:
+            // nothing to do
+        }
+    }
+
+    private void handlePing(ByteBuffer payload) {
+        RemoteEndpoint endPoint = session.getRemote();
+        try {
+            // Note: sendPong() will change the position of the payload
+            //       so the string needs to get retrieved before sendPong()
+            //       is called.
+            pingMsg = getStringFromPayload(payload);
+            endPoint.sendPong(payload);
+            pingReceived.countDown();
+        } catch (IOException e) {
+            System.err.println("Failed to send pong response!");
+            e.printStackTrace();
+        }
+    }
+
+    private void handlePong(ByteBuffer payload) {
+        pongMsg = getStringFromPayload(payload);
+        pongReceived.countDown();
+    }
+
+    private String getStringFromPayload(ByteBuffer payload) {
+        int limit = payload.limit();
+        int position = payload.position();
+        int length = limit - position;
+        byte[] buf = new byte[length];
+        for (int i = 0; position < limit; position++, i++) {
+            buf[i] = payload.get(position);
+        }
+        return new String(buf);
     }
 
     @OnWebSocketClose
@@ -107,6 +176,24 @@ public class CmdChannelAgentSocket {
         if (session != null) {
             this.session.close();
         }
+    }
+
+    public void sendPingToServer(String msgPayload) throws IOException {
+        if (this.session == null) {
+            throw new NullPointerException("Session null. Agent not connected?");
+        }
+        RemoteEndpoint endpoint = session.getRemote();
+        ByteBuffer pingPayload = ByteBuffer.wrap(msgPayload.getBytes());
+        endpoint.sendPing(pingPayload);
+        System.err.println("Client: Ping msg sent <<" + msgPayload + ">>");
+    }
+
+    public String getPongMsg() {
+        return pongMsg;
+    }
+
+    public String getPingMsg() {
+        return pingMsg;
     }
 
     public interface OnMessageCallBack {

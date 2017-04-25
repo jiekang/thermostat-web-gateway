@@ -34,26 +34,34 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.service.commands.socket;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+class AgentPingSequence {
 
-import javax.websocket.Session;
+    private final String agentId;
+    private int currentSequence;
 
-public class AgentSocketsRegistry {
-
-    private static final Map<String, Session> agentSockets = new ConcurrentHashMap<>();
-
-    public static void addSocket(String id, Session session) {
-        agentSockets.put(id, session);
+    AgentPingSequence(String agentId) {
+        this(0, agentId);
     }
 
-    public static Session getSession(String id) {
-        return agentSockets.get(id);
+    AgentPingSequence(int initialVal, String agentId) {
+        this.currentSequence = initialVal;
+        this.agentId = agentId;
     }
 
-    public static void removeSocket(String id) {
-        agentSockets.remove(id);
+    private synchronized int getNextSequence() {
+        int next = currentSequence + 1;
+        next = Math.max(0, next); // handle roll-overs
+        currentSequence = next;
+        return next;
+    }
+
+    synchronized int getCurrentSequence() {
+        return currentSequence;
+    }
+
+    String getNextPingPayload() {
+        return String.format("%d|%s", getNextSequence(), agentId);
     }
 }

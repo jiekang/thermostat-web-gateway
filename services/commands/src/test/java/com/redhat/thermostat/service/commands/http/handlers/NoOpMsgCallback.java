@@ -34,23 +34,18 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.socket;
+package com.redhat.thermostat.service.commands.http.handlers;
 
-import java.io.IOException;
-
-import javax.websocket.PongMessage;
+import org.eclipse.jetty.websocket.api.Session;
 
 import com.redhat.thermostat.service.commands.channel.model.Message;
+import com.redhat.thermostat.service.commands.http.handlers.CmdChannelAgentSocket.OnMessageCallBack;
 
-public interface CommandChannelWebSocket {
+class NoOpMsgCallback implements OnMessageCallBack {
 
-    void onClose(int code, String message);
+    @Override
+    public void run(Session session, Message msg) {
+        // nothing
+    }
 
-    void onConnect() throws IOException;
-
-    void onSocketMessage(Message msg);
-
-    void onError(Throwable cause);
-
-    void onPongMessage(PongMessage pongMessage);
 }

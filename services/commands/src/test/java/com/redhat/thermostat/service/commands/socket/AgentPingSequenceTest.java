@@ -36,21 +36,33 @@
 
 package com.redhat.thermostat.service.commands.socket;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
 
-import javax.websocket.PongMessage;
+import org.junit.Test;
 
-import com.redhat.thermostat.service.commands.channel.model.Message;
+public class AgentPingSequenceTest {
 
-public interface CommandChannelWebSocket {
+    private static final String AGENT_ID = "foo";
 
-    void onClose(int code, String message);
+    @Test
+    public void testRollOver() {
+        int initial = Integer.MAX_VALUE - 1;
+        AgentPingSequence sequence = new AgentPingSequence(initial, AGENT_ID);
+        assertEquals(initial, sequence.getCurrentSequence());
+        assertEquals(String.format("%d|foo", Integer.MAX_VALUE), sequence.getNextPingPayload());
+        assertEquals(Integer.MAX_VALUE, sequence.getCurrentSequence());
+        assertEquals("0|foo", sequence.getNextPingPayload());
+        assertEquals(0, sequence.getCurrentSequence());
+        assertEquals("1|foo", sequence.getNextPingPayload());
+        assertEquals(1, sequence.getCurrentSequence());
+    }
 
-    void onConnect() throws IOException;
-
-    void onSocketMessage(Message msg);
-
-    void onError(Throwable cause);
-
-    void onPongMessage(PongMessage pongMessage);
+    @Test
+    public void canGetPingPayload() {
+        String expected = "1|foo";
+        String nextExpected = "2|foo";
+        AgentPingSequence sequence = new AgentPingSequence(AGENT_ID);
+        assertEquals(expected, sequence.getNextPingPayload());
+        assertEquals(nextExpected, sequence.getNextPingPayload());
+    }
 }

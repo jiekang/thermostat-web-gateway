@@ -37,7 +37,9 @@
 package com.redhat.thermostat.service.commands.http.handlers;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
+import javax.websocket.PongMessage;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.service.commands.channel.model.Message;
@@ -47,9 +49,14 @@ import com.redhat.thermostat.service.commands.socket.WebSocketType;
 
 class CommandChannelEndpointHandler {
 
+    // Default socket timeout will be 10 minutes. For agent sockets they should never
+    // time out since we are sending regular pings to those sockets periodically. The
+    // ping interval is strictly less than the timout set here.
+    private static final long DEFAULT_SOCKET_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
     private CommandChannelWebSocket socket;
 
     protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
+        session.setMaxIdleTimeout(DEFAULT_SOCKET_TIMEOUT);
         socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
         socket.onConnect();
     }
@@ -64,5 +71,9 @@ class CommandChannelEndpointHandler {
 
     protected void onClose(int code, String reason) {
         socket.onClose(code, reason);
+    }
+
+    protected void onPongMessage(PongMessage msg) {
+        socket.onPongMessage(msg);
     }
 }
