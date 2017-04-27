@@ -87,6 +87,11 @@
             <artifactId>keycloak-jetty92-adapter</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>${google-gson.version}</version>
+        </dependency>
         <!-- test scoped deps -->
         <dependency>
             <groupId>junit</groupId>

@@ -34,24 +34,12 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.server.auth.keycloak;
 
-import java.io.IOException;
+public class KeycloakConfiguration {
+    private String realm;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-@Path("{fileName: .+\\.html}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler extends BasicResourceHandler {
-
-    @GET
-    public Response getPage(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(fileName);
+    public String getRealm() {
+        return realm;
     }
-
 }

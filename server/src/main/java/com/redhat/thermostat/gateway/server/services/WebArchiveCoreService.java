@@ -37,12 +37,10 @@
 package com.redhat.thermostat.gateway.server.services;
 
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
 
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -60,6 +58,8 @@ import com.redhat.thermostat.gateway.common.core.Configuration;
 import com.redhat.thermostat.gateway.common.core.ServiceConfiguration;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
+import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfiguration;
+import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfigurationFactory;
 
 class WebArchiveCoreService implements CoreService {
 
@@ -96,11 +96,15 @@ class WebArchiveCoreService implements CoreService {
     }
 
     private void setupKeycloakAuthForContext(WebAppContext webAppContext) {
+        String keycloakConfig = (String) serviceConfig.asMap().get(ServiceConfiguration.ConfigurationKey.KEYCLOAK_CONFIG.name());
+        KeycloakConfiguration keycloakConfiguration = new KeycloakConfigurationFactory().createKeycloakConfiguration(keycloakConfig);
+        String realm = keycloakConfiguration.getRealm();
+
         KeycloakJettyAuthenticator authenticator = new KeycloakJettyAuthenticator();
         ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
         securityHandler.setAuthenticator(authenticator);
         securityHandler.setAuthMethod("BASIC");
-        securityHandler.setRealmName("prototype");
+        securityHandler.setRealmName(realm);
 
         Constraint constraint = new Constraint();
         constraint.setName(Constraint.__BASIC_AUTH);
@@ -112,8 +116,6 @@ class WebArchiveCoreService implements CoreService {
         constraintMapping.setPathSpec("/*");
 
         securityHandler.addConstraintMapping(constraintMapping);
-
-        String keycloakConfig = (String) serviceConfig.asMap().get(ServiceConfiguration.ConfigurationKey.KEYCLOAK_CONFIG.name());
 
         webAppContext.setInitParameter("org.keycloak.json.adapterConfig", keycloakConfig);
         webAppContext.setSecurityHandler(securityHandler);

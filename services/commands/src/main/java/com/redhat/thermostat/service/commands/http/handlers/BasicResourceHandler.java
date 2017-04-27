@@ -36,22 +36,38 @@
 
 package com.redhat.thermostat.service.commands.http.handlers;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("{fileName: .+\\.html}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler extends BasicResourceHandler {
+/**
+ * Basic static resources handler.
+ *
+ */
+class BasicResourceHandler {
 
-    @GET
-    public Response getPage(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(fileName);
+    protected Response getFileAsResponse(String fileName) throws IOException {
+        try (InputStream stream = BasicResourceHandler.class.getClassLoader()
+                .getResourceAsStream(fileName);) {
+            String responseContent = read(stream);
+            return Response.ok(responseContent).build();
+        }
     }
 
+    private String read(InputStream stream) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            String line;
+            StringBuffer b = new StringBuffer();
+            while ((line = buffer.readLine()) != null) {
+                b.append(line);
+                b.append("\n");
+            }
+            return b.toString();
+        }
+    }
 }

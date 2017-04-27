@@ -69,6 +69,14 @@
         <role-name>thermostat-commands-realm</role-name>
       </auth-constraint>
     </security-constraint>
+    <!-- Allow viewing of API json spec without authentication -->
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>Swagger API SPEC JSON File</web-resource-name>
+        <url-pattern>/v1/static/doc/commands-swagger.json</url-pattern>
+      </web-resource-collection>
+      <!-- Explicitly no auth constraint for this file -->
+    </security-constraint>
 
     <login-config>
       <auth-method>BASIC</auth-method>

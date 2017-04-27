@@ -34,24 +34,14 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.server.auth.keycloak;
 
-import java.io.IOException;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-@Path("{fileName: .+\\.html}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler extends BasicResourceHandler {
-
-    @GET
-    public Response getPage(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(fileName);
+public class KeycloakConfigurationFactory {
+    public KeycloakConfiguration createKeycloakConfiguration(String keycloakJson) throws JsonSyntaxException{
+        Gson gson = new Gson();
+        return gson.fromJson(keycloakJson, KeycloakConfiguration.class);
     }
-
 }
