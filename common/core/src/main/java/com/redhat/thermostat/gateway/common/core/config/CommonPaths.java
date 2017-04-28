@@ -34,26 +34,34 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import static org.junit.Assert.assertEquals;
+import java.io.File;
 
-import java.util.HashMap;
-import java.util.Map;
+public class CommonPaths {
 
-import org.junit.Test;
+    private static final String GLOBAL_CONFIG_PROPERTIES = "global-config.properties";
+    private static final String SERVICE_CONFIG_PROPERTIES = "service-config.properties";
 
-public class GlobalServicesConfigurationTest extends ConfigurationTest {
+    private final String gatewayHome;
 
-    @Test
-    public void canReadGlobalServicesConfig() {
-        Map<String, Object> expected = new HashMap<String, Object>();
-        expected.put("/service1", "/path/to/microservice.war");
-        String root = getTestRoot();
-        GlobalConfiguration global = new GlobalConfiguration(root);
-        @SuppressWarnings("unchecked")
-        Map<String, Object> actual = (Map<String, Object>)global.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
-        assertEquals(expected, actual);
+    CommonPaths(String gatewayHome) {
+        this.gatewayHome = gatewayHome;
     }
 
+    public String getGlobalConfigFilePath() {
+        return getConfigDir() + File.separator + GLOBAL_CONFIG_PROPERTIES;
+    }
+
+    public String getServiceConfigFilePath(String serviceName) {
+        return getServiceConfigDir(serviceName) + File.separator + SERVICE_CONFIG_PROPERTIES;
+    }
+
+    String getServiceConfigDir(String serviceName) {
+        return getConfigDir() + File.separator + serviceName;
+    }
+
+    String getConfigDir() {
+        return gatewayHome + File.separator + "etc";
+    }
 }

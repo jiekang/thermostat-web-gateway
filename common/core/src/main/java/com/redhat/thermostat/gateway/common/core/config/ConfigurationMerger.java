@@ -34,55 +34,32 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import static org.junit.Assert.assertEquals;
-
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
-import org.junit.Before;
-import org.junit.Test;
+class ConfigurationMerger implements Configuration {
 
-public class ConfigurationFactoryTest extends ConfigurationTest {
+    private final Configuration globalConfig;
+    private final Configuration serviceConfig;
 
-    private ConfigurationFactory factory;
-    private Map<String, Object> services;
-
-    @Before
-    public void setup() {
-        factory = new ConfigurationFactory(getTestRoot());
-        services = new HashMap<String, Object>();
-        services.put("/service1", "/path/to/microservice.war");
+    ConfigurationMerger(Configuration globalConfig, Configuration serviceConfig) {
+        this.globalConfig = globalConfig;
+        this.serviceConfig = serviceConfig;
     }
 
-    @Test
-    public void canGetMergedConfigForService() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("foo", "service-value"); // override from service config
-        expected.put("bar", "baz"); // global only config
-        expected.put("test", "me"); // service only config
-        expected.put("SERVICES", services);
-        Configuration config = factory.createServiceConfiguration("test-service");
-        assertEquals(expected, config.asMap());
+    @Override
+    public Map<String, Object> asMap() {
+        Map<String, Object> mergedConfig = new HashMap<>(serviceConfig.asMap());
+        for (Entry<String, Object> entry: globalConfig.asMap().entrySet()) {
+            if (!mergedConfig.containsKey(entry.getKey())) {
+                mergedConfig.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return Collections.unmodifiableMap(mergedConfig);
     }
 
-    @Test
-    public void canGetGlobalServicesConfig() {
-        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("/service1", "/path/to/microservice.war");
-
-        assertEquals(expected, globalServicesConfig.asMap());
-    }
-
-    @Test
-    public void canGetGlobalConfig() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("foo", "bar");
-        expected.put("bar", "baz");
-        expected.put("SERVICES", services);
-        Configuration globalConfig = factory.createGlobalConfiguration();
-        assertEquals(expected, globalConfig.asMap());
-    }
 }

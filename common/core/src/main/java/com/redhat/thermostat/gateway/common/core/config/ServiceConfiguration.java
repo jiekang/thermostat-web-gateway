@@ -34,30 +34,57 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import static org.junit.Assert.assertEquals;
+import java.util.Collections;
+import java.util.Map;
 
-import java.io.File;
+public class ServiceConfiguration extends BasicConfiguration {
 
-import org.junit.Test;
+    private final CommonPaths paths;
+    @SuppressWarnings("unused")
+    private final String serviceName;
+    private final Map<String, Object> map;
 
-public class CommonPathsTest {
-
-    private static final String ROOT = "somepath";
-
-    @Test
-    public void canGetGlobalConfig() {
-        CommonPaths paths = new CommonPaths(ROOT);
-        String expected = ROOT + File.separator + "etc" + File.separator + "global-config.properties";
-        assertEquals(expected, paths.getGlobalConfigFilePath());
+    ServiceConfiguration(String gatewayHome, String serviceName) {
+        this.paths = new CommonPaths(gatewayHome);
+        this.serviceName = serviceName;
+        this.map = loadConfig(paths.getServiceConfigFilePath(serviceName), paths.getServiceConfigDir(serviceName));
     }
 
-    @Test
-    public void canGetServiceConfig() {
-        String serviceName = "test-me-service";
-        CommonPaths paths = new CommonPaths(ROOT);
-        String expected = ROOT + File.separator + "etc" + File.separator + serviceName + File.separator + "service-config.properties";
-        assertEquals(expected, paths.getServiceConfigFilePath(serviceName));
+    @Override
+    public Map<String, Object> asMap() {
+        return Collections.unmodifiableMap(map);
     }
+
+    public enum ConfigurationKey {
+        /**
+         * Set to {@code true} for basic authentication
+         */
+        SECURITY_BASIC,
+        /**
+         * Only useful together with SECURITY_BASIC.
+         * Specifies the users a service knows about.
+         */
+        SECURITY_BASIC_USERS,
+        /**
+         * Set to {@code true} if the service needs
+         * websockets functionality.
+         */
+        WEBSOCKETS,
+
+        /**
+         * Set to {@code true} for keycloak authentication
+         * and authorization. Cannot be used along with
+         * {@link ConfigurationKey#SECURITY_BASIC}
+         */
+        SECURITY_KEYCLOAK,
+
+        /**
+         * Only useful together with SECURITY_KEYCLOAK.
+         * Specifies the keycloak configuration string
+         */
+        KEYCLOAK_CONFIG,
+    }
+
 }

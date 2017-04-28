@@ -34,26 +34,32 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.file.Paths;
+import static org.junit.Assert.assertEquals;
 
-abstract class ConfigurationTest {
+import java.io.File;
 
-    protected String getTestRoot() {
-        URL rootUrl = ConfigurationTest.class.getResource("/test_root");
-        return decodeFilePath(rootUrl);
+import org.junit.Test;
+
+import com.redhat.thermostat.gateway.common.core.config.CommonPaths;
+
+public class CommonPathsTest {
+
+    private static final String ROOT = "somepath";
+
+    @Test
+    public void canGetGlobalConfig() {
+        CommonPaths paths = new CommonPaths(ROOT);
+        String expected = ROOT + File.separator + "etc" + File.separator + "global-config.properties";
+        assertEquals(expected, paths.getGlobalConfigFilePath());
     }
 
-    private String decodeFilePath(URL url) {
-        try {
-            // Spaces are encoded as %20 in URLs - handle cases like that.
-            // requires Java 1.7
-            return Paths.get(url.toURI()).toFile().toString();
-        } catch (URISyntaxException e) {
-            throw new AssertionError("Syntax error in URI" + e.getMessage());
-        }
+    @Test
+    public void canGetServiceConfig() {
+        String serviceName = "test-me-service";
+        CommonPaths paths = new CommonPaths(ROOT);
+        String expected = ROOT + File.separator + "etc" + File.separator + serviceName + File.separator + "service-config.properties";
+        assertEquals(expected, paths.getServiceConfigFilePath(serviceName));
     }
 }

@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
 import java.util.Collections;
 import java.util.Map;

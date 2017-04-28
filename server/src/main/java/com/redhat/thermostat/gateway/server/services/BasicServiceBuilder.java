@@ -36,7 +36,7 @@
 
 package com.redhat.thermostat.gateway.server.services;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
 
 public abstract class BasicServiceBuilder implements CoreServiceBuilder {
 

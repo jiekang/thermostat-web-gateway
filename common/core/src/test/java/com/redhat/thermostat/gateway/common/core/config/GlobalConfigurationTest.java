@@ -34,60 +34,31 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Configuration factory for creating relevant configuration instances.
- *
- */
-public class ConfigurationFactory {
+import org.junit.Test;
 
-    private final String gatewayHome;
-    private final GlobalConfiguration globalConfig;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 
-    public ConfigurationFactory(String gatewayHome) {
-        this.gatewayHome = gatewayHome;
-        this.globalConfig = new GlobalConfiguration(gatewayHome);
+public class GlobalConfigurationTest extends ConfigurationTest {
+
+    @Test
+    public void canReadGlobalConfig() {
+        Map<String, Object> services = new HashMap<String, Object>();
+        services.put("/service1", "/path/to/microservice.war");
+        Map<String, Object> expected = new HashMap<String, Object>();
+        expected.put("foo", "bar");
+        expected.put("bar", "baz");
+        expected.put("SERVICES", services);
+        String root = getTestRoot();
+        GlobalConfiguration config = new GlobalConfiguration(root);
+        Map<String, Object> actual = config.asMap();
+        assertEquals(expected, actual);
     }
 
-    /**
-     * Creates the specific service configuration for the named service.
-     *
-     * @param serviceName The name of the service.
-     *
-     * @return The specific service configuration.
-     */
-    public Configuration createServiceConfiguration(String serviceName) {
-        Configuration serviceConfig = new ServiceConfiguration(gatewayHome, serviceName);
-        return new ConfigurationMerger(globalConfig, serviceConfig);
-    }
-
-    /**
-     * Creates the global server (servlet container) configuration.
-     *
-     * @return The server configuration.
-     */
-    public Configuration createGlobalConfiguration() {
-        return globalConfig;
-    }
-
-    /**
-     * Creates the global configuration that specifies which services shall
-     * get deployed in the server.
-     *
-     * @return The to-be-deployed services configuration.
-     */
-    public Configuration createGlobalServicesConfig() {
-        return new Configuration() {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public Map<String, Object> asMap() {
-                return (Map<String, Object>)globalConfig.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
-            }
-
-        };
-    }
 }

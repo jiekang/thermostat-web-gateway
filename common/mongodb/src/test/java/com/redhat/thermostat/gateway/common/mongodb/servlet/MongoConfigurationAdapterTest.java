@@ -46,7 +46,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.mongodb.configuration.MongoConfiguration;
 
 public class MongoConfigurationAdapterTest {

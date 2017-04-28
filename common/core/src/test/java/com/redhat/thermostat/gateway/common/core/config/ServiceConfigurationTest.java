@@ -34,11 +34,28 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
 import java.util.Map;
 
-public interface Configuration {
+import org.junit.Test;
 
-    Map<String, Object> asMap();
+import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
+
+public class ServiceConfigurationTest extends ConfigurationTest {
+
+    @Test
+    public void canReadServiceConfig() {
+        String serviceName = "test-service";
+        Map<String, Object> expected = new HashMap<String, Object>();
+        expected.put("foo", "service-value");
+        expected.put("test", "me");
+        String root = getTestRoot();
+        ServiceConfiguration config = new ServiceConfiguration(root, serviceName);
+        Map<String, Object> actual = config.asMap();
+        assertEquals(expected, actual);
+    }
 }

@@ -36,8 +36,8 @@
 
 package com.redhat.thermostat.wp.service;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
-import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
 import javax.servlet.ServletContext;

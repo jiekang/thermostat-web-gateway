@@ -34,32 +34,26 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 
-class ConfigurationMerger implements Configuration {
+abstract class ConfigurationTest {
 
-    private final Configuration globalConfig;
-    private final Configuration serviceConfig;
-
-    ConfigurationMerger(Configuration globalConfig, Configuration serviceConfig) {
-        this.globalConfig = globalConfig;
-        this.serviceConfig = serviceConfig;
+    protected String getTestRoot() {
+        URL rootUrl = ConfigurationTest.class.getResource("/test_root");
+        return decodeFilePath(rootUrl);
     }
 
-    @Override
-    public Map<String, Object> asMap() {
-        Map<String, Object> mergedConfig = new HashMap<>(serviceConfig.asMap());
-        for (Entry<String, Object> entry: globalConfig.asMap().entrySet()) {
-            if (!mergedConfig.containsKey(entry.getKey())) {
-                mergedConfig.put(entry.getKey(), entry.getValue());
-            }
+    private String decodeFilePath(URL url) {
+        try {
+            // Spaces are encoded as %20 in URLs - handle cases like that.
+            // requires Java 1.7
+            return Paths.get(url.toURI()).toFile().toString();
+        } catch (URISyntaxException e) {
+            throw new AssertionError("Syntax error in URI" + e.getMessage());
         }
-        return Collections.unmodifiableMap(mergedConfig);
     }
-
 }
