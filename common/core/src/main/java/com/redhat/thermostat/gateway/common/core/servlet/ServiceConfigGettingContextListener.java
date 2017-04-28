@@ -34,38 +34,44 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.wp.service;
-
-import java.util.Arrays;
-import java.util.List;
+package com.redhat.thermostat.gateway.common.core.servlet;
 
 import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
-import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
-enum WPConfigurationKeys {
+public class ServiceConfigGettingContextListener extends GatewayHomeSettingContextListener {
 
-    JVM_GATEWAY_URLS,
+    private ServletContext ctx;
 
-    ;
+    public ServiceConfigGettingContextListener() {
+        super();
+    }
 
-    public List<String> get(ServletContext ctx) {
+    ServiceConfigGettingContextListener(EnvHelper helper) {
+        super(helper);
+    }
 
-        String thisService = ctx.getInitParameter(GlobalConstants.SERVICE_NAME_KEY);
-        String gatewayHome = (String)ctx.getAttribute(GlobalConstants.GATEWAY_HOME_KEY);
-        ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
-        Configuration serviceConfig = factory.createServiceConfiguration(thisService);
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        super.contextInitialized(sce);
+        ctx = sce.getServletContext();
+    }
 
-        String configValue = (String) serviceConfig.asMap().get(name());
-        if (configValue == null) {
-            throw new IllegalStateException("WPConfigurationKeys Key: " + name() +
-                                            " can't be found, please" +
-                                            " check your configurations");
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        super.contextDestroyed(sce);
+        ctx = null;
+    }
+
+    public Configuration getServiceConfig(String serviceName) {
+        String gatewayHome;
+        synchronized (ctx) {
+            gatewayHome = (String)ctx.getAttribute(GlobalConstants.GATEWAY_HOME_KEY);
         }
-        String[] configs = configValue.split(";");
-
-        return Arrays.asList(configs);
+        ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
+        return factory.createServiceConfiguration(serviceName);
     }
 }

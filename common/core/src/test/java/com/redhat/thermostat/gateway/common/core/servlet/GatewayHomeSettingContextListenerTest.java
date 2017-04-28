@@ -34,19 +34,12 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.mongodb.servlet;
+package com.redhat.thermostat.gateway.common.core.servlet;
 
-import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -54,56 +47,55 @@ import javax.servlet.ServletContextEvent;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
-import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
-import com.redhat.thermostat.gateway.common.mongodb.configuration.MongoConfiguration;
+import com.redhat.thermostat.gateway.common.core.servlet.GatewayHomeSettingContextListener.EnvHelper;
 
-public class StorageConnectionSettingListenerTest {
+public class GatewayHomeSettingContextListenerTest {
 
     private ServletContext ctxt;
     private ServletContextEvent evt;
+    private EnvHelper mockEnv;
 
     @Before
     public void setup() {
         evt = mock(ServletContextEvent.class);
         ctxt = mock(ServletContext.class);
         when(evt.getServletContext()).thenReturn(ctxt);
-        when(ctxt.getInitParameter(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
-        when(ctxt.getAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
-        when(ctxt.getInitParameter(eq(GlobalConstants.SERVICE_NAME_KEY))).thenReturn("foo-service");
+        mockEnv = mock(EnvHelper.class);
     }
 
     @Test
-    public void canGetConfigFromServletContext() {
-        StorageConnectionSettingListener listener = new StorageConnectionSettingListener();
+    public void initializedSetsGatewayHomeAsSCAfromEnv() {
+        String gatewayHome = "bar-gw-home-from-env";
+        when(mockEnv.getEnv(eq(GlobalConstants.GATEWAY_HOME_ENV))).thenReturn(gatewayHome);
+        GatewayHomeSettingContextListener listener = new GatewayHomeSettingContextListener(mockEnv);
         listener.contextInitialized(evt);
-        Map<String, String> actual = listener.getMongoStorageConfig(ctxt);
-        assertEquals("foo", actual.get(MongoConfiguration.MONGO_DB.name()));
-        assertEquals("foo-user", actual.get(MongoConfiguration.MONGO_USERNAME.name()));
-        assertEquals("foo-password", actual.get(MongoConfiguration.MONGO_PASSWORD.name()));
-        assertEquals("3", actual.get(MongoConfiguration.MONGO_SERVER_TIMEOUT.name()));
-        assertEquals("mongodb://localhost:21793", actual.get(MongoConfiguration.MONGO_URL.name()));
+        verify(ctxt).setAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY), eq(gatewayHome));
     }
 
     @Test
-    public void contextInitializedAddsStorageAsAttribute() {
-        StorageConnectionSettingListener listener = new StorageConnectionSettingListener();
+    public void initializedSetsGatewayHomeAsSCAfromWebXml() {
+        String gatewayHome = "foo-gw-home";
+        when(ctxt.getInitParameter(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(gatewayHome);
+        GatewayHomeSettingContextListener listener = new GatewayHomeSettingContextListener(mockEnv);
         listener.contextInitialized(evt);
-        verify(ctxt).setAttribute(eq(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE), isA(ThermostatMongoStorage.class));
+        verify(ctxt).setAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY), eq(gatewayHome));
     }
 
-    private String getTestGatewayRoot() {
-        URL rootUrl = StorageConnectionSettingListener.class.getResource("/gateway-root");
-        return decodeFilePath(rootUrl);
+    @Test
+    public void envOverridesWebXml() {
+        String webXmlGwHome = "foo-gw-home";
+        String envGwHome = "bar-gw-home-from-env";
+        when(ctxt.getInitParameter(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(webXmlGwHome);
+        when(mockEnv.getEnv(eq(GlobalConstants.GATEWAY_HOME_ENV))).thenReturn(envGwHome);
+        GatewayHomeSettingContextListener listener = new GatewayHomeSettingContextListener(mockEnv);
+        listener.contextInitialized(evt);
+        verify(ctxt).setAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY), eq(envGwHome));
     }
 
-    private String decodeFilePath(URL url) {
-        try {
-            // Spaces are encoded as %20 in URLs. Use URLDecoder.decode() so
-            // as to handle cases like that.
-            return URLDecoder.decode(url.getFile(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new AssertionError("UTF-8 not supported, huh?");
-        }
+    @Test
+    public void destroyedRemovesAttribute() {
+        GatewayHomeSettingContextListener listener = new GatewayHomeSettingContextListener(mockEnv);
+        listener.contextDestroyed(evt);
+        verify(ctxt).setAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY), eq(null));
     }
 }

@@ -40,7 +40,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Paths;
 
-abstract class ConfigurationTest {
+public abstract class ConfigurationTest {
 
     protected String getTestRoot() {
         URL rootUrl = ConfigurationTest.class.getResource("/test_root");

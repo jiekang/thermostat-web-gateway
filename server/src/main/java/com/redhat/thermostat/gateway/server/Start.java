@@ -40,6 +40,7 @@ import org.eclipse.jetty.server.Server;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.CoreServiceType;
@@ -47,10 +48,10 @@ import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.C
 public class Start {
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            throw new RuntimeException("Expected 1 and only one init param: THERMOSTAT_GATEWAY_HOME");
+        String gatewayHome = System.getenv(GlobalConstants.GATEWAY_HOME_ENV);
+        if (gatewayHome == null) {
+            throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
         }
-        String gatewayHome = args[0];
 
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
         CoreServerBuilder serverBuilder = new CoreServerBuilder();

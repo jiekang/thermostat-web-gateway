@@ -58,10 +58,6 @@
     </servlet-mapping>
     <!-- Service configuration -->
     <context-param>
-        <param-name>com.redhat.thermostat.gateway.HOME</param-name>
-        <param-value>@com.redhat.thermostat.gateway.HOME@</param-value>
-    </context-param>
-    <context-param>
         <param-name>com.redhat.thermostat.gateway.SERVICE_NAME</param-name>
         <param-value>@com.redhat.thermostat.gateway.SERVICE_NAME@</param-value>
     </context-param>

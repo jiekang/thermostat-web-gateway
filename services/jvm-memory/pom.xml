@@ -52,7 +52,6 @@
   
   <properties>
     <com.redhat.thermostat.gateway.SERVICE_NAME>jvm-memory</com.redhat.thermostat.gateway.SERVICE_NAME>
-    <com.redhat.thermostat.gateway.HOME>${project.parent.parent.basedir}/distribution/target/image</com.redhat.thermostat.gateway.HOME>
   </properties>
   <build>
     <plugins>
