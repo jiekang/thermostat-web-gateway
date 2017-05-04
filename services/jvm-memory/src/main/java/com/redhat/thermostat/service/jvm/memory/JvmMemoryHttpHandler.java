@@ -60,8 +60,11 @@ import javax.ws.rs.core.Response;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
+import com.mongodb.BasicDBObject;
 import com.mongodb.CursorType;
+import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
+import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
@@ -71,65 +74,116 @@ import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConsta
 @Path("/")
 public class JvmMemoryHttpHandler {
 
-    private final String collectionName = "vm-memory-stats";
+    private final String collectionName = "jvm-memory";
 
     @GET
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmMemory(@QueryParam("l") @DefaultValue("1") Integer limit,
-                                 @QueryParam("o") @DefaultValue("1") Integer offset,
+                                 @QueryParam("o") @DefaultValue("0") Integer offset,
                                  @QueryParam("s") String sort,
                                  @QueryParam("q") String queries,
                                  @QueryParam("p") String projections,
                                  @Context ServletContext context
     ) {
-        List<String> queriesList;
-        if (queries != null) {
-            queriesList = Arrays.asList(queries.split(","));
-        } else {
-            queriesList = Collections.emptyList();
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            FindIterable<Document> documents;
+            if (queries != null) {
+                List<String> queriesList = Arrays.asList(queries.split(","));
+                final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
+                documents = storage.getDatabase().getCollection(collectionName).find(query);
+            } else {
+                documents = storage.getDatabase().getCollection(collectionName).find();
+            }
+
+
+            List<String> projectionsList;
+            if (projections != null) {
+                projectionsList = Arrays.asList(projections.split(","));
+                documents = documents.projection(fields(include(projectionsList), excludeId()));
+            } else {
+                documents = documents.projection(excludeId());
+            }
+
+            final Bson sortObject = MongoSortFilters.createSortObject(sort);
+            documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
+
+            String message = MongoResponseBuilder.buildGetResponse(documents);
+
+            return Response.status(Response.Status.OK).entity(message).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
-
-        List<String> projectionsList;
-        if (projections != null) {
-            projectionsList = Arrays.asList(projections.split(","));
-        } else {
-            projectionsList = Collections.emptyList();
-        }
-
-        final Bson query = MongoRequestFilters.buildFilter(queriesList, Collections.<String>emptyList());
-
-        final Bson sortObject = MongoSortFilters.createSortObject(sort);
-
-        ThermostatMongoStorage storage;
-        synchronized (context) {
-            storage = (ThermostatMongoStorage)context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-        }
-        FindIterable<Document> documents = storage.getDatabase().getCollection(collectionName).find(query).projection(fields(include(projectionsList), excludeId())).sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
-
-        String message = MongoResponseBuilder.buildJsonResponse(MongoResponseBuilder.buildJsonDocuments(documents));
-
-        return Response.status(Response.Status.OK).entity(message).build();
     }
 
     @PUT
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response putJvmMemory() {
-        return Response.ok().build();
+    public Response putJvmMemory(String body,
+                                 @QueryParam("q") String queries,
+                                 @Context ServletContext context) {
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
+
+            final List<String> queriesList;
+            if (queries != null) {
+                queriesList = Arrays.asList(queries.split(","));
+            } else {
+                queriesList = Collections.emptyList();
+            }
+
+            BasicDBObject setObject = (BasicDBObject) inputObject.get("set");
+            final Bson fields = new Document("$set", setObject);
+
+            storage.getDatabase().getCollection(collectionName).updateMany(MongoRequestFilters.buildQueriesFilter(queriesList), fields);
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @POST
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response postJvmMemory() {
-        return Response.ok().build();
+    public Response postJvmMemory(String body,
+                                  @Context ServletContext context) {
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            if (body.length() > 0) {
+                List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
+                storage.getDatabase().getCollection(collectionName, DBObject.class).insertMany(inputList);
+            }
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @DELETE
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response deleteJvmMemory() {
-        return Response.ok().build();
+    public Response deleteJvmMemory(@QueryParam("q") String queries,
+                                    @Context ServletContext context) {
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            List<String> queriesList;
+            if (queries != null) {
+                queriesList = Arrays.asList(queries.split(","));
+                storage.getDatabase().getCollection(collectionName).deleteMany(MongoRequestFilters.buildQueriesFilter(queriesList));
+
+            } else {
+                storage.getDatabase().getCollection(collectionName).drop();
+            }
+
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 }

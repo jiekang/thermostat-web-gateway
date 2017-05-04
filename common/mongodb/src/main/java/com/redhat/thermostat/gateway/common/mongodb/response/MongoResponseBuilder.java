@@ -60,23 +60,10 @@ public class MongoResponseBuilder {
      * }
      */
 
-    public static String buildJsonResponse(String documents) {
-        return "{" +
-                documents +
-                "}";
-    }
-
-    public static String buildJsonResponseWithTime(String documents, long elapsed) {
-        return "{" +
-                documents +
-                buildKeyAddition("time", "" + elapsed) +
-                "}";
-    }
-
-    public static String buildJsonDocuments(FindIterable<Document> documents) {
+    public static String buildGetResponse(FindIterable<Document> documents) {
         final StringBuilder s = new StringBuilder();
 
-        s.append("\"response\" : [");
+        s.append("{ \"response\" : [");
 
         final int[] i = {0};
 
@@ -92,12 +79,8 @@ public class MongoResponseBuilder {
             s.deleteCharAt(s.length() - 1);
         }
 
-        s.append("]");
+        s.append("] }");
 
         return s.toString();
-    }
-
-    private static String buildKeyAddition(String key, String value) {
-        return ",\"" + key + "\" : \"" + value + "\"";
     }
 }

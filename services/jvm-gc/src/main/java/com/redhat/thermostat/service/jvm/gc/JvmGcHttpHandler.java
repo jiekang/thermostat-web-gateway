@@ -96,7 +96,7 @@ public class JvmGcHttpHandler {
             projectionsList = Collections.emptyList();
         }
 
-        final Bson query = MongoRequestFilters.buildFilter(queriesList, Collections.<String>emptyList());
+        final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
 
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
 
@@ -106,7 +106,7 @@ public class JvmGcHttpHandler {
         }
         FindIterable<Document> documents = storage.getDatabase().getCollection(collectionName).find(query).projection(fields(include(projectionsList), excludeId())).sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
 
-        String message = MongoResponseBuilder.buildJsonResponse(MongoResponseBuilder.buildJsonDocuments(documents));
+        String message = MongoResponseBuilder.buildGetResponse(documents);
 
         return Response.status(Response.Status.OK).entity(message).build();
     }
