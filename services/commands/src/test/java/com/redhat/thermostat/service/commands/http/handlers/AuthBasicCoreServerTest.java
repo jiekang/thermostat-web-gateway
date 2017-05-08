@@ -62,8 +62,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
-import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.server.CoreServerBuilder;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;

@@ -34,60 +34,57 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
+import java.util.Collections;
 import java.util.Map;
 
-/**
- * Configuration factory for creating relevant configuration instances.
- *
- */
-public class ConfigurationFactory {
+public class ServiceConfiguration extends BasicConfiguration {
 
-    private final String gatewayHome;
-    private final GlobalConfiguration globalConfig;
+    private final CommonPaths paths;
+    @SuppressWarnings("unused")
+    private final String serviceName;
+    private final Map<String, Object> map;
 
-    public ConfigurationFactory(String gatewayHome) {
-        this.gatewayHome = gatewayHome;
-        this.globalConfig = new GlobalConfiguration(gatewayHome);
+    ServiceConfiguration(String gatewayHome, String serviceName) {
+        this.paths = new CommonPaths(gatewayHome);
+        this.serviceName = serviceName;
+        this.map = loadConfig(paths.getServiceConfigFilePath(serviceName), paths.getServiceConfigDir(serviceName));
     }
 
-    /**
-     * Creates the specific service configuration for the named service.
-     *
-     * @param serviceName The name of the service.
-     *
-     * @return The specific service configuration.
-     */
-    public Configuration createServiceConfiguration(String serviceName) {
-        Configuration serviceConfig = new ServiceConfiguration(gatewayHome, serviceName);
-        return new ConfigurationMerger(globalConfig, serviceConfig);
+    @Override
+    public Map<String, Object> asMap() {
+        return Collections.unmodifiableMap(map);
     }
 
-    /**
-     * Creates the global server (servlet container) configuration.
-     *
-     * @return The server configuration.
-     */
-    public Configuration createGlobalConfiguration() {
-        return globalConfig;
+    public enum ConfigurationKey {
+        /**
+         * Set to {@code true} for basic authentication
+         */
+        SECURITY_BASIC,
+        /**
+         * Only useful together with SECURITY_BASIC.
+         * Specifies the users a service knows about.
+         */
+        SECURITY_BASIC_USERS,
+        /**
+         * Set to {@code true} if the service needs
+         * websockets functionality.
+         */
+        WEBSOCKETS,
+
+        /**
+         * Set to {@code true} for keycloak authentication
+         * and authorization. Cannot be used along with
+         * {@link ConfigurationKey#SECURITY_BASIC}
+         */
+        SECURITY_KEYCLOAK,
+
+        /**
+         * Only useful together with SECURITY_KEYCLOAK.
+         * Specifies the keycloak configuration string
+         */
+        KEYCLOAK_CONFIG,
     }
 
-    /**
-     * Creates the global configuration that specifies which services shall
-     * get deployed in the server.
-     *
-     * @return The to-be-deployed services configuration.
-     */
-    public Configuration createGlobalServicesConfig() {
-        return new Configuration() {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public Map<String, Object> asMap() {
-                return (Map<String, Object>)globalConfig.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
-            }
-
-        };
-    }
 }

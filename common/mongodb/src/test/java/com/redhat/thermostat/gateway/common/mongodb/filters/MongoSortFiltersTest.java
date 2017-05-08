@@ -34,11 +34,54 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.mongodb.filters;
 
-import java.util.Map;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public interface Configuration {
+import org.bson.BsonDocument;
+import org.bson.conversions.Bson;
+import org.junit.Test;
 
-    Map<String, Object> asMap();
+import com.mongodb.MongoClient;
+
+public class MongoSortFiltersTest {
+
+    @Test
+    public void testAscending() {
+        String sort = "+item";
+        Bson filter = MongoSortFilters.createSortObject(sort);
+
+        BsonDocument sortObject = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
+        assertEquals(1, sortObject.getNumber("item").intValue());
+    }
+
+    @Test
+    public void testDescending() {
+        String sort = "-item";
+        Bson filter = MongoSortFilters.createSortObject(sort);
+
+        BsonDocument sortObject = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
+        assertEquals(-1, sortObject.getNumber("item").intValue());
+    }
+
+    @Test
+    public void testMultipleSortItems() {
+        String sort="+a,-b";
+        Bson filter = MongoSortFilters.createSortObject(sort);
+
+        BsonDocument sortObject = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
+
+        assertEquals(1, sortObject.getNumber("a").intValue());
+        assertEquals(-1, sortObject.getNumber("b").intValue());
+    }
+
+    @Test
+    public void testInvalidSort() {
+        String sort = "abc";
+        Bson filter = MongoSortFilters.createSortObject(sort);
+
+        BsonDocument sortObject = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
+        assertTrue(sortObject.isEmpty());
+    }
 }

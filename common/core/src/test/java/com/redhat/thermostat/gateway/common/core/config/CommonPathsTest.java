@@ -34,13 +34,15 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 
 import org.junit.Test;
+
+import com.redhat.thermostat.gateway.common.core.config.CommonPaths;
 
 public class CommonPathsTest {
 

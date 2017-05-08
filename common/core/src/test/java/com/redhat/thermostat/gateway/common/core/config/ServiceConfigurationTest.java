@@ -34,32 +34,28 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import java.util.Collections;
+import static org.junit.Assert.assertEquals;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-class ConfigurationMerger implements Configuration {
+import org.junit.Test;
 
-    private final Configuration globalConfig;
-    private final Configuration serviceConfig;
+import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 
-    ConfigurationMerger(Configuration globalConfig, Configuration serviceConfig) {
-        this.globalConfig = globalConfig;
-        this.serviceConfig = serviceConfig;
+public class ServiceConfigurationTest extends ConfigurationTest {
+
+    @Test
+    public void canReadServiceConfig() {
+        String serviceName = "test-service";
+        Map<String, Object> expected = new HashMap<String, Object>();
+        expected.put("foo", "service-value");
+        expected.put("test", "me");
+        String root = getTestRoot();
+        ServiceConfiguration config = new ServiceConfiguration(root, serviceName);
+        Map<String, Object> actual = config.asMap();
+        assertEquals(expected, actual);
     }
-
-    @Override
-    public Map<String, Object> asMap() {
-        Map<String, Object> mergedConfig = new HashMap<>(serviceConfig.asMap());
-        for (Entry<String, Object> entry: globalConfig.asMap().entrySet()) {
-            if (!mergedConfig.containsKey(entry.getKey())) {
-                mergedConfig.put(entry.getKey(), entry.getValue());
-            }
-        }
-        return Collections.unmodifiableMap(mergedConfig);
-    }
-
 }

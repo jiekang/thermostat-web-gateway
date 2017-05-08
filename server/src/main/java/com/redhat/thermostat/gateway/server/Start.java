@@ -38,8 +38,8 @@ package com.redhat.thermostat.gateway.server;
 
 import org.eclipse.jetty.server.Server;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
-import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.CoreServiceType;

@@ -36,7 +36,7 @@
 
 package com.redhat.thermostat.gateway.server.services;
 
-import com.redhat.thermostat.gateway.common.core.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 
 public class CoreServiceBuilderFactory {
 

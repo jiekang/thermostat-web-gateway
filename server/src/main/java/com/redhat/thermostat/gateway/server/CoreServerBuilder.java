@@ -50,8 +50,8 @@ import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
-import com.redhat.thermostat.gateway.common.core.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.server.apidoc.SwaggerUiHandler;
 import com.redhat.thermostat.gateway.server.services.CoreService;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;

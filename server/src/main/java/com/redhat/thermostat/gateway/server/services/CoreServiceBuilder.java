@@ -38,7 +38,7 @@ package com.redhat.thermostat.gateway.server.services;
 
 import java.util.List;
 
-import com.redhat.thermostat.gateway.common.core.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
 
 public interface CoreServiceBuilder {
 

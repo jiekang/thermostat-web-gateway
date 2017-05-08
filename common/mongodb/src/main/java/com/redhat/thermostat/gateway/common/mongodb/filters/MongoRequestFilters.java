@@ -38,12 +38,11 @@ package com.redhat.thermostat.gateway.common.mongodb.filters;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.exists;
 import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Filters.lt;
 import static com.mongodb.client.model.Filters.lte;
-import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Filters.ne;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,32 +52,10 @@ import java.util.regex.Pattern;
 import org.bson.conversions.Bson;
 
 public class MongoRequestFilters {
-
-    public static Bson buildFilter(List<String> queries, List<String> tags) {
-        List<Bson> filters = new ArrayList<>();
-
-        filters.add(buildQueriesFilter(queries));
-
-        filters.add(buildTagsFilter(tags));
-
-        return and(filters);
-    }
-
-    private static Bson buildTagsFilter(List<String> tags) {
-        List<Bson> filters = new ArrayList<>();
-        filters.add(exists("tags", false));
-        if (tags != null && !tags.isEmpty()) {
-            for (String tag : tags) {
-                filters.add(eq("tags", tag));
-            }
-        }
-        return or(filters);
-    }
-
-    private static Bson buildQueriesFilter(List<String> queries) {
+    public static Bson buildQueriesFilter(List<String> queries) {
         List<Bson> filters = new ArrayList<>();
         for (String filter : queries) {
-            Pattern p = Pattern.compile("(<=|>=|<|>|=)");
+            Pattern p = Pattern.compile("(<=|>=|<|>|==|!=)");
             Matcher m = p.matcher(filter);
             if (m.find()) {
                 String key = filter.substring(0, m.start());
@@ -104,9 +81,11 @@ public class MongoRequestFilters {
                     case ">=":
                         filters.add(gte(key, value));
                         break;
-                    case "=":
+                    case "==":
                         filters.add(eq(key, value));
                         break;
+                    case "!=":
+                        filters.add(ne(key, value));
                     case ">":
                         filters.add(gt(key, value));
                         break;

@@ -121,6 +121,7 @@
                         <configuration>
                             <target>
                                 <chmod file="${project.build.directory}/image/bin/thermostat-web-gateway.sh" perm="755" />
+                                <chmod file="${project.build.directory}/image/bin/thermostat-mongodb.sh" perm="755" />
                             </target>
                         </configuration>
                         <goals>

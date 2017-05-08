@@ -34,54 +34,31 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.mongodb.response;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import org.bson.Document;
+import static org.junit.Assert.assertEquals;
 
-import com.mongodb.Block;
-import com.mongodb.client.FindIterable;
+import java.util.HashMap;
+import java.util.Map;
 
-public class MongoResponseBuilder {
+import org.junit.Test;
 
-    /**
-     * JSON Response format
-     * {
-     *   "response" : {
-     *       [ {...}, ... ]
-     *   }
-     * }
-     *
-     * Timed JSON Response format
-     * {
-     *   "response" : {
-     *       [ {...}, ... ]
-     *   },
-     *   "time" : elapsed
-     * }
-     */
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 
-    public String buildGetResponseString(FindIterable<Document> documents) {
-        final StringBuilder s = new StringBuilder();
+public class GlobalConfigurationTest extends ConfigurationTest {
 
-        s.append("{ \"response\" : [");
-
-        final int[] i = {0};
-
-        documents.forEach(new Block<Document>() {
-            @Override
-            public void apply(Document document) {
-                s.append(document.toJson()).append(",");
-                i[0]++;
-            }
-        });
-
-        if (i[0] != 0) {
-            s.deleteCharAt(s.length() - 1);
-        }
-
-        s.append("] }");
-
-        return s.toString();
+    @Test
+    public void canReadGlobalConfig() {
+        Map<String, Object> services = new HashMap<String, Object>();
+        services.put("/service1", "/path/to/microservice.war");
+        Map<String, Object> expected = new HashMap<String, Object>();
+        expected.put("foo", "bar");
+        expected.put("bar", "baz");
+        expected.put("SERVICES", services);
+        String root = getTestRoot();
+        GlobalConfiguration config = new GlobalConfiguration(root);
+        Map<String, Object> actual = config.asMap();
+        assertEquals(expected, actual);
     }
 
 }
