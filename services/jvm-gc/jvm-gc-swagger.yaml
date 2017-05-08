@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   version: 0.0.2
-  title: Thermostat Web Gateway JVM Memory API
+  title: Thermostat Web Gateway JVM GC API
   license:
     name: GPL v2 with Classpath Exception
     url: 'http://www.gnu.org/licenses'
@@ -14,7 +14,7 @@ basePath: /0.0.2
 paths:
   /:
     get:
-      description: Get jvm memory information.
+      description: Get jvm gc information.
       parameters:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/offset'
@@ -25,9 +25,9 @@ paths:
         '200':
           description: OK
           schema:
-            $ref: '#/definitions/jvm-memory-stats-response'
+            $ref: '#/definitions/jvm-gc-stats-response'
     put:
-      description: Update jvm memory information.
+      description: Update jvm gc information.
       parameters:
         - $ref: '#/parameters/put-body'
         - $ref: '#/parameters/query'
@@ -35,30 +35,30 @@ paths:
         '200':
           description: OK
     post:
-      description: Add jvm memory information
+      description: Add jvm gc information
       parameters:
-        - $ref: '#/parameters/jvm-memory-stats'
+        - $ref: '#/parameters/jvm-gc-stats'
       responses:
         '200':
           description: OK
     delete:
-      description: Delete jvm memory information.
+      description: Delete jvm gc information.
       parameters:
         - $ref: '#/parameters/query'
       responses:
         '200':
           description: OK
 definitions:
-  jvm-memory-stats-response:
+  jvm-gc-stats-response:
     type: object
     properties:
       response:
-          $ref: '#/definitions/jvm-memory-stats'
-  jvm-memory-stats:
+          $ref: '#/definitions/jvm-gc-stats'
+  jvm-gc-stats:
     type: array
     items:
-      $ref: '#/definitions/jvm-memory-stat'
-  jvm-memory-stat:
+      $ref: '#/definitions/jvm-gc-stat'
+  jvm-gc-stat:
     type: object
     properties:
       agentId:
@@ -68,69 +68,27 @@ definitions:
       timeStamp:
         type: integer
         format: int64
-      metaspaceMaxCapacity:
-        type: integer
-        format: int64
-      metaspaceMinCapacity:
-        type: integer
-        format: int64
-      metaspaceCapacity:
-        type: integer
-        format: int64
-      metaspaceUsed:
-        type: integer
-        format: int64
-      generations:
-        type: array
-        items:
-          $ref: '#/definitions/generations-item'
-  generations-item:
-    type: object
-    properties:
-      capacity:
-        type: integer
-        format: int64
-      collector:
+      collectorName:
         type: string
-      maxCapacity:
+      runCount:
         type: integer
         format: int64
-      name:
-        type: string
-      spaces:
-        type: array
-        items:
-          $ref: '#/definitions/spaces-item'
-  spaces-item:
-    type: object
-    properties:
-      capacity:
+      wallTime:
         type: integer
         format: int64
-      index:
-        type: integer
-      maxCapacity:
-        type: integer
-        format: int64
-      name:
-        type: string
-      used:
-        type: integer
-        format: int64
-
   put-body:
     type: object
     properties:
       "set":
         type: object
 parameters:
-  jvm-memory-stats:
-    name: jvm-memory-stats
+  jvm-gc-stats:
+    name: jvm-gc-stats
     in: body
-    description: The jvm memory statistics
+    description: The jvm gc statistics
     required: true
     schema:
-      $ref: '#/definitions/jvm-memory-stats'
+      $ref: '#/definitions/jvm-gc-stats'
   put-body:
     name: putBody
     in: body

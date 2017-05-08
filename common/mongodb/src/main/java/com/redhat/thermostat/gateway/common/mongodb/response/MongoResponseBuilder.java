@@ -60,7 +60,7 @@ public class MongoResponseBuilder {
      * }
      */
 
-    public static String buildGetResponse(FindIterable<Document> documents) {
+    public String buildGetResponseString(FindIterable<Document> documents) {
         final StringBuilder s = new StringBuilder();
 
         s.append("{ \"response\" : [");
@@ -83,4 +83,5 @@ public class MongoResponseBuilder {
 
         return s.toString();
     }
+
 }

@@ -36,14 +36,6 @@
 
 package com.redhat.thermostat.service.jvm.gc;
 
-import static com.mongodb.client.model.Projections.excludeId;
-import static com.mongodb.client.model.Projections.fields;
-import static com.mongodb.client.model.Projections.include;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -57,78 +49,83 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import org.bson.Document;
-import org.bson.conversions.Bson;
 
-import com.mongodb.CursorType;
-import com.mongodb.client.FindIterable;
+import com.mongodb.DBObject;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
-import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
-import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
+import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
 
 @Path("/")
 public class JvmGcHttpHandler {
-    private final String collectionName = "vm-gc-stats";
+    private final MongoExecutor mongoExecutor = new MongoExecutor();
+    private final String collectionName = "jvm-gc";
 
     @GET
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmMemory(@QueryParam("l") @DefaultValue("1") Integer limit,
-                                 @QueryParam("o") @DefaultValue("1") Integer offset,
+                                 @QueryParam("o") @DefaultValue("0") Integer offset,
                                  @QueryParam("s") String sort,
                                  @QueryParam("q") String queries,
                                  @QueryParam("p") String projections,
                                  @Context ServletContext context
     ) {
-        List<String> queriesList;
-        if (queries != null) {
-            queriesList = Arrays.asList(queries.split(","));
-        } else {
-            queriesList = Collections.emptyList();
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            String message = mongoExecutor.buildGetResponse(storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections);
+
+            return Response.status(Response.Status.OK).entity(message).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
-
-        List<String> projectionsList;
-        if (projections != null) {
-            projectionsList = Arrays.asList(projections.split(","));
-        } else {
-            projectionsList = Collections.emptyList();
-        }
-
-        final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
-
-        final Bson sortObject = MongoSortFilters.createSortObject(sort);
-
-        ThermostatMongoStorage storage;
-        synchronized (context) {
-            storage = (ThermostatMongoStorage)context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-        }
-        FindIterable<Document> documents = storage.getDatabase().getCollection(collectionName).find(query).projection(fields(include(projectionsList), excludeId())).sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
-
-        String message = MongoResponseBuilder.buildGetResponse(documents);
-
-        return Response.status(Response.Status.OK).entity(message).build();
     }
 
     @PUT
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response putJvmMemory() {
-        return Response.ok().build();
+    public Response putJvmMemory(String body,
+                                 @QueryParam("q") String queries,
+                                 @Context ServletContext context) {
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            mongoExecutor.buildPutResponse(storage.getDatabase().getCollection(collectionName), body, queries);
+
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @POST
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response postJvmMemory() {
-        return Response.ok().build();
+    public Response postJvmMemory(String body,
+                                  @Context ServletContext context) {
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            mongoExecutor.buildPost(storage.getDatabase().getCollection(collectionName, DBObject.class), body);
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @DELETE
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response deleteJvmMemory() {
-        return Response.ok().build();
+    public Response deleteJvmMemory(@QueryParam("q") String queries,
+                                    @Context ServletContext context) {
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+            mongoExecutor.buildDeleteResponse(storage.getDatabase().getCollection(collectionName), queries);
+
+            return Response.status(Response.Status.OK).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 }

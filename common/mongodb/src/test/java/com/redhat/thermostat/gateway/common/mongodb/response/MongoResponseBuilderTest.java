@@ -46,6 +46,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.mongodb.Block;
@@ -56,6 +57,14 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
 
 public class MongoResponseBuilderTest {
+
+    private MongoResponseBuilder mongoResponseBuilder;
+
+    @Before
+    public void setup() {
+        mongoResponseBuilder = new MongoResponseBuilder();
+    }
+
     @Test
     public void testBuildGetResponse() {
         Document d1 = Document.parse("{\"hello\" : \"blob\"}");
@@ -66,7 +75,7 @@ public class MongoResponseBuilderTest {
 
         FindIterable<Document> iterable = new TestFindIterable<>(list);
 
-        String output = MongoResponseBuilder.buildGetResponse(iterable);
+        String output = mongoResponseBuilder.buildGetResponseString(iterable);
         String expected = "{ \"response\" : [{ \"hello\" : \"blob\" },{ \"a\" : { \"blob\" : [\"hi\"] } }] }";
         assertEquals(expected, output);
     }
@@ -75,7 +84,7 @@ public class MongoResponseBuilderTest {
     public void testBuildEmptyGetResponse() {
         FindIterable<Document> iterable = new TestFindIterable<>(Collections.<Document>emptyList());
 
-        String output = MongoResponseBuilder.buildGetResponse(iterable);
+        String output = mongoResponseBuilder.buildGetResponseString(iterable);
         String expected = "{ \"response\" : [] }";
         assertEquals(expected, output);
     }
