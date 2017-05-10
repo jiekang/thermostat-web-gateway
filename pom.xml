@@ -51,16 +51,13 @@
     <modules>
         <module>server</module>
         <module>distribution</module>
-
         <module>common</module>
-
         <module>services</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.7</java.version>
-
         <jersey.version>2.25</jersey.version>
         <jetty.version>9.2.19.v20160908</jetty.version>
         <mongo-java-driver.version>3.2.1</mongo-java-driver.version>
@@ -111,8 +108,8 @@
                 <configuration>
                     <skip>${license.skip}</skip>
                     <headerDefinitions>
-                        <headerDefinition>license/thermostat-java.xml</headerDefinition>
-                        <headerDefinition>license/thermostat-xml.xml</headerDefinition>
+                        <headerDefinition>buildfiles/license-check/thermostat-java.xml</headerDefinition>
+                        <headerDefinition>buildfiles/license-check/thermostat-xml.xml</headerDefinition>
                     </headerDefinitions>
                     <aggregate>true</aggregate>
                     <mapping>
@@ -120,7 +117,7 @@
                         <xml>THERMOSTAT_XML_STYLE</xml>
                         <sh>SCRIPT_STYLE</sh>
                     </mapping>
-                    <header>license/header.txt</header>
+                    <header>buildfiles/license-check/header.txt</header>
                     <properties>
                         <inceptionYear>${project.inceptionYear}</inceptionYear>
                     </properties>
