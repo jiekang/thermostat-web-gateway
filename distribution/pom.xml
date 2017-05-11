@@ -51,6 +51,43 @@
 
     <packaging>pom</packaging>
 
+	<profiles>
+	
+	<profile>
+	  <id>windows</id>
+	  <activation>
+		<os><family>Windows</family></os>
+	  </activation>
+	  <build>
+		<plugins>
+		  <plugin>
+			<artifactId>maven-resources-plugin</artifactId>
+			<executions>
+			  <execution>
+				<id>copy-windows-scripts</id>
+				<phase>prepare-package</phase>
+				<goals>
+				  <goal>copy-resources</goal>
+				</goals>
+				<configuration>
+				  <outputDirectory>${project.build.directory}</outputDirectory>
+				  <resources>
+					<resource>
+					  <directory>src/windows/bin</directory>
+					  <targetPath>image/bin</targetPath>
+					  <filtering>true</filtering>
+					</resource>
+				  </resources>
+				</configuration>
+			  </execution>
+			</executions>
+		  </plugin>
+		</plugins>
+	  </build>
+	</profile>
+
+	</profiles>
+	
     <build>
         <plugins>
             <plugin>

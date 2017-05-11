@@ -49,8 +49,21 @@ _find_thermostat_gateway_home() {
   echo "$DIR"
 }
 
+if [ "$(uname -s | cut -b1-6)" == "CYGWIN" ]; then
+  ##echo "Running under Cygwin"
+  export CYGWIN_MODE=1
+else
+  ##echo "Running under Linux"
+  export CYGWIN_MODE=0
+fi
+
 if [[ "${THERMOSTAT_GATEWAY_HOME}" = "" ]]; then
   THERMOSTAT_GATEWAY_HOME="$(_find_thermostat_gateway_home)"
+fi
+
+# on cygwin, convert to Windows format
+if [ $CYGWIN_MODE -eq 1 ]; then
+  THERMOSTAT_GATEWAY_HOME="`cygpath -w $THERMOSTAT_GATEWAY_HOME`"
 fi
 
 THERMOSTAT_GATEWAY_LIBS=${THERMOSTAT_GATEWAY_HOME}/libs
@@ -59,7 +72,13 @@ THERMOSTAT_GATEWAY_ETC=${THERMOSTAT_GATEWAY_HOME}/etc
 
 THERMOSTAT_GATEWAY_CONFIG=${THERMOSTAT_GATEWAY_ETC}/services.properties
 
-THERMOSTAT_GATEWAY_SERVICES=${THERMOSTAT_GATEWAY_HOME}/services
+if [ $CYGWIN_MODE -eq 1 ]; then
+  THERMOSTAT_GATEWAY_SERVICES=`echo ${THERMOSTAT_GATEWAY_HOME}/services | tr \\\\ /`
+else 
+  THERMOSTAT_GATEWAY_SERVICES=`echo ${THERMOSTAT_GATEWAY_HOME}/services`
+fi
+
+echo TGS = %THERMOSTAT_GATEWAY_SERVICES%
 
 sed -i -e "s|__SERVICES__|${THERMOSTAT_GATEWAY_SERVICES}|g" ${THERMOSTAT_GATEWAY_CONFIG}
 
