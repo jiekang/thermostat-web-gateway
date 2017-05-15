@@ -1,0 +1,151 @@
+swagger: '2.0'
+info:
+  title: Thermostat Commands API
+  description: Command channel API via Web Sockets
+  version: 1.0.0
+host: '127.0.0.1:30000'
+schemes:
+  - ws
+  - wss
+basePath: /commands
+produces:
+  - application/json
+consumes:
+  - application/json
+tags:
+  - name: receivers
+    description: Everything for receivers (a.k.a. agents)
+  - name: clients
+    description: Everything for initiators (a.k.a. clients)
+paths:
+  '/v1/systems/{systemId}/agents/{agentId}':
+    parameters:
+      - name: systemId
+        in: path
+        required: true
+        type: string
+        description: The system ID this receiver runs on.
+      - name: agentId
+        in: path
+        required: true
+        type: string
+        description: The ID under which to register this receiver.
+    get:
+      tags:
+        - receivers
+      summary: Endpoint for receivers
+      description: Registers a new receiver (a.k.a agent) with the given ID.
+      responses:
+        '200':
+          description: >-
+            When the upgrade request succeeded and registration for the given ID
+            was successful
+          schema:
+            $ref: '#/definitions/AgentRequest'
+        '401':
+          description: When the request did not provide authentication credentials.
+        '403':
+          description: >-
+            When the user posting the request has insufficient privileges to
+            register a receiver for the provided systemId/agentId pairs.
+  '/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}':
+    parameters:
+      - name: action
+        in: path
+        type: string
+        required: true
+        description: The action to perform.
+      - name: systemId
+        in: path
+        required: true
+        type: string
+        description: The system ID this receiver runs on.
+      - name: jvmId
+        in: path
+        required: true
+        type: string
+        description: The JVM ID to perform an action on.
+      - name: agentId
+        in: path
+        required: true
+        type: string
+        description: The ID under which to register this receiver.
+      - name: seqId
+        in: path
+        required: true
+        type: integer
+        format: int64
+        description: >-
+          The sequence ID to use for this conversation. Matching responses will
+          have the same sequence ID as provided via seqId.
+    get:
+      tags:
+        - clients
+      summary: Endpoint for initiators (clients)
+      description: Sends a message to the provided receiver identified via *agentId*
+      responses:
+        '200':
+          description: >-
+            When the upgrade request succeeded and the message was correctly
+            transmitted to the intended receiver.
+          schema:
+            $ref: '#/definitions/AgentResponse'
+        '401':
+          description: When the request did not provide authentication credentials.
+        '403':
+          description: >-
+            When the user posting the request has insufficient privileges to
+            perform the given action for the given receiver, system and JVM.
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            properties:
+              type:
+                type: integer
+                description: >-
+                  The message type's integer representation. 2 for
+                  ClientRequest.
+              payload:
+                type: object
+                description: >-
+                  Arbitrary key-value-pairs of type string representing request
+                  parameters.
+definitions:
+  AgentResponse:
+    description: Response message received from the receiver (agent) via the gateway.
+    type: object
+    properties:
+      type:
+        description: The message type's integer representation. 100 for AgentResponse.
+        type: integer
+      sequence:
+        type: integer
+        format: int64
+        description: The sequence ID of the initiating request
+      payload:
+        type: object
+        description: The receivers response
+        properties:
+          respType:
+            type: string
+            description: 'One of "OK", "ERROR" or "AUTH_FAIL"'
+  AgentRequest:
+    description: >-
+      A relayed client request message sent to the receiver from the gateway on
+      behalf of the client.
+    type: object
+    properties:
+      type:
+        type: integer
+        description: The message type's integer representation. 1 for AgentRequest.
+      sequence:
+        type: integer
+        format: int64
+        description: The sequence ID of the initiating request
+      payload:
+        type: object
+        description: >-
+          Arbitrary key-value-pairs of type string representing request
+          parameters.

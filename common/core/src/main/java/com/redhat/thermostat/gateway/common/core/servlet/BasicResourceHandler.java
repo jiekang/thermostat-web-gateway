@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.common.core.servlet;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,14 +45,13 @@ import java.nio.charset.StandardCharsets;
 import javax.ws.rs.core.Response;
 
 /**
- * Basic static resources handler.
+ * Static resources handler base class.
  *
  */
-class BasicResourceHandler {
+public class BasicResourceHandler {
 
-    protected Response getFileAsResponse(String fileName) throws IOException {
-        try (InputStream stream = BasicResourceHandler.class.getClassLoader()
-                .getResourceAsStream(fileName);) {
+    protected Response getFileAsResponse(ClassLoader loader, String fileName) throws IOException {
+        try (InputStream stream = loader.getResourceAsStream(fileName);) {
             String responseContent = read(stream);
             return Response.ok(responseContent).build();
         }

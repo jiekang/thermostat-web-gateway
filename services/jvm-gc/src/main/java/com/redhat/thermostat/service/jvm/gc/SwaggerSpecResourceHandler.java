@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.http.handlers;
+package com.redhat.thermostat.service.jvm.gc;
 
 import java.io.IOException;
 
@@ -55,4 +55,5 @@ public class SwaggerSpecResourceHandler extends BasicResourceHandler {
     public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
         return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
     }
+
 }
