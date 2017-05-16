@@ -53,10 +53,13 @@
         <module>distribution</module>
         <module>common</module>
         <module>services</module>
+
+        <module>tests</module>
     </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.7</java.version>
         <jersey.version>2.25</jersey.version>
         <jetty.version>9.2.19.v20160908</jetty.version>
