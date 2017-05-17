@@ -37,11 +37,13 @@
 package com.redhat.thermostat.service.commands.socket;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
 
+import javax.websocket.PongMessage;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
-import com.redhat.thermostat.service.commands.channel.AgentSocketsRegistry;
 import com.redhat.thermostat.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.service.commands.channel.CommunicationsRegistry;
 import com.redhat.thermostat.service.commands.channel.model.Message;
@@ -49,10 +51,13 @@ import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
 
 class CommandChannelAgentSocket extends CommandChannelSocket {
 
+    private static final String UNKNOWN_PAYLOAD = "UNKNOWN";
     private static final String AGENT_PROVIDER_PREFIX = "thermostat-commands-provider-";
+    private final long socketTimeout;
 
     CommandChannelAgentSocket(String id, Session session) {
         super(id, session);
+        this.socketTimeout = session.getMaxIdleTimeout();
     }
 
     @Override
@@ -65,13 +70,40 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
         //        connects in that window it will get an error back,
         //        believing that the agent it wants to talk to has not
         //        connected.
-        AgentSocketsRegistry.addSocket(agentId, this.session);
+        AgentSocketsRegistry reg = AgentSocketsRegistry.getInstance(socketTimeout);
+        reg.addSocket(agentId, this.session);
     }
 
     @Override
     public void onClose(int closeCode, String reason) {
         super.onClose(closeCode, reason);
-        AgentSocketsRegistry.removeSocket(agentId);
+        AgentSocketsRegistry reg = AgentSocketsRegistry.getInstance(socketTimeout);
+        reg.removeSocket(agentId);
+    }
+
+    @Override
+    public void onPongMessage(PongMessage message) {
+        if (Debug.isOn()) {
+            String payload = extractPayload(message);
+            System.err.println("Server: Got pong message <<" + payload + ">>");
+        }
+    }
+
+    private String extractPayload(PongMessage message) {
+        ByteBuffer payload = message.getApplicationData();
+        int limit = payload.limit();
+        int position = payload.position();
+        int length = limit - position;
+        byte[] buf = new byte[length];
+        for (int i = 0; position < limit; position++, i++) {
+            buf[i] = payload.get(position);
+        }
+        try {
+            return new String(buf, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("ERROR: Failed to extract payload from pong message: " + e.getMessage());
+            return UNKNOWN_PAYLOAD;
+        }
     }
 
     @Override

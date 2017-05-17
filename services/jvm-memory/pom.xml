@@ -52,7 +52,6 @@
   
   <properties>
     <com.redhat.thermostat.gateway.SERVICE_NAME>jvm-memory</com.redhat.thermostat.gateway.SERVICE_NAME>
-    <com.redhat.thermostat.gateway.HOME>${project.parent.parent.basedir}/distribution/target/image</com.redhat.thermostat.gateway.HOME>
   </properties>
   <build>
     <plugins>
@@ -91,12 +90,6 @@
       <groupId>javax.ws.rs</groupId>
       <artifactId>javax.ws.rs-api</artifactId>
       <version>${javax-rs-api.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-servlets</artifactId>
-      <version>${jetty.version}</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>

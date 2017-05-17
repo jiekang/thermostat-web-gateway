@@ -42,17 +42,17 @@ import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
-import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.common.core.servlet.ServiceConfigGettingContextListener;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 
-public class StorageConnectionSettingListener implements ServletContextListener {
+public class StorageConnectionSettingListener extends ServiceConfigGettingContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
+        super.contextDestroyed(event);
         ServletContext ctx = event.getServletContext();
         synchronized (ctx) {
             ctx.setAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE, null);
@@ -61,6 +61,7 @@ public class StorageConnectionSettingListener implements ServletContextListener 
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
+        super.contextInitialized(event);
         ServletContext ctx = event.getServletContext();
         synchronized (ctx) {
             Map<String, String> config = getMongoStorageConfig(ctx);
@@ -70,10 +71,8 @@ public class StorageConnectionSettingListener implements ServletContextListener 
     }
 
     Map<String, String> getMongoStorageConfig(ServletContext ctx) {
-        String gatewayHome = ctx.getInitParameter(GlobalConstants.GATEWAY_HOME_KEY);
         String serviceName = ctx.getInitParameter(GlobalConstants.SERVICE_NAME_KEY);
-        ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
-        Configuration serviceConfig = factory.createServiceConfiguration(serviceName);
+        Configuration serviceConfig = getServiceConfig(serviceName);
         Configuration mongoConfiguration = new MongoConfigurationAdapter(serviceConfig);
         return convert(mongoConfiguration.asMap());
     }

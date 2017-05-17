@@ -38,6 +38,8 @@ package com.redhat.thermostat.service.commands.socket;
 
 import java.io.IOException;
 
+import javax.websocket.PongMessage;
+
 import com.redhat.thermostat.service.commands.channel.model.Message;
 
 public interface CommandChannelWebSocket {
@@ -49,4 +51,6 @@ public interface CommandChannelWebSocket {
     void onSocketMessage(Message msg);
 
     void onError(Throwable cause);
+
+    void onPongMessage(PongMessage pongMessage);
 }

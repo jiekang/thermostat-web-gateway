@@ -69,12 +69,14 @@ public class StorageConnectionSettingListenerTest {
         ctxt = mock(ServletContext.class);
         when(evt.getServletContext()).thenReturn(ctxt);
         when(ctxt.getInitParameter(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
+        when(ctxt.getAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
         when(ctxt.getInitParameter(eq(GlobalConstants.SERVICE_NAME_KEY))).thenReturn("foo-service");
     }
 
     @Test
     public void canGetConfigFromServletContext() {
         StorageConnectionSettingListener listener = new StorageConnectionSettingListener();
+        listener.contextInitialized(evt);
         Map<String, String> actual = listener.getMongoStorageConfig(ctxt);
         assertEquals("foo", actual.get(MongoConfiguration.MONGO_DB.name()));
         assertEquals("foo-user", actual.get(MongoConfiguration.MONGO_USERNAME.name()));

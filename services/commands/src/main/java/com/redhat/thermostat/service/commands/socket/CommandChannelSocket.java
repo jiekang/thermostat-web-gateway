@@ -42,6 +42,7 @@ import java.security.Principal;
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
 import javax.websocket.EncodeException;
+import javax.websocket.PongMessage;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.service.commands.channel.model.Message;
@@ -100,6 +101,11 @@ abstract class CommandChannelSocket implements CommandChannelWebSocket {
             realCause.printStackTrace();
             realCause = realCause.getCause();
         }
+    }
+
+    @Override
+    public void onPongMessage(PongMessage message) {
+        // no-op
     }
 
     @Override

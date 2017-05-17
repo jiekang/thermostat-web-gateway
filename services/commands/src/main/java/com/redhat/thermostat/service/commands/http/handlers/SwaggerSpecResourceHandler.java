@@ -45,12 +45,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-@Path("doc/{fileName: .+\\.json}")
+import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
+
+@Path("doc/{fileName: .+\\.yaml}")
 @Produces(MediaType.TEXT_PLAIN)
 public class SwaggerSpecResourceHandler extends BasicResourceHandler {
 
     @GET
     public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(fileName);
+        return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
     }
 }

@@ -45,13 +45,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
+
 @Path("{fileName: .+\\.html}")
 @Produces(MediaType.TEXT_HTML)
 public class HtmlResourceHandler extends BasicResourceHandler {
 
     @GET
     public Response getPage(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(fileName);
+        return getFileAsResponse(HtmlResourceHandler.class.getClassLoader(), fileName);
     }
 
 }

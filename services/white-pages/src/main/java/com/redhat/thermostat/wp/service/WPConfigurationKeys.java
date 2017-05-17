@@ -36,13 +36,14 @@
 
 package com.redhat.thermostat.wp.service;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.servlet.ServletContext;
+
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
-
-import javax.servlet.ServletContext;
-import java.util.Arrays;
-import java.util.List;
 
 enum WPConfigurationKeys {
 
@@ -53,7 +54,7 @@ enum WPConfigurationKeys {
     public List<String> get(ServletContext ctx) {
 
         String thisService = ctx.getInitParameter(GlobalConstants.SERVICE_NAME_KEY);
-        String gatewayHome = ctx.getInitParameter(GlobalConstants.GATEWAY_HOME_KEY);
+        String gatewayHome = (String)ctx.getAttribute(GlobalConstants.GATEWAY_HOME_KEY);
         ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
         Configuration serviceConfig = factory.createServiceConfiguration(thisService);
 

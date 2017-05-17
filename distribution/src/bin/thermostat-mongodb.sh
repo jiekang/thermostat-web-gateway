@@ -50,6 +50,20 @@ _find_thermostat_gateway_home() {
   echo "$DIR"
 }
 
+if [ "$(uname -s | cut -b1-6)" == "CYGWIN" ]; then
+  ##echo "Running under Cygwin"
+  export CYGWIN_MODE=1
+else
+  ##echo "Running under Linux"
+  export CYGWIN_MODE=0
+fi
+
+if [ $CYGWIN_MODE -eq 1 ]; then
+  MONGO_FORK_ARG=
+else
+  MONGO_FORK_ARG=--fork
+fi
+
 if [[ "${THERMOSTAT_GATEWAY_HOME}" = "" ]]; then
   THERMOSTAT_GATEWAY_HOME="$(_find_thermostat_gateway_home)"
 fi
@@ -57,17 +71,21 @@ fi
 IP=127.0.0.1
 PORT=27518
 
-
 DB_PATH=${THERMOSTAT_GATEWAY_HOME}/db
 DATA_PATH=${DB_PATH}/data
 JS_PATH=${THERMOSTAT_GATEWAY_HOME}/etc/mongo-dev-setup.js
-
 
 LOG_PATH=${DB_PATH}/db.log
 PID_PATH=${DB_PATH}/db.pid
 
 SETUP_PATH=${DB_PATH}/setup.stamp
 
+# on cygwin, convert to Windows format
+if [ $CYGWIN_MODE -eq 1 ]; then
+  LOG_PATH="`cygpath -w $LOG_PATH`"
+  PID_PATH="`cygpath -w $PID_PATH`"
+  DATA_PATH="`cygpath -w $DATA_PATH`"
+fi
 
 if [ -z "$1" ]; then
     echo "Usage: thermostat-mongodb.sh [start] [stop]"
@@ -78,7 +96,7 @@ if [ $1 == "start" ]; then
     mkdir -p ${DB_PATH}
     mkdir -p ${DATA_PATH}
 
-    mongod --quiet --fork --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT}
+    mongod --quiet ${MONGO_FORK_ARG} --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT}
 
     if [ ! -f ${SETUP_PATH} ]; then
         sleep 3

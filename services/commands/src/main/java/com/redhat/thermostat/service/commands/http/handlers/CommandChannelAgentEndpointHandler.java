@@ -43,6 +43,7 @@ import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
+import javax.websocket.PongMessage;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
@@ -70,6 +71,11 @@ public class CommandChannelAgentEndpointHandler extends CommandChannelEndpointHa
     @OnMessage
     public void onMessage(Message message) {
         super.onMessage(message);
+    }
+
+    @OnMessage
+    public void onPongMessage(PongMessage pong) {
+        super.onPongMessage(pong);
     }
 
     @OnClose

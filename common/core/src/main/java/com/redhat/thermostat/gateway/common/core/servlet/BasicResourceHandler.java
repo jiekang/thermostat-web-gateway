@@ -34,26 +34,39 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.commands.channel;
+package com.redhat.thermostat.gateway.common.core.servlet;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
-import javax.websocket.Session;
+import javax.ws.rs.core.Response;
 
-public class AgentSocketsRegistry {
+/**
+ * Static resources handler base class.
+ *
+ */
+public class BasicResourceHandler {
 
-    private static final Map<String, Session> agentSockets = new ConcurrentHashMap<>();
-
-    public static void addSocket(String id, Session session) {
-        agentSockets.put(id, session);
+    protected Response getFileAsResponse(ClassLoader loader, String fileName) throws IOException {
+        try (InputStream stream = loader.getResourceAsStream(fileName);) {
+            String responseContent = read(stream);
+            return Response.ok(responseContent).build();
+        }
     }
 
-    public static Session getSession(String id) {
-        return agentSockets.get(id);
-    }
-
-    public static void removeSocket(String id) {
-        agentSockets.remove(id);
+    private String read(InputStream stream) throws IOException {
+        try (BufferedReader buffer = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+            String line;
+            StringBuffer b = new StringBuffer();
+            while ((line = buffer.readLine()) != null) {
+                b.append(line);
+                b.append("\n");
+            }
+            return b.toString();
+        }
     }
 }
