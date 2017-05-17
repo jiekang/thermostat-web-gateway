@@ -34,53 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.config;
+package com.redhat.thermostat.gateway.server.webclient;
 
-import java.util.Collections;
-import java.util.Map;
+import com.redhat.thermostat.gateway.server.webclient.StaticAssetsHandler.EnvHelper;
 
-public class GlobalConfiguration extends BasicConfiguration {
+/**
+ * Test artifact to create a handler with a mock env helper
+ *
+ */
+public class StaticAssetsHandlerFactory {
 
-    private final CommonPaths paths;
-    private final Map<String, Object> map;
-
-    // This should remain package private. Use ConfigurationFactory to get an instance.
-    GlobalConfiguration(String gatewayHome) {
-        paths = new CommonPaths(gatewayHome);
-        map = loadConfig(paths.getGlobalConfigFilePath(), paths.getConfigDir());
+    public StaticAssetsHandler create(EnvHelper helper) {
+        return new StaticAssetsHandler(helper);
     }
-
-    @Override
-    public Map<String, Object> asMap() {
-        return Collections.unmodifiableMap(map);
-    }
-
-    public enum ConfigurationKey {
-        /**
-         * The listen address of the servlet container server.
-         */
-        IP,
-        /**
-         * The listen port of the servlet container server.
-         */
-        PORT,
-        /**
-         * The services file name (next to {@code global-config.properties})
-         * specifying which microservices the servlet container shall deploy.
-         *
-         */
-        SERVICES,
-        /**
-         * Specifies whether or not the swagger UI handler should get
-         * created under context path /doc
-         */
-        WITH_SWAGGER_UI,
-        /**
-         * Specifies whether or not a static resource handler, at
-         * context path /web-client, for built web-client assets
-         * should get created.
-         */
-        WITH_WEB_CLIENT
-    }
-
 }

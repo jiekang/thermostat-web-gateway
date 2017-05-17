@@ -52,15 +52,29 @@ import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainer
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration.ConfigurationKey;
 import com.redhat.thermostat.gateway.server.apidoc.SwaggerUiHandler;
 import com.redhat.thermostat.gateway.server.services.CoreService;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
+import com.redhat.thermostat.gateway.server.webclient.StaticAssetsHandler;
 
 public class CoreServerBuilder {
 
-    private Server server = new Server();
+    private final SwaggerUiHandler swaggerHandler;
+    private final StaticAssetsHandler staticAssetsHandler;
+    private final Server server = new Server();
     private CoreServiceBuilder coreServiceBuilder;
     private Configuration serverConfig;
+
+    public CoreServerBuilder() {
+        this(new SwaggerUiHandler(), new StaticAssetsHandler());
+    }
+
+    // package-private for test-overrides
+    CoreServerBuilder(SwaggerUiHandler swaggerHandler, StaticAssetsHandler staticHandler) {
+        this.staticAssetsHandler = staticHandler;
+        this.swaggerHandler = swaggerHandler;
+    }
 
     public CoreServerBuilder setServiceBuilder(CoreServiceBuilder builder) {
         this.coreServiceBuilder = builder;
@@ -94,14 +108,29 @@ public class CoreServerBuilder {
             }
         }
 
-        // Set up Swagger UI-based API doc handler together with the service handlers.
-        // It'll be able to generate API docs based on any URL accessible
-        // swagger spec (swagger.json/swagger.yaml). Hence, we set this up
-        // once in the deploying server and make the swagger spec available
-        // in the services themselves
-        ContextHandler swaggerHandler = new SwaggerUiHandler().createSwaggerResourceHandler();
-        contextHandlerCollection.addHandler(swaggerHandler);
+        Map<String, Object> config = serverConfig.asMap();
+        if (isEnabled(config, ConfigurationKey.WITH_SWAGGER_UI)) {
+            // Set up Swagger UI-based API doc handler together with the service handlers.
+            // It'll be able to generate API docs based on any URL accessible
+            // swagger spec (swagger.json/swagger.yaml). Hence, we set this up
+            // once in the deploying server and make the swagger spec available
+            // in the services themselves
+            ContextHandler swHandler = swaggerHandler.createSwaggerResourceHandler();
+            contextHandlerCollection.addHandler(swHandler);
+        }
+
+        if (isEnabled(config, ConfigurationKey.WITH_WEB_CLIENT)) {
+            // Set up a static resource handler which serves static assets
+            // via /web-client context path
+            ContextHandler webClientHandler = staticAssetsHandler.create();
+            contextHandlerCollection.addHandler(webClientHandler);
+        }
+
         server.setHandler(contextHandlerCollection);
+    }
+
+    private boolean isEnabled(Map<String, Object> config, ConfigurationKey configKey) {
+        return Boolean.parseBoolean((String)config.get(configKey.name()));
     }
 
     private void setupConnector() {
