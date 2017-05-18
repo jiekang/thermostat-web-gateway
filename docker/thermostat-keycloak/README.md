@@ -5,13 +5,13 @@
 ## Build image
 
 ```
-$ docker build -t thermostat-keycloak .
+$ docker build --rm -t thermostat-keycloak .
 ```
 
 ## Run container
 
 ```
-$ docker run --name thermostat-keycloak thermostat-keycloak
+$ docker run thermostat-keycloak
 ```
 
 ## Settings

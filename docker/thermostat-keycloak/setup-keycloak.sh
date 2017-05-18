@@ -41,7 +41,7 @@ THERMOSTAT_USER=tms-user
 THERMOSTAT_PASSWORD=tms-pass
 REALM=thermostat
 
-SERVER=http://localhost:8080/auth
+SERVER=http://127.0.0.1:8080/auth
 CLI=keycloak/bin/kcadm.sh
 
 keycloak/bin/add-user-keycloak.sh --user ${KEYCLOAK_ADMIN} --password ${KEYCLOAK_ADMIN}
@@ -49,7 +49,22 @@ keycloak/bin/add-user-keycloak.sh --user ${KEYCLOAK_ADMIN} --password ${KEYCLOAK
 keycloak/bin/standalone.sh & >/dev/null 2&>1
 
 # Wait for keycloak to startup
+HOST=127.0.0.1
+PORT=8080
+RETRIES=25
+
 sleep 10
+until curl -f -v "http://${HOST}:${PORT}/auth" >/dev/null 2>/dev/null
+do
+    RETRIES=$(($RETRIES - 1))
+    if [ $RETRIES -eq 0 ]
+    then
+        echo "Failed to connect"
+        exit 1
+    fi
+    sleep 2
+done
+echo
 
 ${CLI} config credentials --server ${SERVER} --realm master --user ${KEYCLOAK_ADMIN} --password ${KEYCLOAK_ADMIN}
 
