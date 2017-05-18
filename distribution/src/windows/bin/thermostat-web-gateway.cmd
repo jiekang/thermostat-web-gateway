@@ -41,12 +41,4 @@ if not defined THERMOSTAT_GATEWAY_HOME (
 
 set THERMOSTAT_GATEWAY_LIBS=%THERMOSTAT_GATEWAY_HOME%\libs
 
-set THERMOSTAT_GATEWAY_ETC=%THERMOSTAT_GATEWAY_HOME%\etc
-
-set THERMOSTAT_GATEWAY_CONFIG=%THERMOSTAT_GATEWAY_ETC%\services.properties
-
-set THERMOSTAT_GATEWAY_SERVICES=%THERMOSTAT_GATEWAY_HOME%\services
-
-powershell -command "(get-content %THERMOSTAT_GATEWAY_CONFIG%).replace('__SERVICES__','%THERMOSTAT_GATEWAY_SERVICES%').replace('\','/').replace('//','/') | set-content %THERMOSTAT_GATEWAY_CONFIG%"
-
 java -cp "%THERMOSTAT_GATEWAY_LIBS%/*" com.redhat.thermostat.gateway.server.Start

@@ -39,25 +39,43 @@ package com.redhat.thermostat.gateway.server.services;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.server.services.WebArchiveServiceBuilder.EnvHelper;
+import com.redhat.thermostat.gateway.server.services.WebArchiveServiceBuilder.PathHelper;
 
 public class WebArchiveServiceBuilderTest {
+
+    private EnvHelper envHelper;
+    private PathHelper pathHelper;
+    private ConfigurationFactory configFactory;
+
+    @Before
+    public void setup() {
+        envHelper = mock(EnvHelper.class);
+        pathHelper = mock(PathHelper.class);
+        when(pathHelper.isAbsolute(anyString())).thenReturn(true);
+        configFactory = mock(ConfigurationFactory.class);
+        when(configFactory.createServiceConfiguration(anyString())).thenReturn(mock(Configuration.class));
+    }
+
     @Test
     public void testBuildWebArchiveCoreServices() {
-        ConfigurationFactory configurationFactory = mock(ConfigurationFactory.class);
-        when(configurationFactory.createServiceConfiguration(anyString())).thenReturn(mock(Configuration.class));
 
-        WebArchiveServiceBuilder serviceBuilder = new WebArchiveServiceBuilder(configurationFactory);
+        WebArchiveServiceBuilder serviceBuilder = new WebArchiveServiceBuilder(configFactory, envHelper, pathHelper);
         Configuration configuration = mock(Configuration.class);
         Map<String, Object> configMap = new HashMap<>();
         configMap.put("/context0", "serviceName0");
@@ -73,5 +91,23 @@ public class WebArchiveServiceBuilderTest {
         assertTrue(services.get(1) instanceof WebArchiveCoreService);
     }
 
+    @Test
+    public void canResolveRelativeServiceWarFile() {
+        String mockGwHome = "i-do-not-exist-gw-home";
+        EnvHelper customEnv = mock(EnvHelper.class);
+        when(customEnv.getEnv(eq(GlobalConstants.GATEWAY_HOME_ENV))).thenReturn(mockGwHome);
+        WebArchiveServiceBuilder serviceBuilder = new WebArchiveServiceBuilder(configFactory, customEnv, new PathHelper());
+        String result = serviceBuilder.getAbsolutePathForService("foobar");
+        String expected = new File(new File(mockGwHome, "services"), "foobar").getAbsolutePath();
+        assertEquals(expected, result);
+    }
 
+    @Test
+    public void keepsAbsoluteServiceWarFile() {
+        EnvHelper env = mock(EnvHelper.class);
+        WebArchiveServiceBuilder serviceBuilder = new WebArchiveServiceBuilder(configFactory, env, new PathHelper());
+        String orig = "/abs/path";
+        String result = serviceBuilder.getAbsolutePathForService(orig);
+        assertEquals(orig, result);
+    }
 }
