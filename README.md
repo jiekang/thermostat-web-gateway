@@ -62,3 +62,18 @@ For API see:
 ```
 services/*/*-swagger.json
 ```
+
+# How to debug after building
+
+## Run debug script
+
+This runs Thermostat Web Gateway listening on socket 5005 for a debugger to connect.
+
+```
+$ ./distribution/target/image/bin/thermostat-web-gateway-debug.sh
+```
+
+## Run IdeLauncher class
+
+This class is meant to run from IDE (Eclipse, Intellij, etc.) with configuration setting the environment variable `THERMOSTAT_GATEWAY_HOME` to `distribution/target/image`
+```
