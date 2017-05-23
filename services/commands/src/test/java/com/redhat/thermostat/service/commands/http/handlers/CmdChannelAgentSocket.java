@@ -56,7 +56,6 @@ import com.redhat.thermostat.service.commands.channel.model.Message;
 /**
  * Handles the agent connections from the Web endpoint.
  *
- * TODO: Implement keep-alive ping
  */
 @WebSocket(maxTextMessageSize = 64 * 1024)
 public class CmdChannelAgentSocket {
