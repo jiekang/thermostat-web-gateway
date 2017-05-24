@@ -53,7 +53,7 @@
         <module>distribution</module>
         <module>common</module>
         <module>services</module>
-
+        <module>ide-launcher</module>
         <module>tests</module>
     </modules>
 

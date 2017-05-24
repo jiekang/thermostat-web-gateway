@@ -107,6 +107,8 @@ public class AuthBasicCoreServerTest {
                 Map<String, Object> config = new HashMap<>();
                 config.put(GlobalConfiguration.ConfigurationKey.IP.name(), TEST_ADDRESS);
                 config.put(GlobalConfiguration.ConfigurationKey.PORT.name(), Integer.toString(TEST_PORT));
+                config.put(GlobalConfiguration.ConfigurationKey.WITH_SWAGGER_UI.name(), Boolean.FALSE.toString());
+                config.put(GlobalConfiguration.ConfigurationKey.WITH_WEB_CLIENT.name(), Boolean.FALSE.toString());
                 return config;
             }
         });

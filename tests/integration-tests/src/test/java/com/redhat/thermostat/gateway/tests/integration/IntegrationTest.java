@@ -106,9 +106,12 @@ public class IntegrationTest {
         });
 
         try {
-            f.get(5000L, TimeUnit.MILLISECONDS);
-        } catch (ExecutionException | TimeoutException e) {
+            f.get(20L, TimeUnit.SECONDS);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
             fail();
+        } catch (TimeoutException e) {
+            fail("20 seconds elapsed: Integration test timed out waiting for Server to start");
         }
     }
 

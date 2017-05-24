@@ -47,7 +47,7 @@ import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.C
 
 public class Start {
 
-    public static void main(String[] args) {
+    public void run() {
         String gatewayHome = System.getenv(GlobalConstants.GATEWAY_HOME_ENV);
         if (gatewayHome == null) {
             throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
@@ -74,16 +74,23 @@ public class Start {
         }
     }
 
-    private static void setServerConfig(CoreServerBuilder builder, ConfigurationFactory factory) {
+    private void setServerConfig(CoreServerBuilder builder, ConfigurationFactory factory) {
         Configuration globalConfig = factory.createGlobalConfiguration();
         builder.setServerConfiguration(globalConfig);
     }
 
-    private static void setServiceBuilder(CoreServerBuilder builder, ConfigurationFactory factory) {
+    private void setServiceBuilder(CoreServerBuilder builder, ConfigurationFactory factory) {
         Configuration globalServicesConfig = factory.createGlobalServicesConfig();
         CoreServiceBuilderFactory builderFactory = new CoreServiceBuilderFactory(factory);
         CoreServiceBuilder coreServiceBuilder = builderFactory.createBuilder(CoreServiceType.WEB_ARCHIVE);
         coreServiceBuilder.setConfiguration(globalServicesConfig);
         builder.setServiceBuilder(coreServiceBuilder);
     }
+
+    public static void main(String[] args) {
+        Start start = new Start();
+        start.run();
+    }
+
+
 }

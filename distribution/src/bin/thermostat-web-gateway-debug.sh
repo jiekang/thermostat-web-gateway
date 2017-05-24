@@ -35,49 +35,38 @@
 # to do so, delete this exception statement from your version.
 #
 
+_find_thermostat_gateway_home() {
+  # Compute THERMOSTAT_GATEWAY_HOME by finding the (symlink-resolved) location of the
+  # currently executing code's parent dir. See
+  # http://stackoverflow.com/a/246128/3561275 for implementation details.
+  SOURCE="${BASH_SOURCE[0]}"
+  while [ -h "$SOURCE" ]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
+  done
+  DIR="$(cd -P "$(dirname "$SOURCE")" && cd .. && pwd)"
+  echo "$DIR"
+}
 
-KEYCLOAK_ADMIN=tms-admin
-THERMOSTAT_USER=tms-user
-THERMOSTAT_PASSWORD=tms-pass
-REALM=thermostat
+if [ "$(uname -s | cut -b1-6)" == "CYGWIN" ]; then
+  ##echo "Running under Cygwin"
+  export CYGWIN_MODE=1
+else
+  ##echo "Running under Linux"
+  export CYGWIN_MODE=0
+fi
 
-SERVER=http://127.0.0.1:8080/auth
-CLI=keycloak/bin/kcadm.sh
+if [[ "${THERMOSTAT_GATEWAY_HOME}" = "" ]]; then
+  THERMOSTAT_GATEWAY_HOME="$(_find_thermostat_gateway_home)"
+fi
 
-keycloak/bin/add-user-keycloak.sh --user ${KEYCLOAK_ADMIN} --password ${KEYCLOAK_ADMIN}
+# on cygwin, convert to Windows format
+if [ $CYGWIN_MODE -eq 1 ]; then
+  THERMOSTAT_GATEWAY_HOME="`cygpath -w $THERMOSTAT_GATEWAY_HOME`"
+fi
 
-keycloak/bin/standalone.sh & >/dev/null 2&>1
+THERMOSTAT_GATEWAY_LIBS=${THERMOSTAT_GATEWAY_HOME}/libs
 
-# Wait for keycloak to startup
-HOST=127.0.0.1
-PORT=8080
-RETRIES=25
-
-sleep 10
-until curl -f -v "http://${HOST}:${PORT}/auth" >/dev/null 2>/dev/null
-do
-    RETRIES=$(($RETRIES - 1))
-    if [ $RETRIES -eq 0 ]
-    then
-        echo "Failed to connect"
-        exit 1
-    fi
-    sleep 2
-done
-echo
-
-${CLI} config credentials --server ${SERVER} --realm master --user ${KEYCLOAK_ADMIN} --password ${KEYCLOAK_ADMIN}
-
-${CLI} create realms -s realm=${REALM} -s enabled=true
-
-${CLI} create roles -r ${REALM} -s name=thermostat
-
-${CLI} create clients -r ${REALM} -s clientId=thermostat-bearer -s enabled=true -s bearerOnly=true
-
-${CLI} create clients -r ${REALM} -s clientId=thermostat-web-client -s enabled=true -s publicClient=true -s 'redirectUris=["http://localhost:8080/*"]' -s 'webOrigins=["+"]' -s directAccessGrantsEnabled=true
-
-${CLI} create users -r ${REALM} -s enabled=true -s username=${THERMOSTAT_USER}
-${CLI} add-roles -r ${REALM} --uusername ${THERMOSTAT_USER} --rolename thermostat
-${CLI} set-password -r ${REALM} --username ${THERMOSTAT_USER} --new-password ${THERMOSTAT_PASSWORD}
-
-keycloak/bin/jboss-cli.sh --connect command=:shutdown
+export THERMOSTAT_GATEWAY_HOME
+java -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005 -cp "${THERMOSTAT_GATEWAY_LIBS}/*" com.redhat.thermostat.gateway.server.Start

@@ -36,20 +36,32 @@
 
 package com.redhat.thermostat.gateway.server.services;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
 class WebArchiveServiceBuilder extends BasicServiceBuilder {
 
+    private static final String SERVICES_FOLDER = "services";
     private static final String CONTEXT_PREFIX = "/";
     private final ConfigurationFactory configFactory;
+    private final EnvHelper envHelper;
+    private final PathHelper pathHelper;
 
     public WebArchiveServiceBuilder(ConfigurationFactory configFactory) {
+        this(configFactory, new EnvHelper(), new PathHelper());
+    }
+
+    WebArchiveServiceBuilder(ConfigurationFactory configFactory, EnvHelper envHelper, PathHelper pathHelper) {
         this.configFactory = configFactory;
+        this.envHelper = envHelper;
+        this.pathHelper = pathHelper;
     }
 
     @Override
@@ -61,7 +73,8 @@ class WebArchiveServiceBuilder extends BasicServiceBuilder {
             String contextPath = entry.getKey();
             String serviceName = getServiceName(contextPath);
             Configuration config = configFactory.createServiceConfiguration(serviceName);
-            String warPath = entry.getValue().toString();
+            String warPathCandidate = entry.getValue().toString();
+            String warPath = getAbsolutePathForService(warPathCandidate);
             WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath, config);
             serviceList.add(service);
         }
@@ -71,6 +84,34 @@ class WebArchiveServiceBuilder extends BasicServiceBuilder {
     // FIXME: Heuristic => contextPath == /<servicename>
     private String getServiceName(String contextPath) {
         return contextPath.substring(CONTEXT_PREFIX.length());
+    }
+
+    String getAbsolutePathForService(String path) {
+        if (pathHelper.isAbsolute(path)) {
+            return path;
+        }
+        // assume service web archive file is relative to
+        // THERMOSTAT_GATEWAY_HOME/services
+        String gwHome = envHelper.getEnv(GlobalConstants.GATEWAY_HOME_ENV);
+        Path basePath = Paths.get(gwHome, SERVICES_FOLDER, path);
+        return basePath.toAbsolutePath().toString();
+    }
+
+    static class EnvHelper {
+
+        String getEnv(String var) {
+            return System.getenv(var);
+        }
+
+    }
+
+    static class PathHelper {
+
+        boolean isAbsolute(String path) {
+            Path pathObj = Paths.get(path);
+            return pathObj.isAbsolute();
+        }
+
     }
 
 }
