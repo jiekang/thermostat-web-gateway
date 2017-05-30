@@ -61,10 +61,10 @@ if '%1' == 'start' (
     if not exist %DB_PATH% mkdir %DB_PATH%
     if not exist %DATA_PATH% mkdir %DATA_PATH%
 
-    mongod --quiet --nohttpinterface --bind_ip %IP% --nojournal --dbpath %DATA_PATH% --logpath %LOG_PATH% --pidfilepath %PID_PATH% --port %PORT%
+    start /MIN mongod --quiet --nohttpinterface --bind_ip %IP% --nojournal --dbpath %DATA_PATH% --logpath %LOG_PATH% --pidfilepath %PID_PATH% --port %PORT%
 
     if not exist %SETUP_PATH% (
-        rem sleep 3
+        ping -n 5 localhost >nul
         echo setup-complete >%SETUP_PATH%
         mongo %IP%:%PORT% %JS_PATH%
     )

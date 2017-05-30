@@ -50,6 +50,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.thermostat.gateway.common.util.OS;
 import org.eclipse.jetty.client.HttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -63,7 +64,8 @@ public class IntegrationTest {
 
     protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
     private static final Path distributionImage = Paths.get("../../distribution/target/image");
-    private static final String WEB_GATEWAY_SCRIPT = "thermostat-web-gateway.sh";
+    private static final String POSIX_WEB_GATEWAY_SCRIPT = "thermostat-web-gateway.sh";
+    private static final String WINDOWS_WEB_GATEWAY_SCRIPT = "thermostat-web-gateway.cmd";
 
     private static Process serverProcess;
 
@@ -87,9 +89,11 @@ public class IntegrationTest {
     }
 
     private static void startServer() throws IOException, InterruptedException {
-        String command = distributionImage.resolve("bin").resolve(WEB_GATEWAY_SCRIPT).toAbsolutePath().toString();
+        String commandStr = OS.IS_UNIX ? distributionImage.resolve("bin").resolve(POSIX_WEB_GATEWAY_SCRIPT).toAbsolutePath().toString()
+                : distributionImage.resolve("bin").resolve(WINDOWS_WEB_GATEWAY_SCRIPT).toAbsolutePath().toString();
 
-        ProcessBuilder processBuilder = new ProcessBuilder().command(command).inheritIO().redirectError(ProcessBuilder.Redirect.PIPE);
+        ProcessBuilder processBuilder = OS.IS_UNIX ? new ProcessBuilder().command(commandStr).inheritIO().redirectError(ProcessBuilder.Redirect.PIPE)
+                : new ProcessBuilder().command("cmd", "/c", commandStr).inheritIO().redirectError(ProcessBuilder.Redirect.PIPE);
 
         serverProcess = processBuilder.start();
         final BufferedReader reader = new BufferedReader(new InputStreamReader(serverProcess.getErrorStream()));
@@ -115,10 +119,13 @@ public class IntegrationTest {
         }
     }
 
-
-
     private static void stopServer() throws Exception {
-        ProcessTestUtil.killRecursively(serverProcess);
+        if (OS.IS_UNIX) {
+            ProcessTestUtil.killRecursively(serverProcess);
+        } else {
+            // TODO: kill children on Windows
+            serverProcess.destroy();
+        }
     }
 
     @AfterClass

@@ -87,3 +87,24 @@ $ TOKEN=`echo $RESULT | sed 's/.*access_token":"//g' | sed 's/".*//g'`
 $ curl -H "Authorization: bearer $TOKEN" "http://localhost:30000/jvm-gc/0.0.1"
 ```
 
+### Windows notes for Keycloak
+
+Docker and VirtualBox do not play well together (you can only run one or the other); you need to use Docker Toolbox to avoid a Hyper-V conflict.
+The Keycloak image must be built from the Docker Quickstart terminal (MingW), not from a Windows command shell.
+
+An alternative is to run Keycloak natively in Windows.  A Keycloak configuration script is provided for that purpose.
+
+(tested with keycloak-3.1.0.Final.zip from  http://www.keycloak.org/downloads.html)
+
+1) Download Keycloak, and unzip the installation file.
+2) set KEYCLOAK_HOME to the root of the unzipped Keycloak installation
+3) set JAVA_HOME to the root of a valid Java runtime installation
+4) while Keycloak is not running, run (web-gateway)\docker\thermostat-keycloak\setup-keycloak.cmd
+   (this will create an admin user, temporarily bring up Keycloak in another window, and set up the Thermostat realm)
+4a) optionally, change the server port from the default of 8080.
+    When running Keycloak in standalone mode, this is configured near the bottom of (keycloak)\standalone\configuration\standalone.xml.
+    (Search for socket-binding-group)
+5) start Keycloak normally: %KEYCLOAK_HOME%\bin\standalone.bat
+
+
+
