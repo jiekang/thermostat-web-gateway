@@ -1,0 +1,339 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: Thermostat Web Gateway JVM Information API
+  license:
+    name: GPL v2 with Classpath Exception
+    url: 'http://www.gnu.org/licenses'
+consumes:
+  - application/json
+produces:
+  - application/json
+  - text/html; charset=utf-8
+basePath: /jvms/0.0.1
+paths:
+  '/systems/{systemId}':
+    parameters:
+      - $ref: '#/parameters/system-id'
+    get:
+      description: 'Get jvms for system {systemId}'
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvms-get-response'
+    post:
+      description: 'Add jvms for system {systemId}'
+      parameters:
+        - $ref: '#/parameters/jvms-post-body'
+      responses:
+        '200':
+          description: OK
+    delete:
+      description: 'Delete all jvms on system {systemId}'
+      responses:
+        '200':
+          description: OK
+  '/systems/{systemId}/jvms/{jvmId}':
+    parameters:
+    - $ref: '#/parameters/system-id'
+    - $ref: '#/parameters/jvm-id'
+    get:
+      description: 'Get information for the JVM with id {jvmId} running on system {systemId}'
+      parameters:
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvms-get-response'
+    put:
+      description: 'Update the JVM with id {jvmId} running on system {systemId}'
+      responses:
+        '200':
+          description: OK
+      parameters:
+      - $ref: "#/parameters/jvms-put-body"
+    delete:
+      description: 'Delete the JVM with id {jvmId} running on system {systemId}'
+      responses:
+        '200':
+          description: OK
+  '/tree':
+    get:
+      description: Get jvm information organized by systemId
+      parameters:
+        - $ref: '#/parameters/alive-only'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/tree-get-response'
+  '/update/systems/{systemId}/ts/{timeStamp}':
+    parameters:
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/timestamp'
+    put:
+      description: 'Set last updated to {timeStamp} for jvm information on system {systemId}'
+      parameters:
+      - $ref: "#/parameters/update-put-body"
+      responses:
+        '200':
+          description: OK
+
+definitions:
+  jvm-get-info:
+    type: object
+    properties:
+      systemId:
+        type: string
+      agentId:
+        type: string
+      jvmId:
+        type: string
+      mainClass:
+        type: string
+      startTime:
+        type: integer
+        format: int64
+      endTime:
+        type: integer
+        format: int64
+      jvmPid:
+        type: integer
+      javaVersion:
+        type: string
+      javaHome:
+        type: string
+      javaCommandLine:
+        type: string
+      jvmArguments:
+        type: string
+      jvmName:
+        type: string
+      jvmInfo:
+        type: string
+      jvmVersion:
+        type: string
+      classpath:
+        type: string
+      environment:
+        type: array
+        items:
+          $ref: '#/definitions/environment-items'
+      uid:
+        type: integer
+        format: int64
+      username:
+        type: string
+      lastUpdated:
+        type: integer
+        format: int64
+
+  jvm-post-info:
+    type: object
+    properties:
+      agentId:
+        type: string
+      jvmId:
+        type: string
+      mainClass:
+        type: string
+      startTime:
+        type: integer
+        format: int64
+      stopTime:
+        type: integer
+        format: int64
+      jvmPid:
+        type: integer
+      javaVersion:
+        type: string
+      javaHome:
+        type: string
+      javaCommandLine:
+        type: string
+      jvmArguments:
+        type: string
+      jvmName:
+        type: string
+      jvmInfo:
+        type: string
+      jvmVersion:
+        type: string
+      classpath:
+        type: string
+      environment:
+        type: array
+        items:
+          $ref: '#/definitions/environment-items'
+      uid:
+        type: integer
+        format: int64
+      username:
+        type: string
+      lastUpdated:
+        type: integer
+        format: int64
+  environment-items:
+    type: object
+    properties:
+      key:
+        type: string
+      value:
+        type: string
+
+  jvms-get-response:
+    type: object
+    properties:
+      response:
+        type: array
+        items:
+          $ref: '#/definitions/jvm-get-info'
+  jvms-put-body:
+    type: object
+    properties:
+      set:
+        type: object
+  jvms-post-body:
+    type: array
+    items:
+      $ref: '#/definitions/jvm-post-info'
+
+  update-put-body:
+    type: array
+    description: 'An array of jvm ID strings'
+    items:
+      type: string
+
+  tree-get-response:
+    type: object
+    properties:
+      systemId:
+        type: string
+      jvms:
+        type: array
+        items:
+          $ref: '#/definitions/jvm-get-info'
+parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+    description: The system ID for the jvms
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
+    description: The ID of the jvm
+  timestamp:
+    name: timeStamp
+    in: path
+    required: true
+    type: integer
+    format: int64
+    description: The timestamp to set the last_updated field for.
+  jvms-post-body:
+    name: body
+    in: body
+    description: The jvm information
+    required: true
+    schema:
+      $ref: '#/definitions/jvms-post-body'
+  jvms-put-body:
+    name: body
+    in: body
+    description: >-
+      The JSON object containing a 'set' object. This contains single item JSON
+      objects that specify the field to replace and the JSON value to replace with.
+      Must not include 'systemId' or 'jvmId' fields. Example { "set" : {
+      "field" : "value", "field2":{"object":"item"} }
+    required: true
+    schema:
+      $ref: '#/definitions/jvms-put-body'
+  update-put-body:
+    name: body
+    in: body
+    description: >-
+      An array of jvmIds for which to update the last_updated field.
+    required: true
+    schema:
+      $ref: '#/definitions/update-put-body'
+  limit:
+    name: limit
+    in: query
+    description: Limit of items to return. Example '1'
+    type: integer
+    required: false
+    default: 1
+  offset:
+    name: offset
+    in: query
+    description: Offset of items to return. Example '0'
+    type: integer
+    required: false
+    default: 0
+  sort:
+    name: sort
+    in: query
+    description: >-
+      Sort string. Comma separated list of fields prefixed with '+' for
+      ascending or '-' for descending. Example '?sort=+a,-b' Fields use dot
+      notation for embedded documents. Example 'outer.inner' refers to field
+      inner contained in field outer.
+    type: string
+    required: false
+  query:
+    name: query
+    in: query
+    description: >-
+      Query string. Comma separated list of key, comparator, value pairs.
+      Comparator supports '==', '<=', '>=', '<', '>', '!='. Example
+      '?query=a==b,c!=d'. Keys are fields in documents and use dot notation for
+      embedded documents. Example 'outer.inner' refers to field inner contained
+      in field outer.
+    type: string
+    required: false
+  include:
+    name: include
+    in: query
+    description: >-
+      Inclusion string. Comma separated list of fields to include in the
+      response. Example '?include=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'exclude' parameter Overriden by
+      'exclude' parameter
+    type: string
+    required: false
+  exclude:
+    name: exclude
+    in: query
+    description: >-
+      Exclusion string. Comma separated list of fields to exclude in the
+      response. Example '?exclude=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'include' parameter; takes
+      precedence over 'include' parameter
+    type: string
+    required: false
+  alive-only:
+    name: aliveOnly
+    in: query
+    description: Whether or not to return only JVMs that are live
+    type: boolean
+    default: true
+    required: false
