@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Before;
 import org.junit.Test;
@@ -51,19 +52,126 @@ import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
 
 public class JvmGcServiceIntegrationTest extends IntegrationTest {
 
-    private final String collectionName = "jvm-gc";
     private final String gcUrl = baseUrl + "/jvm-gc/0.0.2";
+    private final String collectionName = "jvm-gc";
+    private final String data = "[{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }, { \"d\" : \"test3\"}," +
+            "{\"e\" : \"test4\" }]";
 
     @Before
     public void beforeIntegrationTest() {
         mongodTestUtil.dropCollection(collectionName);
     }
 
+    private void makeHttpGetRequest(String url, String expectedResponse, int expectedStatus)
+            throws InterruptedException, TimeoutException, ExecutionException {
+
+        ContentResponse response = client.newRequest(url).method(HttpMethod.GET).send();
+
+        if (!expectedResponse.equals("")) {
+            assertEquals(expectedStatus, response.getStatus());
+            assertEquals(expectedResponse, response.getContentAsString());
+        }
+    }
+
+    private void makeHttpMethodRequest(HttpMethod httpMethod, String urlQuery, String dataToSend, String dataType,
+                                       String expectedResponse, int expectedStatus)
+            throws InterruptedException, TimeoutException, ExecutionException {
+
+        StringContentProvider stringContentProvider = new StringContentProvider(dataToSend, "UTF-8");
+        ContentResponse postResponse = client.newRequest(gcUrl + urlQuery).method(httpMethod)
+                .content(stringContentProvider, dataType)
+                .send();
+        assertEquals(expectedStatus, postResponse.getStatus());
+
+        if (!expectedResponse.equals("")) {
+            makeHttpGetRequest(gcUrl, expectedResponse, expectedStatus);
+        }
+    }
+
     @Test
     public void testGet() throws InterruptedException, TimeoutException, ExecutionException {
-        ContentResponse response = client.newRequest(gcUrl).method(HttpMethod.GET).send();
-        assertEquals(200, response.getStatus());
-        String expected = "{ \"response\" : [] }";
-        assertEquals(expected, response.getContentAsString());
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+        makeHttpGetRequest(gcUrl, "{ \"response\" : [{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }] }", 200);
+    }
+
+    @Test
+    public void testGetLimitParam() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+        makeHttpGetRequest(gcUrl + "?l=2", "{ \"response\" : [{ \"a\" : \"test\", \"b\" : \"test1\", " +
+                        "\"c\" : \"test2\" },{ \"d\" : \"test3\" }] }", 200);
+    }
+
+    @Test
+    public void testGetSortParam() throws InterruptedException, TimeoutException, ExecutionException {
+        String data = "[{ \"a\" : \"1\"}, {\"a\" : \"2\"}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data,"application/json", "", 200);
+        makeHttpGetRequest(gcUrl + "?l=3&s=-a", "{ \"response\" : [{ \"a\" : \"2\" },{ \"a\" : \"1\" }] }", 200);
+    }
+
+    @Test
+    public void testGetProjectParam() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+        makeHttpGetRequest(gcUrl + "?p=b,c", "{ \"response\" : [{ \"b\" : \"test1\", \"c\" : \"test2\" }] }", 200);
+    }
+
+    @Test
+    public void testGetOffsetParam() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+        makeHttpGetRequest(gcUrl + "?o=1", "{ \"response\" : [{ \"d\" : \"test3\" }] }", 200);
+    }
+
+    @Test
+    public void testGetQueryParam() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", data,"application/json", "", 200);
+        makeHttpGetRequest(gcUrl + "?q=b==test1", "{ \"response\" : [{ \"a\" : \"test\", \"b\" : \"test1\"," +
+                " \"c\" : \"test2\" }] }", 200);
+    }
+
+    @Test
+    public void testPostJSON() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", "[{ \"f1\" : \"test\" }]", "application/json",
+                "{ \"response\" : [{ \"f1\" : \"test\" }] }", 200);
+    }
+
+    @Test
+    public void testPostXML() throws InterruptedException,TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", "", "application/xml", "", 415);
+    }
+
+    @Test
+    public void testInvalidDataPost() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", "{ \"badFormat\" : \"missing square brackets\" }",
+                "application/json", "", 400);
+    }
+
+    @Test
+    public void testDelete() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.DELETE, "", "", "", "", 200);
+    }
+
+    @Test
+    public void testNonExistentDataDelete() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.DELETE, "?q=nonExist==Null", "", "", "", 200);
+    }
+
+    @Test
+    public void testPostPutDeleteMockedData() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", "[{ \"f1\" : \"test\" }]", "application/json",
+                "{ \"response\" : [{ \"f1\" : \"test\" }] }", 200);
+
+        makeHttpMethodRequest(HttpMethod.PUT, "?q=f1==test", "{ \"set\" : { \"f1\" : \"newdata\" }}",
+                "application/json", "{ \"response\" : [{ \"f1\" : \"newdata\" }] }", 200);
+
+        makeHttpMethodRequest(HttpMethod.DELETE, "?q=f1==test", "", "", "", 200);
+    }
+
+    @Test
+    public void testPutIdenticalPreexistingData() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, "", "[{ \"f2\" : \"identical\" }]",
+                "application/json", "{ \"response\" : [{ \"f2\" : \"identical\" }] }", 200);
+
+        makeHttpMethodRequest(HttpMethod.PUT,"?q=f2==identical","{ \"set\" : { \"f2\" : \"identical\" }}",
+                "application/json","{ \"response\" : [{ \"f2\" : \"identical\" }] }", 200);
     }
 }
