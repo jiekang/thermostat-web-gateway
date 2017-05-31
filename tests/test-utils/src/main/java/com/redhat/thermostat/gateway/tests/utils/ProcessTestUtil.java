@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.gateway.tests.utils;
 
+import com.redhat.thermostat.gateway.common.util.OS;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +50,9 @@ public class ProcessTestUtil {
      * Kill the process and all its children, recursively. Sends SIGTERM.
      */
     public static void killRecursively(Process process) throws Exception {
+        if (OS.IS_WINDOWS) {
+            throw new UnsupportedOperationException("killRecursively() not supported on Windows");
+        }
         killRecursively(getPid(process));
     }
 

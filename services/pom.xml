@@ -51,9 +51,10 @@
     <name>Thermostat Services</name>
 
     <modules>
-        <module>jvm-memory</module>
-        <module>jvm-gc</module>
         <module>commands</module>
+        <module>jvm-gc</module>
+        <module>jvms</module>
+        <module>jvm-memory</module>
         <module>white-pages</module>
     </modules>
 

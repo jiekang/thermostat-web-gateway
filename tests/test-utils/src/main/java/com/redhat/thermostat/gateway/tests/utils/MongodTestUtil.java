@@ -43,6 +43,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import com.redhat.thermostat.gateway.common.util.OS;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
@@ -68,10 +69,10 @@ public class MongodTestUtil {
         tempLogFile = tempDbDir.resolve("mongod.log");
         tempLogFile.toFile().deleteOnExit();
 
-        String[] command = {"mongod", "--dbpath", tempDbDir.resolve("data/db").toAbsolutePath().toString(), "--port", String.valueOf(port), "--fork", "--logpath", tempLogFile.toAbsolutePath().toString()};
-        ProcessBuilder builder = new ProcessBuilder(command);
+        String[] posixCommand = {"mongod", "--dbpath", tempDbDir.resolve("data/db").toAbsolutePath().toString(), "--port", String.valueOf(port), "--fork", "--logpath", tempLogFile.toAbsolutePath().toString()};
+        String[] windowsCommand = {"cmd", "/c", "mongod", "--dbpath", tempDbDir.resolve("data/db").toAbsolutePath().toString(), "--port", String.valueOf(port), "--logpath", tempLogFile.toAbsolutePath().toString()};
+        ProcessBuilder builder = new ProcessBuilder(OS.IS_UNIX ? posixCommand : windowsCommand);
         process = builder.start();
-
         mongoClient = new MongoClient(new ServerAddress(host, port));
 
         waitForMongodStart();

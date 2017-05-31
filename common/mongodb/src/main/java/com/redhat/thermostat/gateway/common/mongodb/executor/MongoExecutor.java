@@ -70,9 +70,8 @@ public class MongoExecutor {
             documents = collection.find();
         }
 
-        List<String> projectionsList;
         if (projections != null) {
-            projectionsList = Arrays.asList(projections.split(","));
+            List<String> projectionsList = Arrays.asList(projections.split(","));
             documents = documents.projection(fields(include(projectionsList), excludeId()));
         } else {
             documents = documents.projection(excludeId());
@@ -83,7 +82,6 @@ public class MongoExecutor {
 
         return mongoResponseBuilder.buildGetResponseString(documents);
     }
-
 
     public void buildPutResponse(MongoCollection<Document> collection, String body, String queries) {
         BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);

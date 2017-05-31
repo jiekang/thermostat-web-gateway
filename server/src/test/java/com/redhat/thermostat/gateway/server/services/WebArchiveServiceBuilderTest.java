@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.redhat.thermostat.gateway.common.util.OS;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -106,7 +107,7 @@ public class WebArchiveServiceBuilderTest {
     public void keepsAbsoluteServiceWarFile() {
         EnvHelper env = mock(EnvHelper.class);
         WebArchiveServiceBuilder serviceBuilder = new WebArchiveServiceBuilder(configFactory, env, new PathHelper());
-        String orig = "/abs/path";
+        String orig = OS.IS_UNIX ? "/abs/path" : "C:\\abs\\path";
         String result = serviceBuilder.getAbsolutePathForService(orig);
         assertEquals(orig, result);
     }
