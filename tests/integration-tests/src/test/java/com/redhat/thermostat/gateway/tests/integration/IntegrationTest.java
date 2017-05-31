@@ -69,6 +69,12 @@ public class IntegrationTest {
 
     private static Process serverProcess;
 
+    protected String resourceUrl;
+
+    public IntegrationTest(String serviceUrl) {
+        this.resourceUrl = baseUrl + "/" + serviceUrl;
+    }
+
     @BeforeClass
     public static void beforeClassIntegrationTest() throws Exception {
         mongodTestUtil.startMongod();

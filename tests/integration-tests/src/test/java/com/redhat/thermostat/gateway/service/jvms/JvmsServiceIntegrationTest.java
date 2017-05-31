@@ -50,8 +50,8 @@ import org.junit.Test;
 import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
 
 public class JvmsServiceIntegrationTest extends IntegrationTest {
-    private final String collectionName = "jvm-info";
-    private final String jvmsUrl = baseUrl + "/jvms/0.0.1";
+    private static final String collectionName = "jvm-info";
+    private static final String jvmsUrl = baseUrl + "/jvms/0.0.1";
 
     private final String postData = "[{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1, \"startTime\" :" +
             "{ \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : \"-9223372036854775808\" }," +
@@ -85,6 +85,10 @@ public class JvmsServiceIntegrationTest extends IntegrationTest {
 
         private final String postDataWithSystemId = postData.substring(0, postData.length() - 2) +
                 ", \"systemId\" : \"invalid\"}]";
+
+    public JvmsServiceIntegrationTest() {
+        super(jvmsUrl);
+    }
 
     @Before
     public void beforeIntegrationTest() {

@@ -52,10 +52,14 @@ import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
 
 public class JvmGcServiceIntegrationTest extends IntegrationTest {
 
-    private final String gcUrl = baseUrl + "/jvm-gc/0.0.2";
-    private final String collectionName = "jvm-gc";
+    private static final String collectionName = "jvm-gc";
+    private static final String gcUrl = baseUrl + "/" + collectionName + "/0.0.2";
     private final String data = "[{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }, { \"d\" : \"test3\"}," +
             "{\"e\" : \"test4\" }]";
+
+    public JvmGcServiceIntegrationTest() {
+        super(collectionName);
+    }
 
     @Before
     public void beforeIntegrationTest() {

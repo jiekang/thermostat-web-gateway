@@ -63,5 +63,17 @@
             <artifactId>mongo-java-driver</artifactId>
             <version>${mongo-java-driver.version}</version>
         </dependency>
+        <!-- HTTP test dependencies -->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-client</artifactId>
+            <version>${jetty.version}</version>
+        </dependency>
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+        </dependency>
     </dependencies>
 </project>
