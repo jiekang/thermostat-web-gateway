@@ -48,7 +48,7 @@ import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.C
 public class Start {
 
     public void run() {
-        String gatewayHome = System.getenv(GlobalConstants.GATEWAY_HOME_ENV);
+        String gatewayHome = System.getProperty(GlobalConstants.GATEWAY_HOME_ENV, System.getenv(GlobalConstants.GATEWAY_HOME_ENV));
         if (gatewayHome == null) {
             throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
         }
