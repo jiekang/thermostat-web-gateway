@@ -108,7 +108,7 @@ definitions:
       startTime:
         type: integer
         format: int64
-      endTime:
+      stopTime:
         type: integer
         format: int64
       jvmPid:
