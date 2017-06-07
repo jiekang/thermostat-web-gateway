@@ -66,16 +66,26 @@ definitions:
       jvmId:
         type: string
       timeStamp:
-        type: integer
-        format: int64
+        $ref: '#/definitions/timestamp'
       collectorName:
         type: string
       runCount:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
       wallTime:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
+
+  metric:
+    type: object
+    properties:
+      $numberLong:
+        type: string
+  timestamp:
+    description: UNIX timestamp in milliseconds
+    type: object
+    properties:
+      $numberLong:
+        type: string
+
   put-body:
     type: object
     properties:
