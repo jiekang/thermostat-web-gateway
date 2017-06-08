@@ -61,7 +61,7 @@ if '%1' == 'start' (
     if not exist %DB_PATH% mkdir %DB_PATH%
     if not exist %DATA_PATH% mkdir %DATA_PATH%
 
-    start /MIN mongod --quiet --nohttpinterface --bind_ip %IP% --nojournal --dbpath %DATA_PATH% --logpath %LOG_PATH% --pidfilepath %PID_PATH% --port %PORT%
+    start /MIN mongod --quiet --nohttpinterface --bind_ip %IP% --nojournal --dbpath %DATA_PATH% --logpath %LOG_PATH% --pidfilepath %PID_PATH% --port %PORT% --auth
 
     if not exist %SETUP_PATH% (
         ping -n 5 localhost >nul

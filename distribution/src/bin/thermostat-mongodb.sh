@@ -96,7 +96,7 @@ if [ $1 == "start" ]; then
     mkdir -p ${DB_PATH}
     mkdir -p ${DATA_PATH}
 
-    mongod --quiet ${MONGO_FORK_ARG} --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT}
+    mongod --quiet ${MONGO_FORK_ARG} --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT} --auth
 
     if [ ! -f ${SETUP_PATH} ]; then
         sleep 3
