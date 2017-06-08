@@ -10,7 +10,7 @@ consumes:
 produces:
   - application/json
   - text/html; charset=utf-8
-basePath: /0.0.2
+basePath: /jvm-gc/0.0.2
 paths:
   /:
     get:
