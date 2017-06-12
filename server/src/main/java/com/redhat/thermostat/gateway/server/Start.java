@@ -44,11 +44,22 @@ import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.CoreServiceType;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
-public class Start {
+public class Start implements Runnable {
+
+    private Server server = null;
+    private AbstractLifeCycle.AbstractLifeCycleListener listener = null;
+
+    public Start() {
+    }
+
+    public Start(AbstractLifeCycle.AbstractLifeCycleListener listener) {
+        this.listener = listener;
+    }
 
     public void run() {
-        String gatewayHome = System.getenv(GlobalConstants.GATEWAY_HOME_ENV);
+        String gatewayHome = System.getProperty(GlobalConstants.GATEWAY_HOME_ENV, System.getenv(GlobalConstants.GATEWAY_HOME_ENV));
         if (gatewayHome == null) {
             throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
         }
@@ -58,7 +69,10 @@ public class Start {
         setServerConfig(serverBuilder, factory);
         setServiceBuilder(serverBuilder, factory);
 
-        Server server = serverBuilder.build();
+        server = serverBuilder.build();
+        if (listener != null) {
+            server.addLifeCycleListener(listener);
+        }
 
         try {
             server.start();
@@ -66,7 +80,9 @@ public class Start {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    public void stopServer() {
         try {
             server.stop();
         } catch (Exception e) {

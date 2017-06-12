@@ -70,6 +70,15 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <environmentVariables>
+                        <THERMOSTAT_GATEWAY_HOME>${project.build.directory}/../../../distribution/target/image</THERMOSTAT_GATEWAY_HOME>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.2</version>
                 <configuration>

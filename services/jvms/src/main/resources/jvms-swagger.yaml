@@ -106,11 +106,9 @@ definitions:
       mainClass:
         type: string
       startTime:
-        type: integer
-        format: int64
-      endTime:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
+      stopTime:
+        $ref: '#/definitions/metric'
       jvmPid:
         type: integer
       javaVersion:
@@ -134,13 +132,11 @@ definitions:
         items:
           $ref: '#/definitions/environment-items'
       uid:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
       username:
         type: string
       lastUpdated:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
 
   jvm-post-info:
     type: object
@@ -152,11 +148,9 @@ definitions:
       mainClass:
         type: string
       startTime:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
       stopTime:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
       jvmPid:
         type: integer
       javaVersion:
@@ -180,19 +174,23 @@ definitions:
         items:
           $ref: '#/definitions/environment-items'
       uid:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
       username:
         type: string
       lastUpdated:
-        type: integer
-        format: int64
+        $ref: '#/definitions/metric'
   environment-items:
     type: object
     properties:
       key:
         type: string
       value:
+        type: string
+
+  metric:
+    type: object
+    properties:
+      $numberLong:
         type: string
 
   jvms-get-response:
@@ -246,7 +244,7 @@ parameters:
     required: true
     type: integer
     format: int64
-    description: The timestamp to set the last_updated field for.
+    description: The UNIX timestamp in milliseconds to set the last_updated field for.
   jvms-post-body:
     name: body
     in: body

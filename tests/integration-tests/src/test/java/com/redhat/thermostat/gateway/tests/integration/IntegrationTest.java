@@ -36,38 +36,36 @@
 
 package com.redhat.thermostat.gateway.tests.integration;
 
-import static org.junit.Assert.fail;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.CountDownLatch;
 
-import com.redhat.thermostat.gateway.common.util.OS;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.server.Start;
+
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
+import org.eclipse.jetty.util.component.LifeCycle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
-import com.redhat.thermostat.gateway.tests.utils.ProcessTestUtil;
 
 public class IntegrationTest {
     protected static HttpClient client;
     protected static String baseUrl = "http://127.0.0.1:30000";
 
     protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
-    private static final Path distributionImage = Paths.get("../../distribution/target/image");
-    private static final String POSIX_WEB_GATEWAY_SCRIPT = "thermostat-web-gateway.sh";
-    private static final String WINDOWS_WEB_GATEWAY_SCRIPT = "thermostat-web-gateway.cmd";
+    private static final Path distributionImage;
 
-    private static Process serverProcess;
+    static {
+        final String distDir = System.getProperty(GlobalConstants.GATEWAY_HOME_ENV, System.getenv(GlobalConstants.GATEWAY_HOME_ENV));
+        distributionImage = distDir != null ? Paths.get(distDir) : null;
+        if (distributionImage == null) {
+            throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
+        }
+    }
 
     protected String resourceUrl;
 
@@ -94,43 +92,70 @@ public class IntegrationTest {
         mongoProcess.waitFor();
     }
 
+    private static Thread serverThread = null;
+    private static Start serverObject = null;
+
+    private static class StartListener extends AbstractLifeCycle.AbstractLifeCycleListener {
+
+        private final CountDownLatch latch;
+        private Throwable cause = null;
+        private boolean failed = false;
+
+        StartListener(CountDownLatch cdl) {
+            this.latch = cdl;
+        }
+
+        @Override
+        public void lifeCycleStarted(LifeCycle event) {
+            super.lifeCycleStarted(event);
+            latch.countDown();
+        }
+
+        @Override
+        public void lifeCycleFailure(LifeCycle event, Throwable cause) {
+            this.failed = true;
+            this.cause = cause;
+            this.latch.countDown();
+        }
+
+        boolean hasFailed() {
+            return failed;
+        }
+
+        Throwable getCause() {
+            return this.cause;
+        }
+    }
+
     private static void startServer() throws IOException, InterruptedException {
-        String commandStr = OS.IS_UNIX ? distributionImage.resolve("bin").resolve(POSIX_WEB_GATEWAY_SCRIPT).toAbsolutePath().toString()
-                : distributionImage.resolve("bin").resolve(WINDOWS_WEB_GATEWAY_SCRIPT).toAbsolutePath().toString();
 
-        ProcessBuilder processBuilder = OS.IS_UNIX ? new ProcessBuilder().command(commandStr).inheritIO().redirectError(ProcessBuilder.Redirect.PIPE)
-                : new ProcessBuilder().command("cmd", "/c", commandStr).inheritIO().redirectError(ProcessBuilder.Redirect.PIPE);
+        if (serverThread == null) {
 
-        serverProcess = processBuilder.start();
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(serverProcess.getErrorStream()));
+            final CountDownLatch contextStartedLatch = new CountDownLatch(1);
 
-        Future<Boolean> f = Executors.newFixedThreadPool(1).submit(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                String line;
-                while ((line = reader.readLine()) != null && !line.contains("Server:main: Started")) {
-                    System.out.println(line);
-                }
-                return true;
+            final StartListener listener = new StartListener(contextStartedLatch);
+
+            serverObject = new Start(listener);
+            serverThread = new Thread(serverObject);
+            serverThread.start();
+
+            // wait for Jetty is up and running?
+            contextStartedLatch.await();
+            if (listener.hasFailed()) {
+                throw new IllegalStateException(listener.getCause());
             }
-        });
-
-        try {
-            f.get(20L, TimeUnit.SECONDS);
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            fail();
-        } catch (TimeoutException e) {
-            fail("20 seconds elapsed: Integration test timed out waiting for Server to start");
         }
     }
 
     private static void stopServer() throws Exception {
-        if (OS.IS_UNIX) {
-            ProcessTestUtil.killRecursively(serverProcess);
-        } else {
-            // TODO: kill children on Windows
-            serverProcess.destroy();
+        if (serverThread != null) {
+            Thread st = serverThread;
+            synchronized (serverThread) {
+                serverThread = null;
+                serverObject.stopServer();
+                st.join();
+                serverObject = null;
+            }
         }
     }
 
