@@ -57,7 +57,7 @@ public class IntegrationTest {
     protected static String baseUrl = "http://127.0.0.1:30000";
 
     protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
-    private static final Path distributionImage;
+    protected static final Path distributionImage;
 
     static {
         final String distDir = System.getProperty(GlobalConstants.GATEWAY_HOME_ENV, System.getenv(GlobalConstants.GATEWAY_HOME_ENV));
@@ -75,21 +75,10 @@ public class IntegrationTest {
 
     @BeforeClass
     public static void beforeClassIntegrationTest() throws Exception {
-        mongodTestUtil.startMongod();
-        setupMongoCredentials();
-
         client = new HttpClient();
         client.start();
 
         startServer();
-    }
-
-    private static void setupMongoCredentials() throws IOException, InterruptedException {
-        Path mongoSetup = distributionImage.resolve("etc/mongo-dev-setup.js");
-
-        ProcessBuilder processBuilder = new ProcessBuilder().command("mongo", mongodTestUtil.listenAddress, mongoSetup.toAbsolutePath().toString()).inheritIO();
-        Process mongoProcess = processBuilder.start();
-        mongoProcess.waitFor();
     }
 
     private static Thread serverThread = null;
@@ -161,7 +150,6 @@ public class IntegrationTest {
 
     @AfterClass
     public static void afterClassIntegrationTest() throws Exception {
-        mongodTestUtil.stopMongod();
         client.stop();
         stopServer();
     }

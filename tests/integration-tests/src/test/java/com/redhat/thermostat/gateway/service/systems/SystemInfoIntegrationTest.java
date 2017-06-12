@@ -40,7 +40,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
@@ -57,10 +57,10 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SystemInfoIntegrationTest extends IntegrationTest {
+public class SystemInfoIntegrationTest extends MongoIntegrationTest {
 
-    private static final String collectionName = "system-info";
-    private static final String serviceURL = baseUrl + "/systems/0.0.1";
+    private static final String serviceName = "system-info";
+    private static final String versionNumber = "0.0.1";
     private static final int HTTP_200_OK = 200;
     private static final String CPU_STRING1 = "Intel";
     private static final String CPU_STRING2 = "AMD";
@@ -93,7 +93,7 @@ public class SystemInfoIntegrationTest extends IntegrationTest {
     }
 
     public SystemInfoIntegrationTest() {
-        super(serviceURL);
+        super("systems/" + versionNumber, serviceName);
     }
 
     @Before
@@ -109,17 +109,17 @@ public class SystemInfoIntegrationTest extends IntegrationTest {
         final String systemid2 = getRandomSystemId();
         postSystemInfo(systemid2);
 
-        ContentResponse response = client.newRequest(serviceURL).method(HttpMethod.GET).send();
+        ContentResponse response = client.newRequest(resourceUrl).method(HttpMethod.GET).send();
         assertEquals(HTTP_200_OK, response.getStatus());
         final List<TinyHostInfo> list = parseHostInfo(response, null);
         assertEquals(1, list.size());
 
-        ContentResponse response2 = client.newRequest(serviceURL + "?limit=99").method(HttpMethod.GET).send();
+        ContentResponse response2 = client.newRequest(resourceUrl + "?limit=99").method(HttpMethod.GET).send();
         assertEquals(HTTP_200_OK, response2.getStatus());
         final List<TinyHostInfo> list2 = parseHostInfo(response2, null);
         assertEquals(2, list2.size());
 
-        ContentResponse response3 = client.newRequest(serviceURL + "?limit=0").method(HttpMethod.GET).send();
+        ContentResponse response3 = client.newRequest(resourceUrl + "?limit=0").method(HttpMethod.GET).send();
         assertEquals(HTTP_200_OK, response3.getStatus());
         final List<TinyHostInfo> list3 = parseHostInfo(response3, null);
         assertEquals(2, list3.size());
@@ -127,7 +127,7 @@ public class SystemInfoIntegrationTest extends IntegrationTest {
 
     @Test
     public void testGetAllEmpty() throws InterruptedException, TimeoutException, ExecutionException {
-        ContentResponse response = client.newRequest(serviceURL).method(HttpMethod.GET).send();
+        ContentResponse response = client.newRequest(resourceUrl).method(HttpMethod.GET).send();
         assertEquals(HTTP_200_OK, response.getStatus());
         final List<TinyHostInfo> list = parseHostInfo(response, null);
         assertTrue(list.isEmpty());
@@ -197,7 +197,7 @@ public class SystemInfoIntegrationTest extends IntegrationTest {
     }
 
     private ContentResponse postSystemInfo(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        final Request request = client.newRequest(serviceURL + "/systems/" + systemid);
+        final Request request = client.newRequest(resourceUrl + "/systems/" + systemid);
         request.header("Content-Type", "application/json");
         request.content(new StringContentProvider("[" + createSystemInfoJSON(systemid) + "]"));
         ContentResponse response = request.method(HttpMethod.POST).send();
@@ -244,7 +244,7 @@ public class SystemInfoIntegrationTest extends IntegrationTest {
     }
 
     private ContentResponse putSystemInfo(final String systemid, final String cpuid) throws InterruptedException, ExecutionException, TimeoutException {
-        final Request request = client.newRequest(serviceURL + "/systems/" + systemid);
+        final Request request = client.newRequest(resourceUrl + "/systems/" + systemid);
         request.header("Content-Type", "application/json");
         final String contentStr = createSystemInfoJSON(systemid).replace(CPU_STRING1, cpuid);
         request.content(new StringContentProvider("{ \"set\" : " +contentStr + "}"));
@@ -268,13 +268,13 @@ public class SystemInfoIntegrationTest extends IntegrationTest {
     }
 
     private ContentResponse getSystemInfo(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        ContentResponse response = client.newRequest(serviceURL + "/systems/" + systemid).method(HttpMethod.GET).send();
+        ContentResponse response = client.newRequest(resourceUrl + "/systems/" + systemid).method(HttpMethod.GET).send();
         assertEquals(HTTP_200_OK, response.getStatus());
         return response;
     }
 
     private ContentResponse deleteSystemInfo(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        ContentResponse response = client.newRequest(serviceURL + "/systems/" + systemid).method(HttpMethod.DELETE).send();
+        ContentResponse response = client.newRequest(resourceUrl + "/systems/" + systemid).method(HttpMethod.DELETE).send();
         assertEquals(HTTP_200_OK, response.getStatus());
         final String expected = "";
         assertEquals(expected, response.getContentAsString());
