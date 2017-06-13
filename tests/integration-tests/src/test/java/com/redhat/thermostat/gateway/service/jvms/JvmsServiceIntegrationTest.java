@@ -41,15 +41,13 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
-
-public class JvmsServiceIntegrationTest extends IntegrationTest {
+public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
     private static final String collectionName = "jvm-info";
     private static final String jvmsUrl = baseUrl + "/jvms/0.0.1";
 
@@ -87,12 +85,7 @@ public class JvmsServiceIntegrationTest extends IntegrationTest {
                 ", \"systemId\" : \"invalid\"}]";
 
     public JvmsServiceIntegrationTest() {
-        super(jvmsUrl);
-    }
-
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
+        super(jvmsUrl, "jvm-info");
     }
 
     @Test

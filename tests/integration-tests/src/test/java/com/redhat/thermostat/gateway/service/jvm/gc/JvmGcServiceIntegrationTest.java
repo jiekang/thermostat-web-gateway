@@ -42,28 +42,22 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Before;
 import org.junit.Test;
 
-import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
+public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
-public class JvmGcServiceIntegrationTest extends IntegrationTest {
-
-    private static final String collectionName = "jvm-gc";
-    private static final String gcUrl = baseUrl + "/" + collectionName + "/0.0.2";
+    private static final String serviceName = "jvm-gc";
+    private static final String versionNumber = "0.0.2";
+    private static final String gcUrl = baseUrl + "/" + serviceName + "/" + versionNumber;
     private final String data = "[{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }, { \"d\" : \"test3\"}," +
             "{\"e\" : \"test4\" }]";
 
     public JvmGcServiceIntegrationTest() {
-        super(collectionName);
-    }
-
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
+        super(serviceName + "/" + versionNumber, serviceName);
     }
 
     private void makeHttpGetRequest(String url, String expectedResponse, int expectedStatus)

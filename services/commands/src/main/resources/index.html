@@ -85,7 +85,7 @@
                 var clientRequest = {};
                 clientRequest.type = 2;
                 clientRequest.payload = {};
-                clientRequest.payload.param1 = message;
+                clientRequest.payload.receiver = message;
                 CmdChan.socket.send(JSON.stringify(clientRequest));
                 document.getElementById('cmd-chan').value = '';
             }
@@ -126,7 +126,7 @@
     Thermostat Commands: HTML Client
     </p>
     <p>
-        <input type="text" placeholder="type and press enter in order to send a message to agent.html" id="cmd-chan" />
+        <input type="text" placeholder="type the receiver name and press enter in order to send a message to the agent and trigger the receiver." id="cmd-chan" />
     </p>
     <div id="console-container">
         <div id="console"/>

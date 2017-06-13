@@ -107,6 +107,6 @@ fi
 
 if [ $1 == "stop" ]; then
     if [ -f ${PID_PATH} ]; then
-        mongo ${IP}:${PORT}/admin --eval "db.shutdownServer()"
+        mongo ${IP}:${PORT}/admin --eval "db.auth('thermostat-admin','mongodevpassword') && db.shutdownServer()"
     fi
 fi

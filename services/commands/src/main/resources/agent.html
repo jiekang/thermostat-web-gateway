@@ -46,7 +46,7 @@
         Msg.fromRequest = (function(rawMsg) {
             var jsonObj = JSON.parse(rawMsg);
             Msg.sequence = jsonObj.sequence;
-            Msg.paramStr = jsonObj.payload.param1;
+            Msg.paramStr = jsonObj.payload.receiver;
         });
 
         CmdChan.socket = null;

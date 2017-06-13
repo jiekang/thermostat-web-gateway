@@ -36,27 +36,21 @@
 
 package com.redhat.thermostat.gateway.service.jvm.memory;
 
-import com.redhat.thermostat.gateway.tests.integration.IntegrationTest;
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
 import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-public class JvmMemoryServiceIntegrationTest extends IntegrationTest {
+public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
 
-    private static final String collectionName = "jvm-memory";
+    private static final String serviceName = "jvm-memory";
     private static final String versionNumber = "0.0.2";
 
     public JvmMemoryServiceIntegrationTest() {
-        super(collectionName + "/" + versionNumber);
-    }
-
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
+        super(serviceName + "/" + versionNumber, serviceName);
     }
 
     @Test
