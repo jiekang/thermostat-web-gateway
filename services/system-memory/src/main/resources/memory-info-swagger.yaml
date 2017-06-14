@@ -1,0 +1,171 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: Thermostat Web Gateway Memory Info API
+  license:
+    name: GPL v2 with Classpath Exception
+    url: 'http://www.gnu.org/licenses'
+consumes:
+  - application/json
+produces:
+  - application/json
+  - text/html; charset=utf-8
+basePath: /system-memory/0.0.1
+paths:
+  /systems/{systemId}:
+    parameters:
+      - $ref: '#/parameters/system-id'
+    get:
+      description: Get Memory information for system {systemId}.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/memory-info-get-response'
+    put:
+      description: Update Memory information for system {systemId}.
+      parameters:
+        - $ref: '#/parameters/memory-info-put-body'
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: OK
+    post:
+      description: Add Memory information for system {systemId}
+      parameters:
+        - $ref: '#/parameters/memory-info-array'
+      responses:
+        '200':
+          description: OK
+    delete:
+      description: Delete Memory information for system ID {systemId}.
+      parameters:
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: OK
+definitions:
+  memory-info-get-response:
+    type: object
+    properties:
+      response:
+        $ref: '#/definitions/memory-info-array'
+  memory-info-array:
+    type: array
+    items:
+      $ref: '#/definitions/memory-info'
+  memory-info:
+    type: object
+    properties:
+      systemId:
+        type: string
+      agentId:
+        type: string
+      timestamp:
+        type: integer
+        format: int64
+      total:
+        type: integer
+        format: int64
+      free:
+        type: integer
+        format: int64
+      buffers:
+        type: integer
+        format: int64
+      cached:
+        type: integer
+        format: int64
+      swapTotal:
+        type: integer
+        format: int64
+      swapFree:
+        type: integer
+        format: int64
+      commitLimit:
+        type: integer
+        format: int64
+  memory-info-put-body:
+    type: object
+    properties:
+      "set":
+        type: object
+parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+  memory-info-array:
+    name: memory-info-array
+    in: body
+    description: The system Memory information
+    required: true
+    schema:
+      $ref: '#/definitions/memory-info-array'
+  memory-info-put-body:
+    name: body
+    in: body
+    description: >-
+      The JSON object containing a 'set' object. This contains single item JSON
+      objects that specify the field to replace and the JSON value to replace with.
+      Must not include 'systemId' field. Example { "set" : {
+      "field" : "value", "field2":{"object":"item"} }
+    required: true
+    schema:
+      $ref: '#/definitions/memory-info-put-body'
+  limit:
+    name: limit
+    in: query
+    description: Limit of items to return. Example '1'
+    type: integer
+    required: false
+    default: 1
+  offset:
+    name: offset
+    in: query
+    description: Offset of items to return. Example '0'
+    type: integer
+    required: true
+    default: 0
+  sort:
+    name: sort
+    in: query
+    description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?sort=+a,-b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    type: string
+    required: false
+  query:
+    name: query
+    in: query
+    description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?query=a==b,c!=d'. Keys are fields in documents and use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    type: string
+    required: false
+  include:
+    name: include
+    in: query
+    description: >-
+      Inclusion string. Comma separated list of fields to include in the
+      response. Example '?include=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'exclude' parameter Overriden by
+      'exclude' parameter
+    type: string
+    required: false
+  exclude:
+    name: exclude
+    in: query
+    description: >-
+      Exclusion string. Comma separated list of fields to exclude in the
+      response. Example '?exclude=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'include' parameter; takes
+      precedence over 'include' parameter
+    type: string
+    required: false
