@@ -95,11 +95,6 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
         super(serviceURL, collectionName);
     }
 
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
-    }
-
     @Test
     public void testGetAll() throws InterruptedException, TimeoutException, ExecutionException {
         final String systemid = getRandomSystemId();
