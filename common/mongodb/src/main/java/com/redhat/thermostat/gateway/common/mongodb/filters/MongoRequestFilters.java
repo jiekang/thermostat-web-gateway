@@ -86,6 +86,7 @@ public class MongoRequestFilters {
                         break;
                     case "!=":
                         filters.add(ne(key, value));
+                        break;
                     case ">":
                         filters.add(gt(key, value));
                         break;
