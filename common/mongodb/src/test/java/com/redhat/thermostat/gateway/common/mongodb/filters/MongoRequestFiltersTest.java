@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
+import org.bson.json.JsonParseException;
 import org.junit.Test;
 
 import com.mongodb.MongoClient;
@@ -154,11 +155,13 @@ public class MongoRequestFiltersTest {
         assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
-    @Test
+    @Test(expected=JsonParseException.class)
     public void testInvalid() {
-        String query = "a";
-        Bson filter = MongoRequestFilters.buildQueriesFilter(Collections.singletonList(query));
-        BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
-        assertEquals(0, bsonDocument.getArray("$and").size());
+        MongoRequestFilters.buildQueriesFilter(Collections.singletonList("a"));
+    }
+
+    @Test(expected=JsonParseException.class)
+    public void testInvalidWithSymbols() {
+        MongoRequestFilters.buildQueriesFilter(Collections.singletonList("a="));
     }
 }
