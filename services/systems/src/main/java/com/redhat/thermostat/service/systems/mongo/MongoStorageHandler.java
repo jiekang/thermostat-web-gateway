@@ -36,8 +36,21 @@
 
 package com.redhat.thermostat.service.systems.mongo;
 
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.exclude;
+import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Projections.fields;
+import static com.mongodb.client.model.Projections.include;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
 import com.mongodb.BasicDBObject;
-import com.mongodb.Block;
 import com.mongodb.CursorType;
 import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
@@ -46,24 +59,6 @@ import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.lt;
-import static com.mongodb.client.model.Filters.or;
-import static com.mongodb.client.model.Projections.exclude;
-import static com.mongodb.client.model.Projections.excludeId;
-import static com.mongodb.client.model.Projections.fields;
-import static com.mongodb.client.model.Projections.include;
 
 public class MongoStorageHandler {
 
@@ -151,23 +146,5 @@ public class MongoStorageHandler {
         final Bson fields = new Document("$set", setObject);
 
         collection.updateMany(and(baseQuery, MongoRequestFilters.buildQueriesFilter(queriesList)), fields);
-    }
-
-    public void updateTimestamps(MongoCollection<Document> collection, String body, String systemId, Long timeStamp) {
-        final Bson filter;
-        if (body != null && body.length() > 0) {
-            List<String> systems = (List<String>) JSON.parse(body);
-            List<Bson> systemFilters = new ArrayList<>();
-            for (String id : systems) {
-                systemFilters.add(eq(Fields.SYSTEM_ID, id));
-            }
-            filter = or(eq(Fields.SYSTEM_ID, systemId), or(systemFilters));
-        } else {
-            filter = eq(Fields.SYSTEM_ID, systemId);
-        }
-
-        String setDocument = "{ \"$set\" : { \"" + Fields.LAST_UPDATED + "\":" + timeStamp + " } }";
-        final Bson update = Document.parse(setDocument);
-        collection.updateMany(filter, update);
     }
 }
