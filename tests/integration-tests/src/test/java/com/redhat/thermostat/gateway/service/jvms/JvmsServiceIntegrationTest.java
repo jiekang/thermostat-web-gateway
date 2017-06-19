@@ -41,21 +41,21 @@ import static org.junit.Assert.assertEquals;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+
 public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
-    private static final String collectionName = "jvm-info";
     private static final String jvmsUrl = baseUrl + "/jvms/0.0.1";
 
     private final String postData = "[{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1, \"startTime\" :" +
             "{ \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : \"-9223372036854775808\" }," +
             " \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
             " \"mainClass\" : \"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" :" +
-            " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" :" +
+            " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" :" +
             " \"25.131-b12\", \"environment\" : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"" +
             " }, { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
             " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" :" +
@@ -69,7 +69,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
             " \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : \"1495727607482\" }," +
             " \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
             " \"mainClass\" : \"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" :" +
-            " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\"," +
+            " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\"," +
             " \"environment\" : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
             " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
             " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" :" +
@@ -112,7 +112,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
                 " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
                 " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" :" +
                 " \"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" :" +
@@ -145,7 +145,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 " \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" :" +
                 " \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
                 " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
                 "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
                 " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", " +
@@ -175,7 +175,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 " \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
                 " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
                 ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, {" +
                 " \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
                 "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" :" +
@@ -191,7 +191,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"$numberLong\" : \"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
                 " [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
                 "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
                 " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
@@ -221,7 +221,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
                 "\"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
                 " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
                 ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
                 "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
                 " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
@@ -250,7 +250,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
                 "\"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
                 " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
                 ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
                 "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
                 " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
@@ -294,7 +294,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 " : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\"" +
                 " : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
                 " \"mainClass\" : \"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" :" +
-                " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : " +
+                " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : " +
                 "\"25.131-b12\", \"environment\" : [{ \"key\" : \"PATH\", \"value\" : " +
                 "\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\" : \"XAUTHORITY\", \"value\" : " +
                 "\"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" :" +
@@ -348,7 +348,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"-9223372036854775808\" }, \"javaVersion\" : \"1.7.0\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"hello\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
                 " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, " +
                 "{ \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
                 "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : " +
@@ -392,7 +392,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 " \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
                 "\"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
                 " [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\"" +
                 " : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
                 " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", " +
@@ -425,7 +425,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
                 "\"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
                 " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
                 ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
                 "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
                 " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
@@ -440,24 +440,39 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
-    public void testUpdateTimestamp() throws InterruptedException, TimeoutException, ExecutionException {
+    public void testUpdateTimestamp() throws Exception {
         String updateUrl = jvmsUrl + "/update/systems/1/ts/2000";
         String url = jvmsUrl + "/systems/1";
+        final String body = "[ \"jid1\", \"jid2\" ]";
 
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST)
                 .content(new StringContentProvider(postData), "application/json").send();
         assertEquals(200, postResponse.getStatus());
 
+        // lastUpdate starts out with 333
+        verifyGetIsExpected(url, 333);
 
-        ContentResponse updateResponse = client.newRequest(updateUrl).method(HttpMethod.PUT).send();
+        ContentResponse updateResponse = client.newRequest(updateUrl)
+                                               .method(HttpMethod.PUT)
+                                               .content(new StringContentProvider(body))
+                                               .send();
         assertEquals(200, updateResponse.getStatus());
 
-        ContentResponse response = client.newRequest(url).method(HttpMethod.GET)
-                .param("include", "lastUpdated").send();
-        assertEquals(200, response.getStatus());
-        String expected = "{ \"response\" : [{ \"lastUpdated\" : 2000 }] }";
-        assertEquals(expected, response.getContentAsString());
+        // lastUpdate should now be 2000
+        verifyGetIsExpected(url, 2000);
+    }
 
+    private void verifyGetIsExpected(String url, long expectedTs) throws Exception {
+        ContentResponse response = client.newRequest(url).method(HttpMethod.GET)
+                .param("include", "lastUpdated").param("limit", "2").send();
+        assertEquals(200, response.getStatus());
+        String expected = getExpectedLastUpdateResponse(expectedTs);
+        assertEquals(expected, response.getContentAsString());
+    }
+
+    private String getExpectedLastUpdateResponse(long expected) {
+        String lastUpdate = "{ \"lastUpdated\" : { \"$numberLong\" : \"" + Long.valueOf(expected).toString() + "\" } }";
+        return "{ \"response\" : [" + lastUpdate + "," + lastUpdate + "] }";
     }
 
     @Test
@@ -475,7 +490,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : {" +
                 " \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
                 " [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\"" +
                 " : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", " +
                 "\"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", " +
@@ -521,7 +536,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : {" +
                 " \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\" : " +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" : " +
                 "[{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\" :" +
                 " \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\"" +
                 " : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" : " +
@@ -553,7 +568,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 " \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" :" +
                 " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
                 " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
                 " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
                 "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" " +
@@ -569,7 +584,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 ": { \"$numberLong\" : \"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
+                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
                 " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
                 " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
                 "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" " +
@@ -601,7 +616,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 " { \"$numberLong\" : \"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
                 "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : 0, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
                 " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
                 "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
                 "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\"" +
