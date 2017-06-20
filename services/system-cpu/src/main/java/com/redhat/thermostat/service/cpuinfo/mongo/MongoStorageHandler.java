@@ -62,7 +62,7 @@ import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilde
 
 public class MongoStorageHandler {
 
-    private final MongoResponseBuilder mongoResponseBuilder = new MongoResponseBuilder();
+    private final MongoResponseBuilder.Builder mongoResponseBuilder = new MongoResponseBuilder.Builder();
 
     public String getMany(MongoCollection<Document> collection, Integer limit, Integer offset, String sort, String queries, String includes, String excludes) {
         FindIterable<Document> documents;
@@ -79,7 +79,7 @@ public class MongoStorageHandler {
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
 
-        return mongoResponseBuilder.buildGetResponseString(documents);
+        return mongoResponseBuilder.queryDocuments(documents).build();
     }
 
     public String getOne(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String includes, String excludes) {
@@ -91,7 +91,7 @@ public class MongoStorageHandler {
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit + offset).cursorType(CursorType.NonTailable);
 
-        return mongoResponseBuilder.buildGetResponseString(documents);
+        return mongoResponseBuilder.queryDocuments(documents).build();
     }
 
     private FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {

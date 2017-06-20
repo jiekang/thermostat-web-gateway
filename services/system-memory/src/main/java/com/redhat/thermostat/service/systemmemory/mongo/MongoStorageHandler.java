@@ -63,7 +63,7 @@ import static com.mongodb.client.model.Projections.include;
 
 public class MongoStorageHandler {
 
-    private final MongoResponseBuilder mongoResponseBuilder = new MongoResponseBuilder();
+    private final MongoResponseBuilder.Builder mongoResponseBuilder = new MongoResponseBuilder.Builder();
 
     public String getOne(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String includes, String excludes) {
         Bson query = eq(Fields.SYSTEM_ID, systemId);
@@ -74,7 +74,7 @@ public class MongoStorageHandler {
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit + offset).cursorType(CursorType.NonTailable);
 
-        return mongoResponseBuilder.buildGetResponseString(documents);
+        return mongoResponseBuilder.queryDocuments(documents).build();
     }
 
     private FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {

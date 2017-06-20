@@ -36,52 +36,56 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
+import java.util.ArrayList;
+
 import org.bson.Document;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 
+/*
+ *  Builds the appropriate response after executing the request's MongoDB Query.
+ *
+ *  NOTE: Builder fields that aren't explicitly set - and therefore null - are omitted in the
+ *        serialized JSON.
+ */
 public class MongoResponseBuilder {
 
-    /**
-     * JSON Response format
-     * {
-     *   "response" : {
-     *       [ {...}, ... ]
-     *   }
-     * }
-     *
-     * Timed JSON Response format
-     * {
-     *   "response" : {
-     *       [ {...}, ... ]
-     *   },
-     *   "time" : elapsed
-     * }
-     */
+    private final ArrayList<Document> response;
+    private final MongoMetaDataResponseBuilder metaData;
 
-    public String buildGetResponseString(FindIterable<Document> documents) {
-        final StringBuilder s = new StringBuilder();
+    public static class Builder {
 
-        s.append("{ \"response\" : [");
+        private ArrayList<Document> queryDocuments;
+        private MongoMetaDataResponseBuilder metaData;
+        private final Gson gson = new GsonBuilder().create();
 
-        final int[] i = {0};
-
-        documents.forEach(new Block<Document>() {
-            @Override
-            public void apply(Document document) {
-                s.append(document.toJson()).append(",");
-                i[0]++;
-            }
-        });
-
-        if (i[0] != 0) {
-            s.deleteCharAt(s.length() - 1);
+        public Builder queryDocuments(FindIterable<Document> documents) {
+            queryDocuments = new ArrayList<>();
+            documents.forEach(new Block<Document>() {
+                @Override
+                public void apply(Document document) {
+                    queryDocuments.add(document);
+                }
+            });
+            return this;
         }
 
-        s.append("] }");
+        public Builder metaData(MongoMetaDataResponseBuilder metaData) {
+            this.metaData = metaData;
+            return this;
+        }
 
-        return s.toString();
+        public String build() {
+            MongoResponseBuilder data = new MongoResponseBuilder(this);
+            return gson.toJson(data);
+        }
     }
 
+    private MongoResponseBuilder(Builder builder) {
+        response = builder.queryDocuments;
+        metaData = builder.metaData;
+    }
 }

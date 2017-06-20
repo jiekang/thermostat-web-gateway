@@ -87,13 +87,12 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
     public JvmsServiceIntegrationTest() {
         super(jvmsUrl, "jvm-info");
     }
-
     @Test
     public void testGetEmpty() throws InterruptedException, TimeoutException, ExecutionException {
         String url = jvmsUrl + "/systems/1";
         ContentResponse response = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, response.getStatus());
-        String expected = "{ \"response\" : [] }";
+        String expected = "{\"response\":[]}";
         assertEquals(expected, response.getContentAsString());
     }
 
@@ -107,23 +106,22 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1, " +
-                "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
-                "\"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
-                " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
-                " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" :" +
-                " \"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" :" +
-                " \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }," +
-                " { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\"," +
-                " \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }," +
-                " { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\"," +
-                " \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", " +
-                "\"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
-                "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid1\",\"jvmPid\":1," +
+                "\"startTime\":1495727607481,\"stopTime\":-9223372036854775808,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
+                "\"mainClass\":\"mc\",\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\"," +
+                "\"vmArguments\":\"-Djline.log.jul\\u003dtrue\",\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333," +
+                "\"jvmVersion\":\"25.131-b12\",\"environment\":[{\"key\":\"PATH\",\"value\":" +
+                "\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"},{\"key\":\"XAUTHORITY\",\"value\":" +
+                "\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\",\"value\":\"i3\"}," +
+                "{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"}," +
+                "{\"key\":\"DARWIN_MODE\",\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -141,21 +139,21 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1," +
-                " \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" :" +
-                " \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
-                " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
-                "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", " +
-                "\"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : " +
-                "\"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\"" +
-                " : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : " +
-                "\"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" :" +
-                " \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\"" +
-                " : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000," +
-                " \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid1\",\"jvmPid\":1," +
+                "\"startTime\":1495727607481,\"stopTime\":-9223372036854775808,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\",\"mainClass\":\"mc\"," +
+                "\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":\"-Djline.log.jul\\u003dtrue\"," +
+                "\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\"," +
+                "\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\",\"value\":\"i3\"}," +
+                "{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"}," +
+                "{\"key\":\"DARWIN_MODE\",\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -170,39 +168,40 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?limit=2";
         ContentResponse getResponse = client.newRequest(url + query).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1," +
-                " \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" :" +
-                " \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
-                " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
-                ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, {" +
-                " \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
-                "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" :" +
-                " \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { " +
-                "\"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\"" +
-                " : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { " +
-                "\"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\"" +
-                " : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" :" +
-                " \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000, " +
-                "\"username\" : \"user\", \"systemId\" : \"1\" },{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", " +
-                "\"jvmPid\" : 2, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { " +
-                "\"$numberLong\" : \"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
-                " [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
-                "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
-                " \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" :" +
-                " \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : " +
-                "\"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" : " +
-                "\"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\"" +
-                " }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\"" +
-                " }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000, " +
-                "\"username\" : \"user\", \"systemId\" : \"1\" }] }";
+
+
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid1\",\"jvmPid\":1," +
+                "\"startTime\":1495727607481,\"stopTime\":-9223372036854775808,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
+                "\"mainClass\":\"mc\",\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\"," +
+                "\"vmArguments\":\"-Djline.log.jul\\u003dtrue\",\"jvmInfo\":\"mixed mode\"," +
+                "\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\"," +
+                "\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\"," +
+                "\"value\":\"i3\"},{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"}," +
+                "{\"key\":\"DARWIN_MODE\",\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"},{\"agentId\":\"aid\",\"jvmId\":\"jid2\",\"jvmPid\":2," +
+                "\"startTime\":1495727607481,\"stopTime\":1495727607482,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\",\"mainClass\":\"mc\"," +
+                "\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":\"-Djline.log.jul\\u003dtrue\"," +
+                "\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\",\"environment\":" +
+                "[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"}," +
+                "{\"key\":\"GDMSESSION\",\"value\":\"i3\"},{\"key\":\"fish_greeting\",\"value\":\"\"}," +
+                "{\"key\":\"TERM\",\"value\":\"xterm-256color\"},{\"key\":\"DARWIN_MODE\",\"value\":\"0\"}," +
+                "{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
+
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -217,21 +216,22 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?offset=1";
         ContentResponse getResponse = client.newRequest(url + query).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", \"jvmPid\" : 2, " +
-                "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
-                "\"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
-                " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
-                ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
-                "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
-                " \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" :" +
-                " \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" " +
-                ": \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" :" +
-                " \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : " +
-                "\"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" :" +
-                " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000," +
-                " \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid2\",\"jvmPid\":2," +
+                "\"startTime\":1495727607481,\"stopTime\":1495727607482,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
+                "\"mainClass\":\"mc\",\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\"," +
+                "\"vmArguments\":\"-Djline.log.jul\\u003dtrue\",\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\"," +
+                "\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"}," +
+                "{\"key\":\"GDMSESSION\",\"value\":\"i3\"},{\"key\":\"fish_greeting\",\"value\":\"\"}," +
+                "{\"key\":\"TERM\",\"value\":\"xterm-256color\"},{\"key\":\"DARWIN_MODE\",\"value\":\"0\"}," +
+                "{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}" +
+                ",{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -246,21 +246,21 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?query=jvmId==jid2";
         ContentResponse getResponse = client.newRequest(url + query).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", \"jvmPid\" : 2, " +
-                "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
-                "\"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
-                " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
-                ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
-                "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
-                " \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" :" +
-                " \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" " +
-                ": \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" :" +
-                " \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : " +
-                "\"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" :" +
-                " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000," +
-                " \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid2\",\"jvmPid\":2," +
+                "\"startTime\":1495727607481,\"stopTime\":1495727607482,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
+                "\"mainClass\":\"mc\",\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":" +
+                "\"-Djline.log.jul\\u003dtrue\",\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":" +
+                "\"25.131-b12\",\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\",\"value\":\"i3\"}," +
+                "{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"},{\"key\":\"DARWIN_MODE\"," +
+                "\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"},{\"key\":\"DBUS_SESSION_BUS_ADDRESS\"," +
+                "\"value\":\"unix:path\\u003d/run/user/1000/bus\"},{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"}," +
+                "{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"},{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"}," +
+                "{\"key\":\"DISPLAY\",\"value\":\":0\"},{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\"," +
+                "\"value\":\"truecolor\"},{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
+
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -275,7 +275,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?include=agentId,jvmId";
         ContentResponse getResponse = client.newRequest(url + query).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -290,23 +290,21 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?exclude=agentId";
         ContentResponse getResponse = client.newRequest(url + query).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"jvmId\" : \"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\"" +
-                " : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\"" +
-                " : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
-                " \"mainClass\" : \"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" :" +
-                " \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : " +
-                "\"25.131-b12\", \"environment\" : [{ \"key\" : \"PATH\", \"value\" : " +
-                "\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\" : \"XAUTHORITY\", \"value\" : " +
-                "\"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" :" +
-                " \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" : \"xterm-256color\" }, { " +
-                "\"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, {" +
-                " \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" :" +
-                " \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }," +
-                " { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" :" +
-                " \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" :" +
-                " \"truecolor\" }, { \"key\" : \"_\", \"value\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000, " +
-                "\"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"jvmId\":\"jid1\",\"jvmPid\":1,\"startTime\":1495727607481," +
+                "\"stopTime\":-9223372036854775808,\"javaVersion\":\"1.8.0_131\",\"javaHome\":" +
+                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\",\"mainClass\":\"mc\"," +
+                "\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":\"-Djline.log.jul\\u003dtrue\"," +
+                "\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\",\"environment\":" +
+                "[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\"," +
+                "\"value\":\"i3\"},{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":" +
+                "\"xterm-256color\"},{\"key\":\"DARWIN_MODE\",\"value\":\"0\"},{\"key\":\"LANG\",\"value\":" +
+                "\"en_US.UTF-8\"},{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -323,7 +321,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [] }";
+        String expected = "{\"response\":[]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -343,23 +341,21 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1, " +
-                "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
-                "\"-9223372036854775808\" }, \"javaVersion\" : \"1.7.0\", \"javaHome\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"hello\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
-                " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, " +
-                "{ \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
-                "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : " +
-                "\"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { " +
-                "\"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", " +
-                "\"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, " +
-                "{ \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", " +
-                "\"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\"," +
-                " \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", " +
-                "\"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
-                "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid1\",\"jvmPid\":1," +
+                "\"startTime\":1495727607481,\"stopTime\":-9223372036854775808,\"javaVersion\":\"1.7.0\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\",\"mainClass\":" +
+                "\"hello\",\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":\"-Djline.log.jul\\u003dtrue\"," +
+                "\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\"," +
+                "\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\"," +
+                "\"value\":\"i3\"},{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"}," +
+                "{\"key\":\"DARWIN_MODE\",\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -388,22 +384,19 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1," +
-                " \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
-                "\"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
-                " [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\"" +
-                " : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", " +
-                "\"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" :" +
-                " \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" :" +
-                " \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\"" +
-                " : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" :" +
-                " \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" :" +
-                " \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" :" +
-                " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000," +
-                " \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid1\",\"jvmPid\":1,\"startTime\":1495727607481," +
+                "\"stopTime\":-9223372036854775808,\"javaVersion\":\"1.8.0_131\",\"javaHome\":" +
+                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\",\"mainClass\":\"mc\"," +
+                "\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":\"-Djline.log.jul\\u003dtrue\"," +
+                "\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\"," +
+                "\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\",\"value\":\"i3\"}," +
+                "{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"},{\"key\":\"DARWIN_MODE\"," +
+                "\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"},{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":" +
+                "\"unix:path\\u003d/run/user/1000/bus\"},{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\"," +
+                "\"value\":\"x11\"},{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"},{\"key\":\"_\",\"value\":" +
+                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}],\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
@@ -421,58 +414,43 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentResponse getResponse = client.newRequest(url).method(HttpMethod.GET).send();
         assertEquals(200, getResponse.getStatus());
-        String expected = "{ \"response\" : [{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", \"jvmPid\" : 2, " +
-                "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : " +
-                "\"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\"," +
-                " \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
-                ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
-                "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\"," +
-                " \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" :" +
-                " \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" " +
-                ": \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" :" +
-                " \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : " +
-                "\"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" :" +
-                " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000," +
-                " \"username\" : \"user\", \"systemId\" : \"1\" }] }";
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid2\",\"jvmPid\":2," +
+                "\"startTime\":1495727607481,\"stopTime\":1495727607482,\"javaVersion\":\"1.8.0_131\",\"javaHome\":" +
+                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\",\"mainClass\":\"mc\"," +
+                "\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":\"-Djline.log.jul\\u003dtrue\"," +
+                "\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":\"25.131-b12\"," +
+                "\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\"," +
+                "\"value\":\"i3\"},{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"}," +
+                "{\"key\":\"DARWIN_MODE\",\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"}," +
+                "{\"key\":\"DBUS_SESSION_BUS_ADDRESS\",\"value\":\"unix:path\\u003d/run/user/1000/bus\"}," +
+                "{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"},{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"}," +
+                "{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"},{\"key\":\"DISPLAY\",\"value\":\":0\"}," +
+                "{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\",\"value\":\"truecolor\"}," +
+                "{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
         assertEquals(expected, getResponse.getContentAsString());
     }
 
     @Test
-    public void testUpdateTimestamp() throws Exception {
+    public void testUpdateTimestamp() throws InterruptedException, TimeoutException, ExecutionException {
         String updateUrl = jvmsUrl + "/update/systems/1/ts/2000";
         String url = jvmsUrl + "/systems/1";
-        final String body = "[ \"jid1\", \"jid2\" ]";
 
         ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST)
                 .content(new StringContentProvider(postData), "application/json").send();
         assertEquals(200, postResponse.getStatus());
 
-        // lastUpdate starts out with 333
-        verifyGetIsExpected(url, 333);
 
-        ContentResponse updateResponse = client.newRequest(updateUrl)
-                                               .method(HttpMethod.PUT)
-                                               .content(new StringContentProvider(body))
-                                               .send();
+        ContentResponse updateResponse = client.newRequest(updateUrl).method(HttpMethod.PUT).send();
         assertEquals(200, updateResponse.getStatus());
 
-        // lastUpdate should now be 2000
-        verifyGetIsExpected(url, 2000);
-    }
-
-    private void verifyGetIsExpected(String url, long expectedTs) throws Exception {
         ContentResponse response = client.newRequest(url).method(HttpMethod.GET)
-                .param("include", "lastUpdated").param("limit", "2").send();
+                .param("include", "lastUpdated").send();
         assertEquals(200, response.getStatus());
-        String expected = getExpectedLastUpdateResponse(expectedTs);
+        String expected = "{\"response\":[{\"lastUpdated\":2000}]}";
         assertEquals(expected, response.getContentAsString());
-    }
 
-    private String getExpectedLastUpdateResponse(long expected) {
-        String lastUpdate = "{ \"lastUpdated\" : { \"$numberLong\" : \"" + Long.valueOf(expected).toString() + "\" } }";
-        return "{ \"response\" : [" + lastUpdate + "," + lastUpdate + "] }";
     }
 
     @Test
@@ -487,20 +465,23 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         ContentResponse response = client.newRequest(treeUrl).method(HttpMethod.GET).send();
         assertEquals(200, response.getStatus());
         String expected = "{ \"response\" : [{\"systemId\":\"1\", \"jvms\":[{ \"agentId\" : \"aid\", \"jvmId\" : " +
-                "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : {" +
-                " \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" :" +
-                " [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\"" +
-                " : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", " +
-                "\"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", " +
-                "\"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : " +
-                "\"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\"" +
-                " : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : " +
-                "\"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : " +
-                "\"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" :" +
-                " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000," +
-                " \"username\" : \"user\", \"systemId\" : \"1\" }]}]}";
+                "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : " +
+                "{ \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
+                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : " +
+                "\"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : " +
+                "\"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : " +
+                "{ \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" : " +
+                "[{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, " +
+                "{ \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
+                "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, " +
+                "{ \"key\" : \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : " +
+                "\"0\" }, { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", " +
+                "\"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, " +
+                "{ \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : " +
+                "\"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, " +
+                "{ \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" : " +
+                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : " +
+                "1000, \"username\" : \"user\", \"systemId\" : \"1\" }]}]}";
         assertEquals(expected, response.getContentAsString());
     }
 
@@ -532,22 +513,23 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?exclude=systemId";
         ContentResponse response = client.newRequest(treeUrl + query).method(HttpMethod.GET).send();
         assertEquals(200, response.getStatus());
-        String expected = "{ \"response\" : [{\"systemId\":\"1\", \"jvms\":[{ \"agentId\" : \"aid\", \"jvmId\" : " +
-                "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : {" +
-                " \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" : " +
-                "[{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\" :" +
-                " \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\"" +
-                " : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" : " +
-                "\"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"LANG\", " +
-                "\"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : " +
-                "\"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" :" +
-                " \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\"" +
-                " }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, " +
-                "{ \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", \"value\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], \"uid\" : 1000, " +
-                "\"username\" : \"user\" }]}]}";
+        String expected = "{ \"response\" : [{\"systemId\":\"1\", \"jvms\":[{ \"agentId\" : \"aid\", " +
+                "\"jvmId\" : \"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, " +
+                "\"stopTime\" : { \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", " +
+                "\"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : " +
+                "\"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, " +
+                "\"jvmVersion\" : \"25.131-b12\", \"environment\" : [{ \"key\" : \"PATH\", \"value\" : " +
+                "\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\" : \"XAUTHORITY\", \"value\" : " +
+                "\"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\" : \"i3\" }, " +
+                "{ \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" : \"xterm-256color\" }, " +
+                "{ \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, " +
+                "{ \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, " +
+                "{ \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, " +
+                "{ \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, " +
+                "{ \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, " +
+                "{ \"key\" : \"_\", \"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
+                "\"uid\" : 1000, \"username\" : \"user\" }]}]}";
         assertEquals(expected, response.getContentAsString());
     }
 
@@ -564,38 +546,36 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         ContentResponse response = client.newRequest(treeUrl + query).method(HttpMethod.GET).send();
         assertEquals(200, response.getStatus());
         String expected = "{ \"response\" : [{\"systemId\":\"1\", \"jvms\":[{ \"agentId\" : \"aid\", \"jvmId\" : " +
-                "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : {" +
-                " \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" :" +
-                " \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
-                " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
-                " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
-                "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" " +
-                ": \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, {" +
-                " \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", " +
-                "\"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, " +
-                "{ \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", " +
-                "\"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\"," +
-                " \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", " +
-                "\"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
-                "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" },{ \"agentId\" : \"aid\", \"jvmId\" " +
-                ": \"jid2\", \"jvmPid\" : 2, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" " +
-                ": { \"$numberLong\" : \"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
+                "\"jid1\", \"jvmPid\" : 1, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : " +
+                "{ \"$numberLong\" : \"-9223372036854775808\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
                 "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\"," +
-                " \"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
-                " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }," +
-                " { \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
-                "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" " +
-                ": \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }," +
-                " { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", " +
-                "\"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\"" +
-                " }, { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\"," +
-                " \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\"," +
-                " \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\"," +
-                " \"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }]," +
-                " \"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" }]}]}";
+                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : " +
+                "\"25.131-b12\", \"environment\" : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, " +
+                "{ \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\" : \"i3\" }, " +
+                "{ \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" : \"xterm-256color\" }, " +
+                "{ \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, " +
+                "{ \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, " +
+                "{ \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, " +
+                "{ \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, " +
+                "{ \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, " +
+                "{ \"key\" : \"_\", \"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
+                "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" }," +
+                "{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", \"jvmPid\" : 2, \"startTime\" : " +
+                "{ \"$numberLong\" : \"1495727607481\" }, \"stopTime\" : { \"$numberLong\" : \"1495727607482\" }, " +
+                "\"javaVersion\" : \"1.8.0_131\", \"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", " +
+                "\"mainClass\" : \"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
+                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\" " +
+                ": [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { \"key\" : \"XAUTHORITY\", " +
+                "\"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : \"GDMSESSION\", \"value\" : \"i3\" }, " +
+                "{ \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\" : \"TERM\", \"value\" : \"xterm-256color\" }, " +
+                "{ \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, " +
+                "{ \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, " +
+                "{ \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, " +
+                "{ \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, " +
+                "{ \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, " +
+                "{ \"key\" : \"_\", \"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
+                "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" }]}]}";
         assertEquals(expected, response.getContentAsString());
     }
 
@@ -611,22 +591,25 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         String query = "?aliveOnly=false&offset=1";
         ContentResponse response = client.newRequest(treeUrl + query).method(HttpMethod.GET).send();
         assertEquals(200, response.getStatus());
-        String expected = "{ \"response\" : [{\"systemId\":\"1\", \"jvms\":[{ \"agentId\" : \"aid\", \"jvmId\" :" +
-                " \"jid2\", \"jvmPid\" : 2, \"startTime\" : { \"$numberLong\" : \"1495727607481\" }, \"stopTime\" :" +
-                " { \"$numberLong\" : \"1495727607482\" }, \"javaVersion\" : \"1.8.0_131\", \"javaHome\" : " +
-                "\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", \"mainClass\" : \"mc\", " +
-                "\"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", \"vmArguments\" : \"-Djline.log.jul=true\", " +
-                "\"jvmInfo\" : \"mixed mode\", \"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", \"environment\"" +
-                " : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, { " +
-                "\"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, { \"key\" : " +
-                "\"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, { \"key\"" +
-                " : \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, {" +
-                " \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, { \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", " +
-                "\"value\" : \"unix:path=/run/user/1000/bus\" }, { \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }," +
-                " { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, { \"key\" : \"XDG_CURRENT_DESKTOP\", " +
-                "\"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, { \"key\" : \"CYGWIN_MODE\", " +
-                "\"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, { \"key\" : \"_\", " +
-                "\"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
+        String expected = "{ \"response\" : [{\"systemId\":\"1\", " +
+                "\"jvms\":[{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", \"jvmPid\" : 2, " +
+                "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, " +
+                "\"stopTime\" : { \"$numberLong\" : \"1495727607482\" }, " +
+                "\"javaVersion\" : \"1.8.0_131\", " +
+                "\"javaHome\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\", " +
+                "\"mainClass\" : \"mc\", \"javaCommandLine\" : \"j cl\", \"jvmName\" : \"vm\", " +
+                "\"vmArguments\" : \"-Djline.log.jul=true\", \"jvmInfo\" : \"mixed mode\", " +
+                "\"lastUpdated\" : { \"$numberLong\" : \"333\" }, \"jvmVersion\" : \"25.131-b12\", " +
+                "\"environment\" : [{ \"key\" : \"PATH\", \"value\" : \"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\" }, " +
+                "{ \"key\" : \"XAUTHORITY\", \"value\" : \"/run/user/1000/gdm/Xauthority\" }, " +
+                "{ \"key\" : \"GDMSESSION\", \"value\" : \"i3\" }, { \"key\" : \"fish_greeting\", \"value\" : \"\" }, " +
+                "{ \"key\" : \"TERM\", \"value\" : \"xterm-256color\" }, { \"key\" : \"DARWIN_MODE\", \"value\" : \"0\" }, " +
+                "{ \"key\" : \"LANG\", \"value\" : \"en_US.UTF-8\" }, " +
+                "{ \"key\" : \"DBUS_SESSION_BUS_ADDRESS\", \"value\" : \"unix:path=/run/user/1000/bus\" }, " +
+                "{ \"key\" : \"XDG_SESSION_ID\", \"value\" : \"2\" }, { \"key\" : \"XDG_SESSION_TYPE\", \"value\" : \"x11\" }, " +
+                "{ \"key\" : \"XDG_CURRENT_DESKTOP\", \"value\" : \"i3\" }, { \"key\" : \"DISPLAY\", \"value\" : \":0\" }, " +
+                "{ \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, " +
+                "{ \"key\" : \"_\", \"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
                 "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\" }]}]}";
         assertEquals(expected, response.getContentAsString());
     }

@@ -48,7 +48,7 @@ import java.util.concurrent.TimeoutException;
 
 public class HttpTestUtil {
 
-    public static final String EMPTY_RESPONSE = "{ \"response\" : [] }";
+    public static final String EMPTY_RESPONSE = "{\"response\":[]}";
 
     public static void testContentlessResponse(HttpClient client,
                                                HttpMethod httpMethod,
