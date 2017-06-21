@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.cpuinfo.http;
+package com.redhat.thermostat.service.system.cpu.http;
 
 import java.io.IOException;
 

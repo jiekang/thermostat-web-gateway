@@ -34,26 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.systemmemory.http;
+package com.redhat.thermostat.service.system.cpu.http;
 
-import java.io.IOException;
+class Parameters {
+    static final String SYSTEM_ID = "systemId";
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+    static final String SORT = "sort";
+    static final String QUERY = "query";
+    static final String OFFSET = "offset";
+    static final String LIMIT = "limit";
+    static final String INCLUDE = "include";
+    static final String EXCLUDE = "exclude";
 
-import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
-
-@Path("doc/{fileName: .+\\.yaml}")
-@Produces(MediaType.TEXT_PLAIN)
-public class SwaggerSpecResourceHandler extends BasicResourceHandler {
-
-    @GET
-    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
-    }
-
+    static final String TIMESTAMP = "timeStamp";
 }

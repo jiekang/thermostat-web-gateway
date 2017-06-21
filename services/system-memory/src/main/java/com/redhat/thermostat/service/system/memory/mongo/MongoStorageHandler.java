@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.systemmemory.mongo;
+package com.redhat.thermostat.service.system.memory.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.CursorType;

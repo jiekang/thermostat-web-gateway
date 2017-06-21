@@ -34,15 +34,11 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.cpuinfo.mongo;
+package com.redhat.thermostat.service.system.memory.mongo;
 
 class Fields {
     static final String SYSTEM_ID = "systemId";
-
     static final String SET = "set";
     static final String LAST_UPDATED = "lastUpdated";
-    static final String STOP_TIME = "stopTime";
-
     static final String RESPONSE = "response";
-    static final String SYSTEMS = "systems";
 }

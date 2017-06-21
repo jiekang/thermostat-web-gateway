@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.systemmemory.http;
+package com.redhat.thermostat.service.system.memory.http;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
@@ -54,7 +54,7 @@ import javax.ws.rs.core.Response;
 import com.mongodb.DBObject;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
-import com.redhat.thermostat.service.systemmemory.mongo.MongoStorageHandler;
+import com.redhat.thermostat.service.system.memory.mongo.MongoStorageHandler;
 
 @Path("/")
 public class SystemMemoryHttpHandler {

@@ -34,17 +34,15 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.systemmemory.http;
+package com.redhat.thermostat.service.system.cpu.mongo;
 
-class Parameters {
+class Fields {
     static final String SYSTEM_ID = "systemId";
 
-    static final String SORT = "sort";
-    static final String QUERY = "query";
-    static final String OFFSET = "offset";
-    static final String LIMIT = "limit";
-    static final String INCLUDE = "include";
-    static final String EXCLUDE = "exclude";
+    static final String SET = "set";
+    static final String LAST_UPDATED = "lastUpdated";
+    static final String STOP_TIME = "stopTime";
 
-    static final String TIMESTAMP = "timeStamp";
+    static final String RESPONSE = "response";
+    static final String SYSTEMS = "systems";
 }
