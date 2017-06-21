@@ -88,88 +88,242 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     @Test
     public void testGet() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
-        makeHttpGetRequest(gcUrl, "{ \"response\" : [{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl,"{\"response\":[{\"a\":\"test\",\"b\":\"test1\","+
+                "\"c\":\"test2\"}]}", 200);
     }
 
     @Test
     public void testGetLimitParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
-        makeHttpGetRequest(gcUrl + "?l=2", "{ \"response\" : [{ \"a\" : \"test\", \"b\" : \"test1\", " +
-                        "\"c\" : \"test2\" },{ \"d\" : \"test3\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?l=2","{\"response\":[{\"a\":\"test\",\"b\":"+
+                "\"test1\",\"c\":\"test2\"},{\"d\":\"test3\"}]}", 200);
     }
 
     @Test
     public void testGetSortParam() throws InterruptedException, TimeoutException, ExecutionException {
-        String data = "[{ \"a\" : \"1\"}, {\"a\" : \"2\"}]";
+        String data ="[{\"a\":\"1\"}, {\"a\":\"2\"}]";
 
-        makeHttpMethodRequest(HttpMethod.POST, "", data,"application/json", "", 200);
-        makeHttpGetRequest(gcUrl + "?l=3&s=-a", "{ \"response\" : [{ \"a\" : \"2\" },{ \"a\" : \"1\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?l=3&s=-a","{\"response\":[{\"a\":\"2\"},{\"a\":"+
+                "\"1\"}]}", 200);
     }
 
     @Test
     public void testGetProjectParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
-        makeHttpGetRequest(gcUrl + "?p=b,c", "{ \"response\" : [{ \"b\" : \"test1\", \"c\" : \"test2\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?p=b,c","{\"response\":[{\"b\":\"test1\",\"c\":"+
+                "\"test2\"}]}", 200);
     }
 
     @Test
     public void testGetOffsetParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
-        makeHttpGetRequest(gcUrl + "?o=1", "{ \"response\" : [{ \"d\" : \"test3\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?o=1","{\"response\":[{\"d\":\"test3\"}]}", 200);
     }
 
     @Test
     public void testGetQueryParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", data,"application/json", "", 200);
-        makeHttpGetRequest(gcUrl + "?q=b==test1", "{ \"response\" : [{ \"a\" : \"test\", \"b\" : \"test1\"," +
-                " \"c\" : \"test2\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1","{\"response\":[{\"a\":\"test\",\"b\":"+
+                "\"test1\",\"c\":\"test2\"}]}", 200);
     }
 
     @Test
     public void testPostJSON() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", "[{ \"f1\" : \"test\" }]", "application/json",
-                "{ \"response\" : [{ \"f1\" : \"test\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"?m=true","[{\"f1\":\"test\"}]","application/json",
+                "{\"response\":[{\"f1\":\"test\"}]}", 200);
     }
 
     @Test
     public void testPostXML() throws InterruptedException,TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", "", "application/xml", "", 415);
+        makeHttpMethodRequest(HttpMethod.POST,"","","application/xml","", 415);
     }
 
     @Test
     public void testInvalidDataPost() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", "{ \"badFormat\" : \"missing square brackets\" }",
-                "application/json", "", 400);
+        makeHttpMethodRequest(HttpMethod.POST,"","{\"badFormat\":\"missing square brackets\"}",
+                "application/json","", 400);
     }
 
     @Test
     public void testDelete() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.DELETE, "", "", "", "", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE,"","","","", 200);
     }
 
     @Test
     public void testNonExistentDataDelete() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.DELETE, "?q=nonExist==Null", "", "", "", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE,"?q=nonExist==Null","","","", 200);
     }
 
     @Test
     public void testPostPutDeleteMockedData() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", "[{ \"f1\" : \"test\" }]", "application/json",
-                "{ \"response\" : [{ \"f1\" : \"test\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.POST,"","[{\"f1\":\"test\"}]","application/json",
+                "{\"response\":[{\"f1\":\"test\"}]}", 200);
 
-        makeHttpMethodRequest(HttpMethod.PUT, "?q=f1==test", "{ \"set\" : { \"f1\" : \"newdata\" }}",
-                "application/json", "{ \"response\" : [{ \"f1\" : \"newdata\" }] }", 200);
+        makeHttpMethodRequest(HttpMethod.PUT,"?q=f1==test","{\"set\": {\"f1\":\"newdata\"}}",
+                "application/json","{\"response\":[{\"f1\":\"newdata\"}]}", 200);
 
-        makeHttpMethodRequest(HttpMethod.DELETE, "?q=f1==test", "", "", "", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE,"?q=f1==test","","","", 200);
     }
 
     @Test
-    public void testPutIdenticalPreexistingData() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST, "", "[{ \"f2\" : \"identical\" }]",
-                "application/json", "{ \"response\" : [{ \"f2\" : \"identical\" }] }", 200);
+    public void testGetWithMetaDataAndLimit() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}]";
 
-        makeHttpMethodRequest(HttpMethod.PUT,"?q=f2==identical","{ \"set\" : { \"f2\" : \"identical\" }}",
-                "application/json","{ \"response\" : [{ \"f2\" : \"identical\" }] }", 200);
+        // {"response":["{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}"],
+        //"metaData":{"payloadCount":1,"count":3,
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=1&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d1\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&l=1", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetWithMetaDataAndOffset() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}]";
+
+        // {"response":["{\"b\":\"test1\"}"],"metaData":{"payloadCount":1,"count":3,
+        //"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=1",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=2&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=1", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatPrevOffsetBiggerThanLimit() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}, {\"b\":\"test1\"}, {\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"}]";
+
+        // {"response":["{\"b\":\"test1\"}","{\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":1,"count":6,"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=2&o=1",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=5&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=3&l=2", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatPrevOffsetEqualToLimit() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}]";
+
+        // {"response":["{\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":1,"count":3,"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=1",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=2&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=1&l=1", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatNextOffsetLessThanLimit() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}, {\"b\":\"test1\"}, {\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"}]";
+
+        // {"response":["{\"b\":\"test1\"}","{\"e\":\"test4\",\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":2,"count":6,"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=1&o=0",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=3&l=2&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"b\":\"test1\"},{\"e\":\"test4\",\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":2,\"count\":6,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\\u0026o\\u003d0\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d3\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=1&l=2", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatNextOffsetBiggerThanLimit() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}, {\"b\":\"test1\"}, {\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"}]";
+
+        // {"response":["{\"b\":\"test1\"}","{\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":1,"count":6,
+        //"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=2&o=1",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=5&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=3&l=2", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatNextOffsetEqualToLimit() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}, {\"b\":\"test1\"}, {\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"}]";
+
+        // {"response":["{\"e\":\"test4\",\"b\":\"test1\"}","{\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":2,"count":6,"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=2&o=0",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=4&l=2&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":2,\"count\":6,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=2", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatNextExtremity() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}, {\"b\":\"test1\"}, {\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"}]";
+
+        // {"response":["{\"e\":\"test4\",\"b\":\"test1\"}","{\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":2,"count":6,
+        //"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=2&o=0",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=4&l=2&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":2,\"count\":6,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=2", expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMetDatPrevExtremity() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}, {\"b\":\"test1\"}, {\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"}]";
+
+
+        // {"response":["{\"e\":\"test4\",\"b\":\"test1\"}","{\"b\":\"test1\"}","{\"b\":\"test1\"}"],
+        //"metaData":{"payloadCount":1,"count":6,"prev":"http://127.0.0.1:30000/jvm-gc/0.0.2?q===test1&m=true&l=2&o=0",
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=5&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},"+
+                "{\"b\":\"test1\"},{\"b\":\"test1\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
+                "\"prev\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\","+
+                "\"next\":\"http://127.0.0.1:30000/jvm-gc/0.0.2?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=3", expectedResponse, 200);
     }
 }

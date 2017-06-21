@@ -225,13 +225,13 @@
                             <type>war</type>
                             <overWrite>false</overWrite>
                         </artifactItem>
-                        <!--artifactItem>
+                        <artifactItem>
                             <groupId>com.redhat.thermostat</groupId>
                             <artifactId>thermostat-web-gateway-service-system-memory</artifactId>
                             <version>${project.version}</version>
                             <type>war</type>
                             <overWrite>false</overWrite>
-                        </artifactItem-->
+                        </artifactItem>
                         <artifactItem>
                             <groupId>com.redhat.thermostat</groupId>
                             <artifactId>thermostat-web-gateway-service-white-pages</artifactId>
@@ -286,13 +286,13 @@
             <type>war</type>
             <scope>provided</scope>
         </dependency>
-        <!--dependency>
+        <dependency>
             <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-service-system-memory</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>
-        </dependency-->
+        </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-service-commands</artifactId>

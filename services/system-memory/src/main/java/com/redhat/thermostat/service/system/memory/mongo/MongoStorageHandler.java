@@ -34,21 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.systems.mongo;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Projections.exclude;
-import static com.mongodb.client.model.Projections.excludeId;
-import static com.mongodb.client.model.Projections.fields;
-import static com.mongodb.client.model.Projections.include;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.bson.Document;
-import org.bson.conversions.Bson;
+package com.redhat.thermostat.service.system.memory.mongo;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.CursorType;
@@ -59,30 +45,27 @@ import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.or;
+import static com.mongodb.client.model.Projections.exclude;
+import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Projections.fields;
+import static com.mongodb.client.model.Projections.include;
 
 public class MongoStorageHandler {
 
     private final MongoResponseBuilder.Builder mongoResponseBuilder = new MongoResponseBuilder.Builder();
 
-    public String getSystemInfos(MongoCollection<Document> collection, Integer limit, Integer offset, String sort, String queries, String includes, String excludes) {
-        FindIterable<Document> documents;
-        if (queries != null) {
-            List<String> queriesList = Arrays.asList(queries.split(","));
-            final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
-            documents = collection.find(query);
-        } else {
-            documents = collection.find();
-        }
-
-        documents = buildProjection(documents, includes, excludes);
-
-        final Bson sortObject = MongoSortFilters.createSortObject(sort);
-        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
-
-        return mongoResponseBuilder.queryDocuments(documents).build();
-    }
-
-    public String getSystemInfo(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String includes, String excludes) {
+    public String getOne(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String includes, String excludes) {
         Bson query = eq(Fields.SYSTEM_ID, systemId);
         FindIterable<Document> documents = collection.find(query);
 
@@ -108,7 +91,7 @@ public class MongoStorageHandler {
         return documents;
     }
 
-    public void addSystemInfos(MongoCollection<DBObject> collection, String body, String systemId) {
+    public void addMany(MongoCollection<DBObject> collection, String body, String systemId) {
         if (body.length() > 0) {
             List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
             for (DBObject o : inputList) {
@@ -118,7 +101,7 @@ public class MongoStorageHandler {
         }
     }
 
-    public void deleteSystemInfo(MongoCollection<Document> collection, String systemId) {
+    public void delete(MongoCollection<Document> collection, String systemId) {
         Bson query = eq(Fields.SYSTEM_ID, systemId);
         deleteDocuments(collection, query);
     }
@@ -127,7 +110,7 @@ public class MongoStorageHandler {
         collection.deleteMany(query);
     }
 
-    public void updateSystemInfo(MongoCollection<Document> collection, String body, String systemId, String queries) {
+    public void updateOne(MongoCollection<Document> collection, String body, String systemId, String queries) {
         Bson baseQuery = eq(Fields.SYSTEM_ID, systemId);
 
         BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);

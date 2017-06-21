@@ -58,11 +58,11 @@ import com.mongodb.client.MongoIterable;
 
 public class MongoResponseBuilderTest {
 
-    private MongoResponseBuilder mongoResponseBuilder;
+    private MongoResponseBuilder.Builder mongoResponseBuilder;
 
     @Before
     public void setup() {
-        mongoResponseBuilder = new MongoResponseBuilder();
+        mongoResponseBuilder = new MongoResponseBuilder.Builder();
     }
 
     @Test
@@ -75,8 +75,8 @@ public class MongoResponseBuilderTest {
 
         FindIterable<Document> iterable = new TestFindIterable<>(list);
 
-        String output = mongoResponseBuilder.buildGetResponseString(iterable);
-        String expected = "{ \"response\" : [{ \"hello\" : \"blob\" },{ \"a\" : { \"blob\" : [\"hi\"] } }] }";
+        String output = mongoResponseBuilder.queryDocuments(iterable).build();
+        String expected = "{\"response\":[{\"hello\":\"blob\"},{\"a\":{\"blob\":[\"hi\"]}}]}";
         assertEquals(expected, output);
     }
 
@@ -84,8 +84,8 @@ public class MongoResponseBuilderTest {
     public void testBuildEmptyGetResponse() {
         FindIterable<Document> iterable = new TestFindIterable<>(Collections.<Document>emptyList());
 
-        String output = mongoResponseBuilder.buildGetResponseString(iterable);
-        String expected = "{ \"response\" : [] }";
+        String output = mongoResponseBuilder.queryDocuments(iterable).build();
+        String expected = "{\"response\":[]}";
         assertEquals(expected, output);
     }
 

@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.system.cpu;
+package com.redhat.thermostat.gateway.service.system.memory;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -59,62 +59,67 @@ import java.util.concurrent.TimeoutException;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class SystemCPUIntegrationTest extends MongoIntegrationTest {
 
-    private static final String collectionName = "cpu-info";
-    private static final String serviceURL = baseUrl + "/system-cpu/0.0.1";
+public class SystemMemoryIntegrationTest extends MongoIntegrationTest {
+    
+    private static final String collectionName = "memory-info";
+    private static final String serviceURL = baseUrl + "/system-memory/0.0.1";
     private static final int HTTP_200_OK = 200;
     private static final int HTTP_404_NOTFOUND = 404;
     private static final String TIMESTAMP_TOKEN = "$TIMESTAMP$";
     private static final String AGENT_ID = getRandomSystemId();
-    private static final String cpuInfoJSON =
+    private static long timeStamp = java.lang.System.nanoTime();
+    private static final String memInfoJSON =
             "{\n" +
-            "    \"perProcessorUsage\" : [ \n" +
-            "        94.0, \n" +
-            "        76.0, \n" +
-            "        94.0, \n" +
-            "        82.0\n" +
-            "    ],\n" +
+            "    \"total\" : 12566220800,\n" +
+            "    \"free\" : 2338582528,\n" +
+            "    \"buffers\" : 0,\n" +
+            "    \"cached\" : 0,\n" +
+            "    \"swapTotal\" : 17666494464,\n" +
+            "    \"swapFree\" : 3524055040,\n" +
+            "    \"commitLimit\" : 0,\n" +
             "    \"timeStamp\" : " + TIMESTAMP_TOKEN + ",\n" +
-            "    \"agentId\": \"" + AGENT_ID + "\",\n" +
+            "    \"agentId\" : \"" + AGENT_ID + "\",\n" +
             "}";
 
-
-    private static class TinyCPUInfo {
-        TinyCPUInfo(String systemId, String agentId, int[] ppusage) {
+    private static class TinyMemoryInfo {
+        TinyMemoryInfo(String systemId, String agentId, long total, long free, long buffers) {
             this.systemId = systemId;
             this.agentId = agentId;
-            this.perProcessorUsage = ppusage;
+            this.total = total;
+            this.free = free;
+            this.buffers = buffers;
         }
         String agentId;
         String systemId;
-        int[] perProcessorUsage;
+        long total;
+        long free;
+        long buffers;
     }
 
-    public SystemCPUIntegrationTest() {
+    public SystemMemoryIntegrationTest() {
         super(serviceURL, collectionName);
     }
 
     @Test
     public void testGetAll() throws InterruptedException, TimeoutException, ExecutionException {
+
         final String systemid = getRandomSystemId();
 
         post(systemid);
-        Thread.sleep(5);
         post(systemid);
-        Thread.sleep(5);
         post(systemid);
 
         ContentResponse response = get(systemid);
-        final List<TinyCPUInfo> list = parse(response, systemid);
+        final List<TinyMemoryInfo> list = parse(response, systemid);
         assertEquals(1, list.size());
 
         ContentResponse response2 = get(systemid, "?limit=2");
-        final List<TinyCPUInfo> list2 = parse(response2, systemid);
+        final List<TinyMemoryInfo> list2 = parse(response2, systemid);
         assertEquals(2, list2.size());
 
         ContentResponse response3 = get(systemid, "?limit=0");
-        final List<TinyCPUInfo> list3 = parse(response3, systemid);
+        final List<TinyMemoryInfo> list3 = parse(response3, systemid);
         assertEquals(3, list3.size());
     }
 
@@ -149,18 +154,16 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
 
         // retrieve it
         final ContentResponse response1 = getKnown(systemid);
-        final List<TinyCPUInfo> list1 = parse(response1, systemid);
+        final List<TinyMemoryInfo> list1 = parse(response1, systemid);
         assertEquals(1, list1.size());
-        //assertEquals(CPU_STRING1, list1.get(0).cpuModel);
 
         // modify it
         put(systemid, timestamp+1);
 
         // ensure it was changed
         final ContentResponse response2 = getKnown(systemid);
-        final List<TinyCPUInfo> list2 = parse(response2, systemid);
+        final List<TinyMemoryInfo> list2 = parse(response2, systemid);
         assertEquals(1, list2.size());
-        //assertEquals(timestamp+1, list2.get(0).????);
     }
 
     @Test
@@ -199,14 +202,24 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
         return response;
     }
 
-    private List<TinyCPUInfo> parse(ContentResponse contentResponse, final String expectedSystemId) {
+    private static long getLong(JsonObject json, final String id) {
+        JsonElement el = json.get(id);
+        if (el.isJsonObject()) {
+            final JsonObject o = el.getAsJsonObject();
+            return o.get("$numberLong").getAsLong();
+        } else {
+            return el.getAsLong();
+        }
+    }
+
+    private List<TinyMemoryInfo> parse(ContentResponse contentResponse, final String expectedSystemId) {
 
         JsonParser parser = new JsonParser();
         JsonObject json = (JsonObject) parser.parse(contentResponse.getContentAsString());
         JsonElement response = json.get("response");
 
         JsonArray allData = response.getAsJsonArray();
-        List<TinyCPUInfo> result = new ArrayList<>();
+        List<TinyMemoryInfo> result = new ArrayList<>();
 
         for (JsonElement entry : allData) {
 
@@ -215,30 +228,23 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
             assertTrue(json.has("systemId"));
             assertTrue(json.has("agentId"));
             assertTrue(json.has("timeStamp"));
-            assertTrue(json.has("perProcessorUsage"));
+            assertTrue(json.has("total"));
+            assertTrue(json.has("free"));
+            assertTrue(json.has("buffers"));
 
             final String systemId = json.get("systemId").getAsString();
             final String agentId = json.get("agentId").getAsString();
-            // TODO timestamp is special because it's long // final long timeStamp = json.get("timeStamp").getAsLong();
-            final JsonArray usages = json.get("perProcessorUsage").getAsJsonArray();
+            //final long timeStamp = getLong(json, "timeStamp");
+            final long total = getLong(json, "total");
+            final long free = getLong(json, "free");
+            final long bufsiz = getLong(json, "buffers");
 
-            final int[] cpuUsages;
-
-            // Deal with the case of a non-array value.
-            if (usages == null) {
-                cpuUsages = new int[0];
-            } else {
-                cpuUsages = new int[usages.size()];
-                for (int i = 0; i < usages.size(); ++i) {
-                    cpuUsages[i] = usages.get(i).getAsInt();
-                }
-            }
             assertEquals(AGENT_ID, agentId);
             if (expectedSystemId != null) {
                 assertEquals(expectedSystemId, systemId);
             }
 
-            TinyCPUInfo hi = new TinyCPUInfo(systemId, agentId, cpuUsages);
+            TinyMemoryInfo hi = new TinyMemoryInfo(systemId, agentId, total, free, bufsiz);
 
             result.add(hi);
         }
@@ -296,7 +302,8 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
     }
 
     private static long getTimestamp() {
-        return java.lang.System.nanoTime();
+        timeStamp += 1;
+        return timeStamp;
     }
 
     private String createJSON() {
@@ -304,6 +311,6 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
     }
 
     private String createJSON(final long ts) {
-        return cpuInfoJSON.replace(TIMESTAMP_TOKEN, Long.toString(ts));
+        return memInfoJSON.replace(TIMESTAMP_TOKEN, Long.toString(ts));
     }
 }

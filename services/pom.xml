@@ -57,7 +57,7 @@
         <module>jvm-memory</module>
         <module>systems</module>
         <module>system-cpu</module>
-        <!--module>system-memory</module-->
+        <module>system-memory</module>
         <module>white-pages</module>
     </modules>
 

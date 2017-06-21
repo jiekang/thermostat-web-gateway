@@ -50,6 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.bson.conversions.Bson;
+import org.bson.json.JsonParseException;
 
 public class MongoRequestFilters {
     public static Bson buildQueriesFilter(List<String> queries) {
@@ -86,6 +87,7 @@ public class MongoRequestFilters {
                         break;
                     case "!=":
                         filters.add(ne(key, value));
+                        break;
                     case ">":
                         filters.add(gt(key, value));
                         break;
@@ -93,6 +95,8 @@ public class MongoRequestFilters {
                         filters.add(lt(key, value));
                         break;
                 }
+            } else {
+                throw new JsonParseException("No relation found in: " + filter);
             }
         }
         return and(filters);

@@ -96,11 +96,6 @@ public class SystemInfoIntegrationTest extends MongoIntegrationTest {
         super("systems/" + versionNumber, serviceName);
     }
 
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
-    }
-
     @Test
     public void testGetAll() throws InterruptedException, TimeoutException, ExecutionException {
         final String systemid1 = getRandomSystemId();

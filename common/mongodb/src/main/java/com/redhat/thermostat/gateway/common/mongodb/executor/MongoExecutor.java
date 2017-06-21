@@ -55,17 +55,20 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
 
 public class MongoExecutor {
-    private final MongoResponseBuilder mongoResponseBuilder = new MongoResponseBuilder();
 
-    public String buildGetResponse(MongoCollection<Document> collection, Integer limit, Integer offset, String sort, String queries, String projections) {
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit,
+                                                   Integer offset, String sort, String queries, String projections) {
         FindIterable<Document> documents;
+        MongoDataResultContainer queryDataContainer = new MongoDataResultContainer();
+
         if (queries != null) {
             List<String> queriesList = Arrays.asList(queries.split(","));
             final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
             documents = collection.find(query);
+            queryDataContainer.setGetReqCount(collection.count(query));
+            queryDataContainer.setRemainingNumQueryDocuments((int) (collection.count(query) - (limit + offset)));
         } else {
             documents = collection.find();
         }
@@ -79,12 +82,14 @@ public class MongoExecutor {
 
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
+        queryDataContainer.setQueryDataResult(documents);
 
-        return mongoResponseBuilder.buildGetResponseString(documents);
+        return queryDataContainer;
     }
 
-    public void buildPutResponse(MongoCollection<Document> collection, String body, String queries) {
+    public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body, String queries) {
         BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
+        MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
 
         final List<String> queriesList;
         if (queries != null) {
@@ -95,25 +100,40 @@ public class MongoExecutor {
 
         BasicDBObject setObject = (BasicDBObject) inputObject.get("set");
         final Bson fields = new Document("$set", setObject);
+        final Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queriesList);
+        collection.updateMany(bsonQueries, fields);
 
-        collection.updateMany(MongoRequestFilters.buildQueriesFilter(queriesList), fields);
+        metaDataContainer.setPutReqMatches(collection.count(bsonQueries));
+
+        return metaDataContainer;
     }
 
-    public void buildDeleteResponse(MongoCollection<Document> collection, String queries) {
+    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, String queries) {
         List<String> queriesList;
+        MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
         if (queries != null) {
             queriesList = Arrays.asList(queries.split(","));
-            collection.deleteMany(MongoRequestFilters.buildQueriesFilter(queriesList));
+            Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queriesList);
+            collection.deleteMany(bsonQueries);
 
+            metaDataContainer.setDeleteReqMatches(collection.count(bsonQueries));
+            return metaDataContainer;
         } else {
             collection.drop();
         }
+
+        return metaDataContainer;
     }
 
-    public void buildPost(MongoCollection<DBObject> collection, String body) {
+    public MongoDataResultContainer execPostRequest(MongoCollection<DBObject> collection, String body) {
+        MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
+
         if (body.length() > 0) {
             List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
             collection.insertMany(inputList);
         }
+
+        return metaDataContainer;
     }
+
 }

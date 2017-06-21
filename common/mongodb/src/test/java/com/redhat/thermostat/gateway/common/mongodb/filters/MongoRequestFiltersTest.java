@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.bson.BsonDocument;
 import org.bson.conversions.Bson;
+import org.bson.json.JsonParseException;
 import org.junit.Test;
 
 import com.mongodb.MongoClient;
@@ -57,6 +58,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("b", bsonDocument.getDocument("a").getString("$lte").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
     @Test
@@ -66,6 +69,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("b", bsonDocument.getDocument("a").getString("$gte").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
     @Test
@@ -75,6 +80,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("b", bsonDocument.getString("a").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.size());
     }
 
     @Test
@@ -84,6 +91,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("b", bsonDocument.getDocument("a").getString("$ne").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
     @Test
@@ -93,6 +102,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("b", bsonDocument.getDocument("a").getString("$lt").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
     @Test
@@ -102,6 +113,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("b", bsonDocument.getDocument("a").getString("$gt").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
     @Test
@@ -113,6 +126,9 @@ public class MongoRequestFiltersTest {
         Bson filter = MongoRequestFilters.buildQueriesFilter(queries);
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
 
+        assertEquals(2, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
+        assertEquals(1, bsonDocument.getDocument("c").size());
         assertEquals("b", bsonDocument.getDocument("a").getString("$gt").getValue());
         assertEquals("d", bsonDocument.getDocument("c").getString("$lt").getValue());
     }
@@ -124,6 +140,8 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals(25, bsonDocument.getDocument("a").getNumber("$gt").intValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
 
     @Test
@@ -133,12 +151,17 @@ public class MongoRequestFiltersTest {
 
         BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
         assertEquals("25", bsonDocument.getDocument("a").getString("$gt").getValue());
+        assertEquals(1, bsonDocument.size());
+        assertEquals(1, bsonDocument.getDocument("a").size());
     }
-    @Test
+
+    @Test(expected=JsonParseException.class)
     public void testInvalid() {
-        String query = "a";
-        Bson filter = MongoRequestFilters.buildQueriesFilter(Collections.singletonList(query));
-        BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
-        assertEquals(0, bsonDocument.getArray("$and").size());
+        MongoRequestFilters.buildQueriesFilter(Collections.singletonList("a"));
+    }
+
+    @Test(expected=JsonParseException.class)
+    public void testInvalidWithSymbols() {
+        MongoRequestFilters.buildQueriesFilter(Collections.singletonList("a="));
     }
 }

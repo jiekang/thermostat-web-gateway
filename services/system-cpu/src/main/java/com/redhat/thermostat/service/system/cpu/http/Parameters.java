@@ -34,58 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.mongodb.response;
+package com.redhat.thermostat.service.system.cpu.http;
 
-import java.util.ArrayList;
+class Parameters {
+    static final String SYSTEM_ID = "systemId";
 
-import org.bson.Document;
+    static final String SORT = "sort";
+    static final String QUERY = "query";
+    static final String OFFSET = "offset";
+    static final String LIMIT = "limit";
+    static final String INCLUDE = "include";
+    static final String EXCLUDE = "exclude";
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mongodb.Block;
-import com.mongodb.client.FindIterable;
-
-/*
- *  Builds the appropriate response after executing the request's MongoDB Query.
- *
- *  NOTE: Builder fields that aren't explicitly set - and therefore null - are omitted in the
- *        serialized JSON.
- */
-public class MongoResponseBuilder {
-
-    private final ArrayList<Document> response;
-    private final MongoMetaDataResponseBuilder metaData;
-
-    public static class Builder {
-
-        private ArrayList<Document> queryDocuments;
-        private MongoMetaDataResponseBuilder metaData;
-        private final Gson gson = new GsonBuilder().create();
-
-        public Builder queryDocuments(FindIterable<Document> documents) {
-            queryDocuments = new ArrayList<>();
-            documents.forEach(new Block<Document>() {
-                @Override
-                public void apply(Document document) {
-                    queryDocuments.add(document);
-                }
-            });
-            return this;
-        }
-
-        public Builder metaData(MongoMetaDataResponseBuilder metaData) {
-            this.metaData = metaData;
-            return this;
-        }
-
-        public String build() {
-            MongoResponseBuilder data = new MongoResponseBuilder(this);
-            return gson.toJson(data);
-        }
-    }
-
-    private MongoResponseBuilder(Builder builder) {
-        response = builder.queryDocuments;
-        metaData = builder.metaData;
-    }
+    static final String TIMESTAMP = "timeStamp";
 }

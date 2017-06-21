@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
  Copyright 2012-2017 Red Hat, Inc.
@@ -36,60 +35,63 @@
  to do so, delete this exception statement from your version.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
+        <artifactId>thermostat-web-gateway-services</artifactId>
         <groupId>com.redhat.thermostat</groupId>
-        <artifactId>thermostat-web-gateway-common</artifactId>
         <version>1.99.12-SNAPSHOT</version>
     </parent>
 
-    <artifactId>thermostat-web-gateway-common-mongodb</artifactId>
+    <artifactId>thermostat-web-gateway-service-system-memory</artifactId>
 
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
-    <name>Thermostat Web Gateway Mongodb Package</name>
+    <name>Thermostat Web Gateway System Memory Service</name>
+
+    <properties>
+        <com.redhat.thermostat.gateway.SERVICE_NAME>system-memory</com.redhat.thermostat.gateway.SERVICE_NAME>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <webResources>
+                        <resource>
+                            <directory>src/main/webapp</directory>
+                            <filtering>true</filtering>
+                        </resource>
+                    </webResources>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <dependencies>
         <!-- Thermostat Web Gateway Dependencies -->
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-web-gateway-common-core</artifactId>
+            <artifactId>thermostat-web-gateway-common-mongodb</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- MongoDB dependencies -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-java-driver</artifactId>
-            <version>${mongo-java-driver.version}</version>
-        </dependency>
+
         <!-- Servlet API deps -->
         <dependency>
-      		<groupId>javax.servlet</groupId>
-      		<artifactId>javax.servlet-api</artifactId>
-      		<version>${javax.servlet.version}</version>
-      		<scope>provided</scope>
-    	</dependency>
-        
-        <!-- test scoped deps -->
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>${junit.version}</version>
-            <scope>test</scope>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${javax.servlet.version}</version>
+            <scope>provided</scope>
         </dependency>
+
+        <!-- JAX-RS Dependencies -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>${mockito-core.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.2.4</version>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>${javax-rs-api.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>
-

@@ -34,7 +34,21 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.cpuinfo.mongo;
+package com.redhat.thermostat.service.system.cpu.mongo;
+
+import static com.mongodb.client.model.Filters.and;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.exclude;
+import static com.mongodb.client.model.Projections.excludeId;
+import static com.mongodb.client.model.Projections.fields;
+import static com.mongodb.client.model.Projections.include;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+import org.bson.Document;
+import org.bson.conversions.Bson;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.CursorType;
@@ -45,25 +59,10 @@ import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import org.bson.Document;
-import org.bson.conversions.Bson;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import static com.mongodb.client.model.Filters.and;
-import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Filters.or;
-import static com.mongodb.client.model.Projections.exclude;
-import static com.mongodb.client.model.Projections.excludeId;
-import static com.mongodb.client.model.Projections.fields;
-import static com.mongodb.client.model.Projections.include;
 
 public class MongoStorageHandler {
 
-    private final MongoResponseBuilder mongoResponseBuilder = new MongoResponseBuilder();
+    private final MongoResponseBuilder.Builder mongoResponseBuilder = new MongoResponseBuilder.Builder();
 
     public String getMany(MongoCollection<Document> collection, Integer limit, Integer offset, String sort, String queries, String includes, String excludes) {
         FindIterable<Document> documents;
@@ -80,7 +79,7 @@ public class MongoStorageHandler {
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
 
-        return mongoResponseBuilder.buildGetResponseString(documents);
+        return mongoResponseBuilder.queryDocuments(documents).build();
     }
 
     public String getOne(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String includes, String excludes) {
@@ -92,7 +91,7 @@ public class MongoStorageHandler {
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit + offset).cursorType(CursorType.NonTailable);
 
-        return mongoResponseBuilder.buildGetResponseString(documents);
+        return mongoResponseBuilder.queryDocuments(documents).build();
     }
 
     private FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
@@ -147,23 +146,5 @@ public class MongoStorageHandler {
         final Bson fields = new Document("$set", setObject);
 
         collection.updateMany(and(baseQuery, MongoRequestFilters.buildQueriesFilter(queriesList)), fields);
-    }
-
-    public void updateTimestamps(MongoCollection<Document> collection, String body, String systemId, Long timeStamp) {
-        final Bson filter;
-        if (body != null && body.length() > 0) {
-            List<String> systems = (List<String>) JSON.parse(body);
-            List<Bson> systemFilters = new ArrayList<>();
-            for (String id : systems) {
-                systemFilters.add(eq(Fields.SYSTEM_ID, id));
-            }
-            filter = or(eq(Fields.SYSTEM_ID, systemId), or(systemFilters));
-        } else {
-            filter = eq(Fields.SYSTEM_ID, systemId);
-        }
-
-        String setDocument = "{ \"$set\" : { \"" + Fields.LAST_UPDATED + "\":" + timeStamp + " } }";
-        final Bson update = Document.parse(setDocument);
-        collection.updateMany(filter, update);
     }
 }

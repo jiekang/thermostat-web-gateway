@@ -34,15 +34,26 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.cpuinfo.mongo;
+package com.redhat.thermostat.service.system.memory.http;
 
-class Fields {
-    static final String SYSTEM_ID = "systemId";
+import java.io.IOException;
 
-    static final String SET = "set";
-    static final String LAST_UPDATED = "lastUpdated";
-    static final String STOP_TIME = "stopTime";
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-    static final String RESPONSE = "response";
-    static final String SYSTEMS = "systems";
+import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
+
+@Path("doc/{fileName: .+\\.yaml}")
+@Produces(MediaType.TEXT_PLAIN)
+public class SwaggerSpecResourceHandler extends BasicResourceHandler {
+
+    @GET
+    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
+        return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
+    }
+
 }

@@ -34,58 +34,26 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.mongodb.response;
+package com.redhat.thermostat.service.system.cpu.http;
 
-import java.util.ArrayList;
+import java.io.IOException;
 
-import org.bson.Document;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mongodb.Block;
-import com.mongodb.client.FindIterable;
+import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
 
-/*
- *  Builds the appropriate response after executing the request's MongoDB Query.
- *
- *  NOTE: Builder fields that aren't explicitly set - and therefore null - are omitted in the
- *        serialized JSON.
- */
-public class MongoResponseBuilder {
+@Path("doc/{fileName: .+\\.yaml}")
+@Produces(MediaType.TEXT_PLAIN)
+public class SwaggerSpecResourceHandler extends BasicResourceHandler {
 
-    private final ArrayList<Document> response;
-    private final MongoMetaDataResponseBuilder metaData;
-
-    public static class Builder {
-
-        private ArrayList<Document> queryDocuments;
-        private MongoMetaDataResponseBuilder metaData;
-        private final Gson gson = new GsonBuilder().create();
-
-        public Builder queryDocuments(FindIterable<Document> documents) {
-            queryDocuments = new ArrayList<>();
-            documents.forEach(new Block<Document>() {
-                @Override
-                public void apply(Document document) {
-                    queryDocuments.add(document);
-                }
-            });
-            return this;
-        }
-
-        public Builder metaData(MongoMetaDataResponseBuilder metaData) {
-            this.metaData = metaData;
-            return this;
-        }
-
-        public String build() {
-            MongoResponseBuilder data = new MongoResponseBuilder(this);
-            return gson.toJson(data);
-        }
+    @GET
+    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
+        return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
     }
 
-    private MongoResponseBuilder(Builder builder) {
-        response = builder.queryDocuments;
-        metaData = builder.metaData;
-    }
 }
