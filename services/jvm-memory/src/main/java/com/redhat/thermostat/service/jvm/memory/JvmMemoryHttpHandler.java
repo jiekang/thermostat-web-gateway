@@ -49,14 +49,16 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+
 import com.mongodb.DBObject;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
+import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
+import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
-import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 
 @Path("/")
 public class JvmMemoryHttpHandler {
@@ -67,7 +69,7 @@ public class JvmMemoryHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmMemory(@QueryParam("l") @DefaultValue("1") Integer limit,
-                                 @QueryParam("o") @DefaultValue("0") Integer offset,
+                                 @QueryParam("o") @DefaultValue("0") OffsetParameter offsetParam,
                                  @QueryParam("s") String sort,
                                  @QueryParam("q") String queries,
                                  @QueryParam("p") String projections,
@@ -75,6 +77,7 @@ public class JvmMemoryHttpHandler {
                                  @Context ServletContext context,
                                  @Context HttpServletRequest requestInfo) {
         try {
+            Integer offset = offsetParam.getValue();
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
             MongoDataResultContainer execResult = mongoExecutor.execGetRequest(
                     storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections);

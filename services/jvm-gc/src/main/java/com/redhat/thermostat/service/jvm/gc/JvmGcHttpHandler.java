@@ -52,12 +52,12 @@ import javax.ws.rs.core.Response;
 
 import com.mongodb.DBObject;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
+import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
+import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
-import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 
 @Path("/")
 public class JvmGcHttpHandler {

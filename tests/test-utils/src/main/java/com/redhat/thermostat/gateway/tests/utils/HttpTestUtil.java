@@ -50,6 +50,15 @@ public class HttpTestUtil {
 
     public static final String EMPTY_RESPONSE = "{\"response\":[]}";
 
+    public static void addRecords(HttpClient client, String resourceUrl, String content) throws InterruptedException, ExecutionException, TimeoutException {
+        StringContentProvider stringContentProvider = new StringContentProvider(content, "UTF-8");
+        ContentResponse response = client.newRequest(resourceUrl)
+                                         .method(HttpMethod.POST)
+                                         .content(stringContentProvider, "application/json")
+                                         .send();
+        assertEquals(200, response.getStatus());
+    }
+
     public static void testContentlessResponse(HttpClient client,
                                                HttpMethod httpMethod,
                                                String url,
