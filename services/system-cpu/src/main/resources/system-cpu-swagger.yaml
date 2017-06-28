@@ -12,21 +12,6 @@ produces:
   - text/html; charset=utf-8
 basePath: /system-cpu/0.0.1
 paths:
-  /:
-    get:
-      description: Get all CPU information for all systems.
-      parameters:
-        - $ref: '#/parameters/limit'
-        - $ref: '#/parameters/offset'
-        - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/include'
-        - $ref: '#/parameters/exclude'
-        - $ref: '#/parameters/query'
-      responses:
-        '200':
-          description: OK
-          schema:
-            $ref: '#/definitions/cpu-info-get-response'
   /systems/{systemId}:
     parameters:
       - $ref: '#/parameters/system-id'
