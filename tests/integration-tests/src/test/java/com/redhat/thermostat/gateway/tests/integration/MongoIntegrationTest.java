@@ -36,15 +36,20 @@
 
 package com.redhat.thermostat.gateway.tests.integration;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
 public class MongoIntegrationTest extends IntegrationTest {
+
+    protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
 
     protected String collectionName;
 
@@ -56,6 +61,9 @@ public class MongoIntegrationTest extends IntegrationTest {
     @BeforeClass
     public static void beforeClassMongoIntegrationTest() throws Exception {
         mongodTestUtil.startMongod();
+        if (!mongodTestUtil.isConnectedToDatabase()) {
+            fail("Unable to start mongodb database, port in use");
+        }
         setupMongoCredentials();
     }
 

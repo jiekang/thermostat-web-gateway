@@ -50,13 +50,10 @@ import org.eclipse.jetty.util.component.LifeCycle;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
-import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
-
 public class IntegrationTest {
     protected static HttpClient client;
     protected static String baseUrl = "http://127.0.0.1:30000";
 
-    protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
     protected static final Path distributionImage;
 
     static {

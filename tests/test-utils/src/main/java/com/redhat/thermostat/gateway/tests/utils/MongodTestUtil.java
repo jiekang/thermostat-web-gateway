@@ -50,6 +50,10 @@ import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 
 public class MongodTestUtil {
+
+    private static final int WAIT_FOR_MAX_ITERATIONS = 100;
+    private static final long WAIT_FOR_SLEEP_DURATION = 100L;
+
     private final String databaseName = "thermostat";
     private final String host = "127.0.0.1";
     private final int port = 27518;
@@ -59,8 +63,7 @@ public class MongodTestUtil {
     private Path tempDbDir;
     private Path tempLogFile;
     public Process process;
-
-
+    private boolean connectedToDatabase;
 
     public void startMongod() throws IOException, InterruptedException {
         tempDbDir = Files.createTempDirectory("tms-mongo");
@@ -74,19 +77,20 @@ public class MongodTestUtil {
         ProcessBuilder builder = new ProcessBuilder(OS.IS_UNIX ? posixCommand : windowsCommand);
         process = builder.start();
         mongoClient = new MongoClient(new ServerAddress(host, port));
-
-        waitForMongodStart();
+        connectedToDatabase = waitForMongodStart();
     }
 
     public void stopMongod() throws IOException, InterruptedException {
-        try {
-            mongoClient.getDatabase("admin").runCommand(new Document("shutdown", 1));
-        } catch (Exception ignored) {
+        if (connectedToDatabase) {
+            try {
+                mongoClient.getDatabase("admin").runCommand(new Document("shutdown", 1));
+            } catch (Exception ignored) {
+            }
+            mongoClient.close();
+            mongoClient = null;
+            waitForMongodStop();
+            finish();
         }
-        mongoClient.close();
-        mongoClient = null;
-        waitForMongodStop();
-        finish();
     }
 
     public void dropCollection(String collectionName) {
@@ -111,7 +115,7 @@ public class MongodTestUtil {
     }
 
     private boolean waitForMongodStart() throws IOException, InterruptedException {
-        return waitFor("waiting for connections on port");
+        return waitFor("waiting for connections on port", "addr already in use");
     }
 
     private boolean waitForMongodStop() throws IOException, InterruptedException {
@@ -119,16 +123,42 @@ public class MongodTestUtil {
     }
 
     private boolean waitFor(String match) throws IOException, InterruptedException {
-        final String[] s = new String[]{""};
+        return waitFor(match, "");
+    }
 
-        for (int i = 0; i < 100; i++) {
-            if (Files.exists(tempLogFile) && !s[0].contains(match)) {
-                s[0] = new String(Files.readAllBytes(tempLogFile));
-            } else if (s[0].contains(match)) {
-                return true;
+    /**
+     * Keeps checking the temporary log file to see if any of the desired
+     * matches are found in the file. This allows short-circuiting of checking
+     * the files in the event some error happens (like being unable to connect
+     * to the database) so it does not keep cycling for a long period of time.
+     * @param desiredMatch The string to find, returns true if found. Null
+     *                     should not be passed to this argument.
+     * @param errorMatch An error string to return false on finding. An empty
+     *                   string should be used if no error match is needed (it
+     *                   is better to call waitFor(desiredMatch) instead). Null
+     *                   should not be used.
+     * @return True if any of the desired matches were found, false if an error
+     * match was found or it timed out.
+     */
+    private boolean waitFor(String desiredMatch, String errorMatch) throws IOException, InterruptedException {
+        for (int i = 0; i < WAIT_FOR_MAX_ITERATIONS; i++) {
+            if (Files.exists(tempLogFile)) {
+                String logFileText = new String(Files.readAllBytes(tempLogFile));
+                if (logFileText.contains(desiredMatch)) {
+                    return true;
+                }
+                if (!"".equals(errorMatch) && logFileText.contains(errorMatch)) {
+                    return false;
+                }
             }
-            Thread.sleep(100L);
+
+            Thread.sleep(WAIT_FOR_SLEEP_DURATION);
         }
+
         return false;
+    }
+
+    public boolean isConnectedToDatabase() {
+        return connectedToDatabase;
     }
 }
