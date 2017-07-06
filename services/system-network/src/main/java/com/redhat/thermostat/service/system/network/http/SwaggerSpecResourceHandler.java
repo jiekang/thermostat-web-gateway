@@ -34,54 +34,25 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.tests.integration;
+package com.redhat.thermostat.service.system.network.http;
 
-import static org.junit.Assert.fail;
+import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Objects;
 
-import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+@Path("doc/{fileName: .+\\.yaml}")
+@Produces(MediaType.TEXT_PLAIN)
+public class SwaggerSpecResourceHandler extends BasicResourceHandler {
 
-public class MongoIntegrationTest extends IntegrationTest {
-
-    protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
-
-    protected String collectionName;
-
-    public MongoIntegrationTest(String serviceUrl, String collectionName) {
-        super(serviceUrl);
-        this.collectionName = Objects.requireNonNull(collectionName);
+    @GET
+    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
+        return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
     }
 
-    @BeforeClass
-    public static void beforeClassMongoIntegrationTest() throws Exception {
-        mongodTestUtil.startMongod();
-        if (!mongodTestUtil.isConnectedToDatabase()) {
-            fail("Unable to start mongodb database, port in use");
-        }
-        setupMongoCredentials();
-    }
-
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
-    }
-
-    private static void setupMongoCredentials() throws IOException, InterruptedException {
-        Path mongoSetup = distributionImage.resolve("etc/mongo-dev-setup.js");
-
-        ProcessBuilder processBuilder = new ProcessBuilder().command("mongo", mongodTestUtil.listenAddress, mongoSetup.toAbsolutePath().toString()).inheritIO();
-        Process mongoProcess = processBuilder.start();
-        mongoProcess.waitFor();
-    }
-
-    @AfterClass
-    public static void afterClassMongoIntegrationTest() throws Exception {
-        mongodTestUtil.stopMongod();
-    }
 }

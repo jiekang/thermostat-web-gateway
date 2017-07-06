@@ -34,54 +34,32 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.tests.integration;
+package com.redhat.thermostat.gateway.common.core.model;
 
-import static org.junit.Assert.fail;
+import com.redhat.thermostat.gateway.common.core.jaxrs.InvalidParameterValueException;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Objects;
+public class OffsetParameter {
 
-import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+    private final Integer offset;
 
-public class MongoIntegrationTest extends IntegrationTest {
-
-    protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
-
-    protected String collectionName;
-
-    public MongoIntegrationTest(String serviceUrl, String collectionName) {
-        super(serviceUrl);
-        this.collectionName = Objects.requireNonNull(collectionName);
+    private OffsetParameter(Integer offset) {
+        this.offset = offset;
     }
 
-    @BeforeClass
-    public static void beforeClassMongoIntegrationTest() throws Exception {
-        mongodTestUtil.startMongod();
-        if (!mongodTestUtil.isConnectedToDatabase()) {
-            fail("Unable to start mongodb database, port in use");
+    public Integer getValue() {
+        return offset;
+    }
+
+    public static OffsetParameter valueOf(String rawParam) {
+        if (rawParam == null) {
+            return null;
         }
-        setupMongoCredentials();
-    }
-
-    @Before
-    public void beforeIntegrationTest() {
-        mongodTestUtil.dropCollection(collectionName);
-    }
-
-    private static void setupMongoCredentials() throws IOException, InterruptedException {
-        Path mongoSetup = distributionImage.resolve("etc/mongo-dev-setup.js");
-
-        ProcessBuilder processBuilder = new ProcessBuilder().command("mongo", mongodTestUtil.listenAddress, mongoSetup.toAbsolutePath().toString()).inheritIO();
-        Process mongoProcess = processBuilder.start();
-        mongoProcess.waitFor();
-    }
-
-    @AfterClass
-    public static void afterClassMongoIntegrationTest() throws Exception {
-        mongodTestUtil.stopMongod();
+        Integer intVal = Integer.valueOf(rawParam);
+        if (intVal < 0) {
+            // JAX RS throws 404 on illegal parameter types by default, make it throw
+            // 400 instead.
+            throw new InvalidParameterValueException("Offset value must not be negative");
+        }
+        return new OffsetParameter(intVal);
     }
 }

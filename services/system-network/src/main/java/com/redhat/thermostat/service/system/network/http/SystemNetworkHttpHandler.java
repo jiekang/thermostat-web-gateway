@@ -34,10 +34,14 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.jvm.gc;
+package com.redhat.thermostat.service.system.network.http;
+
+import com.mongodb.DBObject;
+import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
+import com.redhat.thermostat.service.system.network.mongo.MongoStorageHandler;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -45,71 +49,49 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import com.mongodb.DBObject;
-import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
-import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
-import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
-
 @Path("/")
-public class JvmGcHttpHandler {
-    private final MongoExecutor mongoExecutor = new MongoExecutor();
-    private final String collectionName = "jvm-gc";
+public class SystemNetworkHttpHandler {
+    private final MongoStorageHandler mongoStorageHandler = new MongoStorageHandler();
+    private final String collectionName = "network-info";
 
     @GET
+    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response getJvmGc(@QueryParam("l") @DefaultValue("1") Integer limit,
-                             @QueryParam("o") @DefaultValue("0") Integer offset,
-                             @QueryParam("s") String sort,
-                             @QueryParam("q") String queries,
-                             @QueryParam("p") String projections,
-                             @QueryParam("m") @DefaultValue("false") Boolean metadata,
-                             @Context HttpServletRequest requestInfo,
-                             @Context ServletContext context) {
+    public Response getNetworkInfo(@PathParam(Parameters.SYSTEM_ID) String systemId,
+                               @QueryParam(Parameters.LIMIT) @DefaultValue("1") Integer limit,
+                               @QueryParam(Parameters.OFFSET) @DefaultValue("0") Integer offset,
+                               @QueryParam(Parameters.SORT) String sort,
+                               @QueryParam(Parameters.INCLUDE) String includes,
+                               @QueryParam(Parameters.EXCLUDE) String excludes,
+                               @Context ServletContext context
+    ) {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            MongoDataResultContainer execResult = mongoExecutor.execGetRequest(
-                    storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections);
-
-            MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
-            response.queryDocuments(execResult.getQueryDataResult());
-
-            if (metadata) {
-                MongoMetaDataResponseBuilder.MetaBuilder metaDataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
-                MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(limit, offset, sort, queries,
-                        projections, requestInfo, execResult);
-
-                metaDataGenerator.setDocAndPayloadCount(metaDataResponse);
-                metaDataGenerator.setPrev(metaDataResponse);
-                metaDataGenerator.setNext(metaDataResponse);
-
-                response.metaData(metaDataResponse.build());
-            }
-            return Response.status(Response.Status.OK).entity(response.build()).build();
+            String message = mongoStorageHandler.getOne(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, includes, excludes);
+            return Response.status(Response.Status.OK).entity(message).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getStackTrace()).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
 
     @PUT
+    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response putJvmGc(String body,
-                             @QueryParam("q") String queries,
-                             @QueryParam("m") @DefaultValue("false") String metadata,
-                             @Context ServletContext context) {
+    public Response putNetworkInfo(String body,
+                               @PathParam(Parameters.SYSTEM_ID) String systemId,
+                               @QueryParam(Parameters.QUERY) String queries,
+                               @Context ServletContext context) {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries);
+            mongoStorageHandler.updateOne(storage.getDatabase().getCollection(collectionName), body, systemId, queries);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -117,14 +99,15 @@ public class JvmGcHttpHandler {
     }
 
     @POST
+    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response postJvmGc(String body,
-                              @QueryParam("m") @DefaultValue("false") String metadata,
-                              @Context ServletContext context) {
+    public Response postNetworkInfo(String body,
+                                @PathParam(Parameters.SYSTEM_ID) String systemId,
+                                @Context ServletContext context) {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body);
+            mongoStorageHandler.addOne(storage.getDatabase().getCollection(collectionName, DBObject.class), body, systemId);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -132,14 +115,15 @@ public class JvmGcHttpHandler {
     }
 
     @DELETE
+    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response deleteJvmGc(@QueryParam("q") String queries,
-                                @QueryParam("m") @DefaultValue("false") String metadata,
-                                @Context ServletContext context) {
+    public Response deleteNetworkInfo(@PathParam(Parameters.SYSTEM_ID) String systemId,
+                                  @QueryParam(Parameters.QUERY) String queries,
+                                  @Context ServletContext context) {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries);
+            mongoStorageHandler.delete(storage.getDatabase().getCollection(collectionName), systemId);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
