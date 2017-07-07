@@ -78,7 +78,22 @@
 
         <maven.itest.skip>false</maven.itest.skip>
         <maven.ptest.skip>true</maven.ptest.skip>
+
+        <!-- Intentionally empty. See java-7 profile -->
+        <surefire.argline></surefire.argline>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>java-7</id>
+            <activation>
+                <jdk>1.7</jdk>
+            </activation>
+            <properties>
+                <surefire.argline>-XX:-UseSplitVerifier -XX:MaxPermSize=256m</surefire.argline>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <pluginManagement>
@@ -104,6 +119,9 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>2.20</version>
+                    <configuration>
+                        <argLine>${surefire.argline}</argLine>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
