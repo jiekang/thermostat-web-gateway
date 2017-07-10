@@ -57,20 +57,24 @@ import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 
 public class MongoExecutor {
-
     public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit,
                                                    Integer offset, String sort, String queries, String projections) {
-        FindIterable<Document> documents;
+        return execGetRequest(collection, limit, offset, sort, buildQueries(queries), projections);
+    }
+
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit,
+                                                   Integer offset, String sort, List<String> queries, String projections) {
+        FindIterable<Document> documents = collection.find();
         MongoDataResultContainer queryDataContainer = new MongoDataResultContainer();
 
-        if (queries != null) {
-            List<String> queriesList = Arrays.asList(queries.split(","));
-            final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
-            documents = collection.find(query);
+        if (queries != null && !queries.isEmpty()) {
+            final Bson query = MongoRequestFilters.buildQueriesFilter(queries);
+            documents = documents.filter(query);
             queryDataContainer.setGetReqCount(collection.count(query));
             queryDataContainer.setRemainingNumQueryDocuments((int) (collection.count(query) - (limit + offset)));
         } else {
-            documents = collection.find();
+            queryDataContainer.setGetReqCount(collection.count());
+            queryDataContainer.setRemainingNumQueryDocuments((int) (collection.count() - (limit + offset)));
         }
 
         if (projections != null) {
@@ -88,19 +92,16 @@ public class MongoExecutor {
     }
 
     public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body, String queries) {
+        return execPutRequest(collection, body, buildQueries(queries));
+    }
+
+    public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body, List<String> queries) {
         BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
 
-        final List<String> queriesList;
-        if (queries != null) {
-            queriesList = Arrays.asList(queries.split(","));
-        } else {
-            queriesList = Collections.emptyList();
-        }
-
         BasicDBObject setObject = (BasicDBObject) inputObject.get("set");
         final Bson fields = new Document("$set", setObject);
-        final Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queriesList);
+        final Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queries);
         collection.updateMany(bsonQueries, fields);
 
         metaDataContainer.setPutReqMatches(collection.count(bsonQueries));
@@ -108,17 +109,20 @@ public class MongoExecutor {
         return metaDataContainer;
     }
 
+
     public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, String queries) {
-        List<String> queriesList;
+        return execDeleteRequest(collection, buildQueries(queries));
+    }
+
+    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, List<String> queries) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
-        if (queries != null) {
-            queriesList = Arrays.asList(queries.split(","));
-            Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queriesList);
+        if (queries != null && !queries.isEmpty()) {
+            Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queries);
             collection.deleteMany(bsonQueries);
 
             metaDataContainer.setDeleteReqMatches(collection.count(bsonQueries));
-            return metaDataContainer;
         } else {
+            metaDataContainer.setDeleteReqMatches(collection.count());
             collection.drop();
         }
 
@@ -136,4 +140,12 @@ public class MongoExecutor {
         return metaDataContainer;
     }
 
+
+    private List<String> buildQueries(String queries) {
+        if (queries != null) {
+            return Arrays.asList(queries.split(","));
+        } else {
+            return Collections.emptyList();
+        }
+    }
 }
