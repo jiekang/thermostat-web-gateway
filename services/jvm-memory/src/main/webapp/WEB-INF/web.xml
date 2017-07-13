@@ -65,13 +65,4 @@
     <listener>
         <listener-class>com.redhat.thermostat.gateway.common.mongodb.servlet.StorageConnectionSettingListener</listener-class>
     </listener>
-    <!-- Cross Origin Filter -->
-    <filter>
-        <filter-name>cross-origin</filter-name>
-        <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>cross-origin</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
 </web-app>
