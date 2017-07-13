@@ -101,7 +101,14 @@ public class MongoExecutor {
 
         BasicDBObject setObject = (BasicDBObject) inputObject.get("set");
         final Bson fields = new Document("$set", setObject);
-        final Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queries);
+
+        Bson bsonQueries;
+        if (queries != null && !queries.isEmpty()) {
+            bsonQueries = MongoRequestFilters.buildQueriesFilter(queries);
+        } else {
+            bsonQueries = new Document();
+        }
+
         collection.updateMany(bsonQueries, fields);
 
         metaDataContainer.setPutReqMatches(collection.count(bsonQueries));

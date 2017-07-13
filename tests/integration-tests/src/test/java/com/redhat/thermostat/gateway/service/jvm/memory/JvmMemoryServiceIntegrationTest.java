@@ -152,7 +152,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testPutDataWithoutUrlQuery() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl, "{\"set\":{\"fakedata\":\"test\"}}", 400);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl, "{\"set\":{\"fakedata\":\"test\"}}", 200);
     }
 
     @Test
@@ -168,7 +168,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     public void testPutWithIdenticalData() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedDataResponse = "{\"response\":[{\"fakedata\":\"test\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl, "{\"set\":{\"fakedata\":\"test\"}}", 400);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl, "{\"set\":{\"fakedata\":\"test\"}}", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedDataResponse);
     }
 
