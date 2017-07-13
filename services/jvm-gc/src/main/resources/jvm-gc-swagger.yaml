@@ -21,6 +21,7 @@ paths:
         - $ref: '#/parameters/sort'
         - $ref: '#/parameters/projection'
         - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
       responses:
         '200':
           description: OK
@@ -31,29 +32,40 @@ paths:
       parameters:
         - $ref: '#/parameters/put-body'
         - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/metadata'
     post:
       description: Add jvm gc information
       parameters:
         - $ref: '#/parameters/jvm-gc-stats'
+        - $ref: '#/parameters/metadata'
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/metadata'
     delete:
       description: Delete jvm gc information.
       parameters:
         - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/metadata'
 definitions:
   jvm-gc-stats-response:
     type: object
     properties:
       response:
           $ref: '#/definitions/jvm-gc-stats'
+      metadata:
+        $ref: '#/definitions/metadata'
   jvm-gc-stats:
     type: array
     items:
@@ -73,7 +85,6 @@ definitions:
         $ref: '#/definitions/metric'
       wallTime:
         $ref: '#/definitions/metric'
-
   metric:
     type: object
     properties:
@@ -85,7 +96,28 @@ definitions:
     properties:
       $numberLong:
         type: string
-
+  metadata:
+    type: object
+    properties:
+      payloadCount:
+        type: integer
+      count:
+        type: integer
+      prev:
+        type: string
+      next:
+        type: string
+      first:
+        type: string
+      last:
+        type: string
+      insertCount:
+        type: integer
+      matchCount:
+        type: integer
+      elapsed:
+        type: integer
+        format: int64
   put-body:
     type: object
     properties:
@@ -131,3 +163,8 @@ parameters:
     in: query
     description: Projection string. Comma separated list of fields to include in the response. Example '?p=a,b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
     type: string
+  metadata:
+    name: m
+    type: boolean
+    in: query
+    description: "Metadata flag. If set to 'true', the subsequent request response will return metadata information. If set to 'false', such metadata information will be omitted."

@@ -66,7 +66,17 @@ if [ $CYGWIN_MODE -eq 1 ]; then
   THERMOSTAT_GATEWAY_HOME="`cygpath -w $THERMOSTAT_GATEWAY_HOME`"
 fi
 
+LOGGING_ARGS=()
+LOG_CONFIG_FILE="${THERMOSTAT_GATEWAY_HOME}/etc/logging.properties"
+if [ -f "${LOG_CONFIG_FILE}" ] ; then
+  if [ $CYGWIN_MODE -eq 1 ]; then
+    LOGGING_ARGS=( "-Djava.util.logging.config.file=`cygpath -w ${LOG_CONFIG_FILE}`" )
+  else
+    LOGGING_ARGS=( "-Djava.util.logging.config.file=${LOG_CONFIG_FILE}" )
+  fi
+fi
+
 THERMOSTAT_GATEWAY_LIBS=${THERMOSTAT_GATEWAY_HOME}/libs
 
 export THERMOSTAT_GATEWAY_HOME
-java -cp "${THERMOSTAT_GATEWAY_LIBS}/*" com.redhat.thermostat.gateway.server.Start
+java -cp "${THERMOSTAT_GATEWAY_LIBS}/*" "${LOGGING_ARGS[@]}" com.redhat.thermostat.gateway.server.Start

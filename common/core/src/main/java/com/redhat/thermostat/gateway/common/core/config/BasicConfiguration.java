@@ -46,9 +46,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import com.redhat.thermostat.gateway.common.util.LoggingUtil;
 
 abstract class BasicConfiguration implements Configuration {
 
+    private static final Logger logger = LoggingUtil.getLogger(BasicConfiguration.class);
     private static final String PROPERTIES_PREFIX = "properties|";
     private static final String FILE_PREFIX = "file|";
 
@@ -67,12 +72,13 @@ abstract class BasicConfiguration implements Configuration {
     protected static Map<String, Object> loadConfig(String configFile, String basePath) {
         Properties props = new Properties();
         File globalConfig = new File(configFile);
+        logger.fine("Loading config from " + configFile);
         try (FileInputStream fis = new FileInputStream(globalConfig)) {
             props.load(fis);
         } catch (FileNotFoundException e) {
             // ignore
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.FINE, "Error reading config properties file", e);
         }
         Map<String, Object> config = new HashMap<>();
         for (Entry<Object, Object> entry: props.entrySet()) {
@@ -95,7 +101,7 @@ abstract class BasicConfiguration implements Configuration {
                 } catch (FileNotFoundException e) {
                     // ignore
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.log(Level.FINE, "Error reading properties file", e);
                 }
             } else {
                 config.put(key, entry.getValue());
