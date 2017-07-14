@@ -47,7 +47,6 @@ import java.util.List;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import com.mongodb.BasicDBObject;
 import com.mongodb.CursorType;
 import com.mongodb.DBObject;
 import com.mongodb.client.FindIterable;
@@ -96,11 +95,11 @@ public class MongoExecutor {
     }
 
     public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body, List<String> queries) {
-        BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
+        Document inputDocument = Document.parse(body);
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
 
-        BasicDBObject setObject = (BasicDBObject) inputObject.get("set");
-        final Bson fields = new Document("$set", setObject);
+        Document setDocument = inputDocument.get("set", Document.class);
+        final Bson fields = new Document("$set", setDocument);
 
         Bson bsonQueries;
         if (queries != null && !queries.isEmpty()) {
