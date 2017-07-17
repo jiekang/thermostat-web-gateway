@@ -41,18 +41,25 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 
-import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
-import com.redhat.thermostat.gateway.server.Start;
-
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.server.Start;
+import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
+
 public class IntegrationTest {
+    private static final ConfigurationFactory factory;
+
     protected static HttpClient client;
-    protected static String baseUrl = "http://127.0.0.1:30000";
+    protected static String baseUrl;
 
     protected static final Path distributionImage;
 
@@ -62,6 +69,14 @@ public class IntegrationTest {
         if (distributionImage == null) {
             throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
         }
+        factory = new ConfigurationFactory(distDir);
+        String scheme;
+        if (isTLSEnabled()) {
+            scheme = "https";
+        } else {
+            scheme = "http";
+        }
+        baseUrl = scheme + "://127.0.0.1:30000";
     }
 
     protected String resourceUrl;
@@ -72,10 +87,21 @@ public class IntegrationTest {
 
     @BeforeClass
     public static void beforeClassIntegrationTest() throws Exception {
-        client = new HttpClient();
+        if (isTLSEnabled()) {
+            SslContextFactory sslFactory = new SslContextFactory();
+            sslFactory.setTrustAll(true);
+            client = new HttpClient(sslFactory);
+        } else {
+            client = new HttpClient();
+        }
         client.start();
 
         startServer();
+    }
+
+    private static boolean isTLSEnabled() {
+        Configuration config = factory.createGlobalConfiguration();
+        return Boolean.parseBoolean((String)config.asMap().get(GlobalConfiguration.ConfigurationKey.WITH_TLS.name()));
     }
 
     private static Thread serverThread = null;

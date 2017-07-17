@@ -37,6 +37,7 @@
 package com.redhat.thermostat.gateway.server;
 
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
@@ -44,7 +45,6 @@ import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.CoreServiceType;
-import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
 public class Start implements Runnable {
 
@@ -68,6 +68,7 @@ public class Start implements Runnable {
         CoreServerBuilder serverBuilder = new CoreServerBuilder();
         setServerConfig(serverBuilder, factory);
         setServiceBuilder(serverBuilder, factory);
+        serverBuilder.setGatewayHome(gatewayHome);
 
         server = serverBuilder.build();
         if (listener != null) {

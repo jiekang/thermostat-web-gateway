@@ -37,17 +37,24 @@
 package com.redhat.thermostat.gateway.server;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
@@ -78,6 +85,7 @@ public class CoreServerBuilderTest {
         configMap.put(GlobalConfiguration.ConfigurationKey.PORT.name(), port);
         configMap.put(GlobalConfiguration.ConfigurationKey.WITH_SWAGGER_UI.name(), Boolean.FALSE.toString());
         configMap.put(GlobalConfiguration.ConfigurationKey.WITH_WEB_CLIENT.name(), Boolean.FALSE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_TLS.name(), Boolean.FALSE.toString());
         Configuration configuration = getMockConfiguration(configMap);
 
         CoreServerBuilder builder = new CoreServerBuilder();
@@ -110,6 +118,7 @@ public class CoreServerBuilderTest {
         configMap.put(GlobalConfiguration.ConfigurationKey.PORT.name(), port);
         configMap.put(GlobalConfiguration.ConfigurationKey.WITH_SWAGGER_UI.name(), Boolean.TRUE.toString());
         configMap.put(GlobalConfiguration.ConfigurationKey.WITH_WEB_CLIENT.name(), Boolean.TRUE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_TLS.name(), Boolean.FALSE.toString());
         Configuration configuration = getMockConfiguration(configMap);
 
         SwaggerUiHandler swaggerHandler = new SwaggerUiHandler();
@@ -125,6 +134,58 @@ public class CoreServerBuilderTest {
         ContextHandlerCollection handler = (ContextHandlerCollection) server.getHandler();
         // Expects 3 handlers, 1 service mocked above, 1 swagger ui handler, 1 static resource handler
         assertEquals(3, handler.getHandlers().length);
+    }
+
+    @Test
+    public void testHttpConnector() {
+        CoreServiceBuilder serviceBuilder = getMockServiceBuilder();
+
+        Map<String, Object> configMap = new HashMap<>();
+        String ip = "127.0.0.1";
+        String port = "8080";
+        configMap.put(GlobalConfiguration.ConfigurationKey.IP.name(), ip);
+        configMap.put(GlobalConfiguration.ConfigurationKey.PORT.name(), port);
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_SWAGGER_UI.name(), Boolean.FALSE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_WEB_CLIENT.name(), Boolean.FALSE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_TLS.name(), Boolean.FALSE.toString());
+        Configuration configuration = getMockConfiguration(configMap);
+        CoreServerBuilder builder = new CoreServerBuilder();
+        builder.setServerConfiguration(configuration);
+        builder.setServiceBuilder(serviceBuilder);
+
+        Server server = builder.build();
+        Connector[] connectors = server.getConnectors();
+        assertEquals(1, connectors.length);
+        assertTrue(connectors[0] instanceof ServerConnector);
+        ServerConnector serverConnector = (ServerConnector)connectors[0];
+        assertTrue(serverConnector.getDefaultConnectionFactory() instanceof HttpConnectionFactory);
+    }
+
+    @Test
+    public void testHttpsConnectorDefaultKeystoreLocation() {
+        CoreServiceBuilder serviceBuilder = getMockServiceBuilder();
+
+        Map<String, Object> configMap = new HashMap<>();
+        String ip = "127.0.0.1";
+        String port = "8080";
+        configMap.put(GlobalConfiguration.ConfigurationKey.IP.name(), ip);
+        configMap.put(GlobalConfiguration.ConfigurationKey.PORT.name(), port);
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_SWAGGER_UI.name(), Boolean.FALSE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_WEB_CLIENT.name(), Boolean.FALSE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.WITH_TLS.name(), Boolean.TRUE.toString());
+        configMap.put(GlobalConfiguration.ConfigurationKey.KEYSTORE_FILE.name(), "test_me.jks");
+        Configuration configuration = getMockConfiguration(configMap);
+        CoreServerBuilder builder = new CoreServerBuilder();
+        builder.setServerConfiguration(configuration);
+        builder.setServiceBuilder(serviceBuilder);
+        builder.setGatewayHome(getTestRoot("/test_gw_home"));
+
+        Server server = builder.build();
+        Connector[] connectors = server.getConnectors();
+        assertEquals(1, connectors.length);
+        assertTrue(connectors[0] instanceof ServerConnector);
+        ServerConnector serverConnector = (ServerConnector)connectors[0];
+        assertTrue(serverConnector.getDefaultConnectionFactory() instanceof SslConnectionFactory);
     }
 
     private Configuration getMockConfiguration(Map<String, Object> configMap) {
@@ -143,5 +204,20 @@ public class CoreServerBuilderTest {
         serviceList.add(service);
         when(serviceBuilder.build()).thenReturn(serviceList);
         return serviceBuilder;
+    }
+
+    private String getTestRoot(String path) {
+        URL rootUrl = CoreServerBuilderTest.class.getResource(path);
+        return decodeFilePath(rootUrl);
+    }
+
+    private String decodeFilePath(URL url) {
+        try {
+            // Spaces are encoded as %20 in URLs - handle cases like that.
+            // requires Java 1.7
+            return Paths.get(url.toURI()).toFile().toString();
+        } catch (URISyntaxException e) {
+            throw new AssertionError("Syntax error in URI" + e.getMessage());
+        }
     }
 }
