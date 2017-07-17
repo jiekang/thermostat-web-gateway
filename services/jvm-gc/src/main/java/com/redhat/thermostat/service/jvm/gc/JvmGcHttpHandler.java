@@ -36,6 +36,13 @@
 
 package com.redhat.thermostat.service.jvm.gc;
 
+import static com.redhat.thermostat.gateway.common.util.ServiceException.CANNOT_QUERY_REALMS_PROPERTY;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.DATABASE_UNAVAILABLE;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.EXPECTED_JSON_ARRAY;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.MALFORMED_CLIENT_REQUEST;
+
+import java.io.IOException;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -51,6 +58,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import com.mongodb.DBObject;
+import com.mongodb.MongoTimeoutException;
+import com.mongodb.MongoWriteException;
 import com.redhat.thermostat.gateway.common.core.auth.keycloak.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
@@ -59,11 +68,23 @@ import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenera
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
+import com.redhat.thermostat.gateway.common.util.HttpResponseExceptionHandler;
+import org.bson.json.JsonParseException;
 
 @Path("/")
 public class JvmGcHttpHandler {
     private final MongoExecutor mongoExecutor = new MongoExecutor();
     private final String collectionName = "jvm-gc";
+    private final HttpResponseExceptionHandler exceptionHandler = new HttpResponseExceptionHandler();
+
+    public JvmGcHttpHandler() {
+        exceptionHandler.add(MongoWriteException.class, MALFORMED_CLIENT_REQUEST)
+                        .add(JsonParseException.class, MALFORMED_CLIENT_REQUEST)
+                        .add(UnsupportedOperationException.class, MALFORMED_CLIENT_REQUEST)
+                        .add(ClassCastException.class, EXPECTED_JSON_ARRAY)
+                        .add(MongoTimeoutException.class, DATABASE_UNAVAILABLE)
+                        .add(IOException.class, CANNOT_QUERY_REALMS_PROPERTY);
+    }
 
     @GET
     @Consumes({ "application/json" })
@@ -110,7 +131,7 @@ public class JvmGcHttpHandler {
             }
             return Response.status(Response.Status.OK).entity(response.build()).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 
@@ -138,7 +159,7 @@ public class JvmGcHttpHandler {
 
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 
@@ -164,7 +185,7 @@ public class JvmGcHttpHandler {
             }
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 
@@ -191,7 +212,7 @@ public class JvmGcHttpHandler {
 
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 }
