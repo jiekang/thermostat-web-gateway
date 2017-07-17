@@ -36,6 +36,7 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.filters;
 
+import static com.mongodb.client.model.Filters.all;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.gt;
@@ -43,14 +44,19 @@ import static com.mongodb.client.model.Filters.gte;
 import static com.mongodb.client.model.Filters.lt;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Filters.ne;
+import static com.mongodb.client.model.Filters.size;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonParseException;
+
+import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoRequestFilters {
     public static Bson buildQueriesFilter(List<String> queries) {
@@ -100,5 +106,32 @@ public class MongoRequestFilters {
             }
         }
         return and(filters);
+    }
+
+    public static Bson buildRealmsFilter(Set<String> realms) {
+        return and(all(KeycloakFields.REALMS_KEY, realms), size(KeycloakFields.REALMS_KEY, realms.size()));
+    }
+
+    public static Bson buildQuery(List<String> clientQueries, Set<String> realms) {
+        Bson query = null;
+
+        if (clientQueries != null && !clientQueries.isEmpty()) {
+            query = MongoRequestFilters.buildQueriesFilter(clientQueries);
+        }
+
+        if (realms != null && realms.size() > 0) {
+            Bson realmsQuery = MongoRequestFilters.buildRealmsFilter(realms);
+            if (query != null) {
+                query = and(query, realmsQuery);
+            } else {
+                query = realmsQuery;
+            }
+        }
+
+        if (query == null) {
+            query = new Document();
+        }
+
+        return query;
     }
 }

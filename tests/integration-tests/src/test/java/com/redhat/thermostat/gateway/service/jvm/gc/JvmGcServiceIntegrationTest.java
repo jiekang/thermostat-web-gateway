@@ -38,15 +38,26 @@
 package com.redhat.thermostat.gateway.service.jvm.gc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import org.bson.Document;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.mongodb.Block;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 
 public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
@@ -326,5 +337,196 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"next\":\"" + gcUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
         makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=3", expectedResponse, 200);
+    }
+
+    @Test
+    public void testUpdateDoesNotAffectRealms() throws InterruptedException, TimeoutException, ExecutionException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        String updateString = "{\"set\" : {\"realms\" : 1, \"a\" : 2}}";
+        makeHttpMethodRequest(HttpMethod.PUT,"", updateString,"application/json","", 200);
+
+        FindIterable<Document> documents = collection.find();
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                assertEquals("[\"a\",\"b\"]", gson.toJson(document.get("realms"), listType));
+            }
+        });
+    }
+
+    @Test
+    public void testUpdateOnlyRealmsDoesNotAffectRealms() throws InterruptedException, TimeoutException, ExecutionException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        String updateString = "{\"set\" : {\"realms\" : 1}}";
+        makeHttpMethodRequest(HttpMethod.PUT,"", updateString,"application/json","", 400);
+
+        FindIterable<Document> documents = collection.find();
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                assertEquals("[\"a\",\"b\"]", gson.toJson(document.get("realms"), listType));
+            }
+        });
+    }
+
+    @Test
+    public void testUpdateRealmsQueryMatchIsNotUsed() throws InterruptedException, TimeoutException, ExecutionException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\"]}," +
+                "{\"item\":2,\"realms\":[\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        String updateString = "{\"set\" : {\"item\" : 5}}";
+        StringContentProvider stringContentProvider = new StringContentProvider(updateString, "UTF-8");
+        ContentResponse response = client.newRequest(gcUrl).param("q", "realms==[\"a\"]")
+                .method(HttpMethod.PUT).content(stringContentProvider, "application/json")
+                .send();
+        assertEquals(400, response.getStatus());
+
+        FindIterable<Document> documents = collection.find();
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                if (document.get("item", Double.class).equals(5)) {
+                    fail();
+                }
+            }
+        });
+    }
+
+    @Test
+    public void testUpdateMultipleRealmsDoesNotAffectRealms() throws InterruptedException, TimeoutException, ExecutionException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        String updateString = "{\"set\" : {\"realms\" : 1, \"realms\" : 2}}";
+        makeHttpMethodRequest(HttpMethod.PUT,"", updateString,"application/json","", 400);
+
+        FindIterable<Document> documents = collection.find();
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                assertEquals("[\"a\",\"b\"]", gson.toJson(document.get("realms"), listType));
+            }
+        });
+    }
+
+    @Test
+    public void testGetCannotSeeRealms() throws InterruptedException, ExecutionException, TimeoutException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        String expected = "{\"response\":[{\"item\":1.0}]}";
+
+        makeHttpGetRequest(gcUrl,expected, 200);
+    }
+
+    @Test
+    public void testGetProjectionCannotSeeRealms() throws InterruptedException, ExecutionException, TimeoutException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        String expected = "{\"response\":[{\"item\":1.0}]}";
+
+        makeHttpGetRequest(gcUrl + "?p=realms,item",expected, 200);
+    }
+
+    @Test
+    public void testGetQueryCannotMatchRealms() throws InterruptedException, ExecutionException, TimeoutException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\"]}," +
+                "{\"item\":2,\"realms\":[\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        ContentResponse response = client.newRequest(gcUrl)
+                .param("q", "realms==[\"a\"]").method(HttpMethod.GET).send();
+
+        assertEquals(400, response.getStatus());
+    }
+
+
+    @Test
+    public void testPostCannotAddRealms() throws InterruptedException, ExecutionException, TimeoutException {
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+
+        FindIterable<Document> documents = collection.find();
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                assertNull(document.get("realms"));
+            }
+        });
+    }
+
+    @Test
+    public void testDeleteCannotQueryRealms() throws InterruptedException, TimeoutException, ExecutionException {
+        MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
+        String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
+                "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
+        final Gson gson = new GsonBuilder().create();
+        final Type listType = new TypeToken<List<Document>>() {}.getType();
+        List<Document> insertDocuments = gson.fromJson(data, listType);
+
+        collection.insertMany(insertDocuments);
+
+        ContentResponse response = client.newRequest(gcUrl)
+                .param("q", "realms==[\"a\",\"b\"]").method(HttpMethod.DELETE)
+                .send();
+        assertEquals(400, response.getStatus());
+
+        FindIterable<Document> documents = collection.find();
+        documents.forEach(new Block<Document>() {
+            @Override
+            public void apply(Document document) {
+                assertEquals("[\"a\",\"b\"]", gson.toJson(document.get("realms"), listType));
+            }
+        });
     }
 }

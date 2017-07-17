@@ -48,7 +48,6 @@ import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilde
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;

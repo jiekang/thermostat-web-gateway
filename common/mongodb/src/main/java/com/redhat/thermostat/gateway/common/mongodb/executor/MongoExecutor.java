@@ -40,9 +40,11 @@ import static com.mongodb.client.model.Projections.excludeId;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -54,27 +56,27 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
+import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoExecutor {
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit,
-                                                   Integer offset, String sort, String queries, String projections) {
-        return execGetRequest(collection, limit, offset, sort, buildQueries(queries), projections);
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
+                                                   String sort, String queries, String projections,
+                                                   Set<String> realms) throws IOException {
+        return execGetRequest(collection, limit, offset, sort, buildClientQueries(queries), projections, realms);
     }
 
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit,
-                                                   Integer offset, String sort, List<String> queries, String projections) {
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
+                                                   String sort, List<String> queries, String projections,
+                                                   Set<String> realms) {
         FindIterable<Document> documents = collection.find();
         MongoDataResultContainer queryDataContainer = new MongoDataResultContainer();
 
-        if (queries != null && !queries.isEmpty()) {
-            final Bson query = MongoRequestFilters.buildQueriesFilter(queries);
-            documents = documents.filter(query);
-            queryDataContainer.setGetReqCount(collection.count(query));
-            queryDataContainer.setRemainingNumQueryDocuments((int) (collection.count(query) - (limit + offset)));
-        } else {
-            queryDataContainer.setGetReqCount(collection.count());
-            queryDataContainer.setRemainingNumQueryDocuments((int) (collection.count() - (limit + offset)));
-        }
+        Bson query = MongoRequestFilters.buildQuery(queries, realms);
+        documents = documents.filter(query);
+
+        long count = collection.count(query);
+        queryDataContainer.setGetReqCount(count);
+        queryDataContainer.setRemainingNumQueryDocuments((int) (count - (limit + offset)));
 
         if (projections != null) {
             List<String> projectionsList = Arrays.asList(projections.split(","));
@@ -90,23 +92,21 @@ public class MongoExecutor {
         return queryDataContainer;
     }
 
-    public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body, String queries) {
-        return execPutRequest(collection, body, buildQueries(queries));
+    public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body,
+                                                   String queries, Set<String> realms) throws IOException {
+        return execPutRequest(collection, body, buildClientQueries(queries), realms);
     }
 
-    public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body, List<String> queries) {
+    public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body,
+                                                   List<String> queries, Set<String> realms) {
         Document inputDocument = Document.parse(body);
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
 
         Document setDocument = inputDocument.get("set", Document.class);
+        setDocument.remove(KeycloakFields.REALMS_KEY);
         final Bson fields = new Document("$set", setDocument);
 
-        Bson bsonQueries;
-        if (queries != null && !queries.isEmpty()) {
-            bsonQueries = MongoRequestFilters.buildQueriesFilter(queries);
-        } else {
-            bsonQueries = new Document();
-        }
+        final Bson bsonQueries = MongoRequestFilters.buildQuery(queries, realms);
 
         collection.updateMany(bsonQueries, fields);
 
@@ -116,17 +116,18 @@ public class MongoExecutor {
     }
 
 
-    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, String queries) {
-        return execDeleteRequest(collection, buildQueries(queries));
+    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, String queries,
+                                                      Set<String> realms) throws IOException {
+        return execDeleteRequest(collection, buildClientQueries(queries), realms);
     }
 
-    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, List<String> queries) {
+    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, List<String> queries,
+                                                      Set<String> realms) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
-        if (queries != null && !queries.isEmpty()) {
-            Bson bsonQueries = MongoRequestFilters.buildQueriesFilter(queries);
-            collection.deleteMany(bsonQueries);
-
+        if (queries != null && !queries.isEmpty() || realms != null && !realms.isEmpty()) {
+            Bson bsonQueries = MongoRequestFilters.buildQuery(queries, realms);
             metaDataContainer.setDeleteReqMatches(collection.count(bsonQueries));
+            collection.deleteMany(bsonQueries);
         } else {
             metaDataContainer.setDeleteReqMatches(collection.count());
             collection.drop();
@@ -135,11 +136,21 @@ public class MongoExecutor {
         return metaDataContainer;
     }
 
-    public MongoDataResultContainer execPostRequest(MongoCollection<DBObject> collection, String body) {
+    public MongoDataResultContainer execPostRequest(MongoCollection<DBObject> collection, String body,
+                                                    Set<String> realms) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
 
         if (body.length() > 0) {
             List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
+
+            for (DBObject object : inputList) {
+                object.removeField(KeycloakFields.REALMS_KEY);
+                if (realms != null && !realms.isEmpty())  {
+                    object.put(KeycloakFields.REALMS_KEY, realms);
+                }
+
+            }
+
             collection.insertMany(inputList);
         }
 
@@ -147,9 +158,16 @@ public class MongoExecutor {
     }
 
 
-    private List<String> buildQueries(String queries) {
+    private List<String> buildClientQueries(String queries) throws IOException {
         if (queries != null) {
-            return Arrays.asList(queries.split(","));
+            List<String> queriesList = Arrays.asList(queries.split(","));
+            for (String query : queriesList) {
+                if (query.startsWith(KeycloakFields.REALMS_KEY)) {
+                    throw new IOException("Cannot query realms property");
+                }
+            }
+
+            return queriesList;
         } else {
             return Collections.emptyList();
         }

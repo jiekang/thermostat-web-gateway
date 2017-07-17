@@ -51,6 +51,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import com.mongodb.DBObject;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
@@ -73,12 +74,25 @@ public class JvmGcHttpHandler {
                              @QueryParam("q") String queries,
                              @QueryParam("p") String projections,
                              @QueryParam("m") @DefaultValue("false") Boolean metadata,
-                             @Context HttpServletRequest requestInfo,
+                             @Context HttpServletRequest httpServletRequest,
                              @Context ServletContext context) {
         try {
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            MongoDataResultContainer execResult = mongoExecutor.execGetRequest(
-                    storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections);
+
+            MongoDataResultContainer execResult;
+
+            if (realmAuthorizer != null) {
+                if (realmAuthorizer.readable()) {
+                    execResult = mongoExecutor.execGetRequest(
+                            storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections, realmAuthorizer.getReadableRealms());
+                } else {
+                    return Response.status(Response.Status.FORBIDDEN).build();
+                }
+            } else {
+                execResult = mongoExecutor.execGetRequest(
+                        storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections, null);
+            }
 
             MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
             response.queryDocuments(execResult.getQueryDataResult());
@@ -86,7 +100,7 @@ public class JvmGcHttpHandler {
             if (metadata) {
                 MongoMetaDataResponseBuilder.MetaBuilder metaDataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
                 MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(limit, offset, sort, queries,
-                        projections, requestInfo, execResult);
+                        projections, httpServletRequest, execResult);
 
                 metaDataGenerator.setDocAndPayloadCount(metaDataResponse);
                 metaDataGenerator.setPrev(metaDataResponse);
@@ -96,7 +110,7 @@ public class JvmGcHttpHandler {
             }
             return Response.status(Response.Status.OK).entity(response.build()).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).entity(e.getStackTrace()).build();
+            return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
 
@@ -106,10 +120,22 @@ public class JvmGcHttpHandler {
     public Response putJvmGc(String body,
                              @QueryParam("q") String queries,
                              @QueryParam("m") @DefaultValue("false") String metadata,
-                             @Context ServletContext context) {
+                             @Context ServletContext context,
+                             @Context HttpServletRequest httpServletRequest) {
         try {
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries);
+
+            if (realmAuthorizer != null) {
+                if (realmAuthorizer.updatable()) {
+                    mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries, realmAuthorizer.getUpdatableRealms());
+                } else {
+                    return Response.status(Response.Status.FORBIDDEN).build();
+                }
+            } else {
+                mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries, null);
+            }
+
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -121,10 +147,21 @@ public class JvmGcHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response postJvmGc(String body,
                               @QueryParam("m") @DefaultValue("false") String metadata,
-                              @Context ServletContext context) {
+                              @Context ServletContext context,
+                              @Context HttpServletRequest httpServletRequest) {
         try {
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body);
+
+            if (realmAuthorizer != null) {
+                if (realmAuthorizer.writable()) {
+                    mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, realmAuthorizer.getWritableRealms());
+                } else {
+                    return Response.status(Response.Status.FORBIDDEN).build();
+                }
+            } else {
+                mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, null);
+            }
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -136,10 +173,22 @@ public class JvmGcHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response deleteJvmGc(@QueryParam("q") String queries,
                                 @QueryParam("m") @DefaultValue("false") String metadata,
-                                @Context ServletContext context) {
+                                @Context ServletContext context,
+                                @Context HttpServletRequest httpServletRequest) {
         try {
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries);
+
+            if (realmAuthorizer != null) {
+                if (realmAuthorizer.deletable()) {
+                    mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries, realmAuthorizer.getDeletableRealms());
+                } else {
+                    return Response.status(Response.Status.FORBIDDEN).build();
+                }
+            } else {
+                mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries, null);
+            }
+
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();

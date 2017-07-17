@@ -67,6 +67,13 @@
             <version>${javax-rs-api.version}</version>
         </dependency>
 
+        <!-- Keycloak dependencies -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-core</artifactId>
+            <version>${keycloak.version}</version>
+        </dependency>
+
         <!-- test scoped deps -->
         <dependency>
             <groupId>junit</groupId>

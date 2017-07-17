@@ -37,10 +37,12 @@
 package com.redhat.thermostat.gateway.server.services;
 
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.servlet.DispatcherType;
 import javax.servlet.ServletException;
 
 import org.eclipse.jetty.security.ConstraintMapping;
@@ -60,6 +62,7 @@ import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfiguration;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfigurationFactory;
+import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakRequestFilter;
 
 class WebArchiveCoreService implements CoreService {
 
@@ -120,6 +123,9 @@ class WebArchiveCoreService implements CoreService {
         webAppContext.setInitParameter("org.keycloak.json.adapterConfig", keycloakConfig);
         webAppContext.setSecurityHandler(securityHandler);
         webAppContext.addSystemClass("org.keycloak.");
+        webAppContext.addSystemClass("com.redhat.thermostat.gateway.common.core.auth.keycloak.");
+
+        webAppContext.addFilter(KeycloakRequestFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     }
 
     private void setupBasicAuthForContext(WebAppContext webAppContext) {

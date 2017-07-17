@@ -37,12 +37,17 @@
 package com.redhat.thermostat.gateway.common.mongodb.filters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import org.bson.BsonArray;
 import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.conversions.Bson;
 import org.bson.json.JsonParseException;
 import org.junit.Test;
@@ -163,5 +168,26 @@ public class MongoRequestFiltersTest {
     @Test(expected=JsonParseException.class)
     public void testInvalidWithSymbols() {
         MongoRequestFilters.buildQueriesFilter(Collections.singletonList("a="));
+    }
+
+    @Test
+    public void testBuildRealmsFilter() {
+        Set<String> realms = new HashSet<>();
+        realms.add("one");
+        realms.add("two");
+
+        Bson filter = MongoRequestFilters.buildRealmsFilter(realms);
+        BsonDocument bsonDocument = filter.toBsonDocument(BsonDocument.class, MongoClient.getDefaultCodecRegistry());
+
+        BsonDocument realmsDocument = bsonDocument.getDocument("realms");
+        assertTrue(realmsDocument.containsKey("$all"));
+        assertTrue(realmsDocument.containsKey("$size"));
+
+        assertEquals(2, realmsDocument.get("$size").asInt32().getValue());
+
+        BsonArray allDocument = realmsDocument.getArray("$all");
+        assertEquals(2, allDocument.size());
+        assertTrue(allDocument.contains(new BsonString("one")));
+        assertTrue(allDocument.contains(new BsonString("two")));
     }
 }

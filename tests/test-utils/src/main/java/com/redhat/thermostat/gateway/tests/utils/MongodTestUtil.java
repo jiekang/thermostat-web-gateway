@@ -43,6 +43,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import com.mongodb.client.MongoCollection;
 import com.redhat.thermostat.gateway.common.util.OS;
 import org.bson.Document;
 
@@ -95,6 +96,11 @@ public class MongodTestUtil {
 
     public void dropCollection(String collectionName) {
         mongoClient.getDatabase(databaseName).getCollection(collectionName).drop();
+    }
+
+
+    public MongoCollection<Document> getCollection(String collectionName) {
+        return mongoClient.getDatabase(databaseName).getCollection(collectionName);
     }
 
     private void finish() throws IOException {
@@ -161,4 +167,5 @@ public class MongodTestUtil {
     public boolean isConnectedToDatabase() {
         return connectedToDatabase;
     }
+
 }

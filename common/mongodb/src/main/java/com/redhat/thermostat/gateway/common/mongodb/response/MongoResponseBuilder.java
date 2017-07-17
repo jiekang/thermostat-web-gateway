@@ -44,6 +44,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
+import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 /*
  *  Builds the appropriate response after executing the request's MongoDB Query.
@@ -67,6 +68,9 @@ public class MongoResponseBuilder {
             documents.forEach(new Block<Document>() {
                 @Override
                 public void apply(Document document) {
+                    if (document.containsKey(KeycloakFields.REALMS_KEY)) {
+                        document.remove(KeycloakFields.REALMS_KEY);
+                    }
                     queryDocuments.add(document);
                 }
             });
