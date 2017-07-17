@@ -144,6 +144,23 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <!-- Certificate is generated with buildfiles/certs/generate_self_signed_cert.sh -->
+                        <id>copy-cert</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/image</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/cert</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>copy-etc</id>
                         <phase>prepare-package</phase>
                         <goals>
