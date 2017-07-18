@@ -52,6 +52,7 @@
         <module>server</module>
         <module>distribution</module>
         <module>common</module>
+        <module>config-assembly</module>
         <module>services</module>
         <module>ide-launcher</module>
         <module>tests</module>

@@ -107,6 +107,20 @@
                             <goal>single</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>plugin-assembly</id>
+                        <configuration>
+                            <finalName>image</finalName>
+                            <descriptors>
+                                <descriptor>src/assembly/plugin-assembly.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>false</appendAssemblyId>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -320,6 +334,15 @@
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- src/etc/ dependencies from other services -->
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-service-commands</artifactId>
+            <version>${project.version}</version>
+            <classifier>config</classifier>
+            <type>zip</type>
         </dependency>
     </dependencies>
 </project>
