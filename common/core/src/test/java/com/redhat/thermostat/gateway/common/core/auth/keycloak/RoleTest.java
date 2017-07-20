@@ -37,6 +37,8 @@
 package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
@@ -54,6 +56,28 @@ public class RoleTest {
         Role r = new Role("rw", "realm-1.2-3");
 
         verifyRole(r, "rw", "realm-1.2-3");
+    }
+
+    /*
+    Roles are added to set data structures which rely on the equals()
+    implementation to prevent duplicates
+     */
+    @Test
+    public void testEquals() {
+        Role one = new Role("a", "b");
+        Role two = new Role("a", "b");
+
+        assertEquals(one, two);
+    }
+
+    @Test
+    public void testNotEquals() {
+        Role one = new Role("a", "b");
+        Role two = new Role("a", "c");
+        Role three = new Role("c", "b");
+
+        assertNotEquals(one, two);
+        assertNotEquals(one, three);
     }
 
     private void verifyRole(Role role, String expectedActions, String expectedRole) {

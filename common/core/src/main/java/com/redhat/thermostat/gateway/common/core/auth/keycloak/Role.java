@@ -36,8 +36,9 @@
 
 package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
-public class Role {
+import java.util.Objects;
 
+public class Role {
     public static final String ROLE_DELIMITER = "-";
     public static final String[] RESTRICTED_CHARACTERS = new String[]{","};
 
@@ -45,6 +46,8 @@ public class Role {
     private final String realm;
 
     public Role(String actions, String realm) {
+        Objects.requireNonNull(actions);
+        Objects.requireNonNull(realm);
         this.actions = actions;
         this.realm = realm;
     }
@@ -55,5 +58,28 @@ public class Role {
 
     public String getRealm() {
         return this.realm;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Role role = (Role) o;
+
+        if (!actions.equals(role.actions)) {
+            return false;
+        }
+
+        return realm.equals(role.realm);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(actions, realm);
     }
 }
