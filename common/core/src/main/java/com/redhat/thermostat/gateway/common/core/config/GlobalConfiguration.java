@@ -80,7 +80,17 @@ public class GlobalConfiguration extends BasicConfiguration {
          * context path /web-client, for built web-client assets
          * should get created.
          */
-        WITH_WEB_CLIENT
+        WITH_WEB_CLIENT,
+        /**
+         * Determines whether or not the connector at the given host
+         * and port will be TLS enabled or not.
+         */
+        WITH_TLS,
+        /**
+         * The path to the JKS keystore file with the keymaterial,
+         * alias 'thermostat', when WITH_TLS=true.
+         */
+        KEYSTORE_FILE,
     }
 
 }

@@ -89,6 +89,21 @@ public class MongoResponseBuilderTest {
         assertEquals(expected, output);
     }
 
+    @Test
+    public void testRealmsKeyRemoved() {
+        Document d1 = Document.parse("{\"hello\" : \"blob\", \"realms\" : [\"a\",\"b\"]}");
+        Document d2 = Document.parse("{\"a\" : {\"blob\" : [\"hi\"]}, \"realms\" : [\"c\",\"d\"]}");
+        final List<Document> list = new ArrayList<>();
+        list.add(d1);
+        list.add(d2);
+
+        FindIterable<Document> iterable = new TestFindIterable<>(list);
+
+        String output = mongoResponseBuilder.queryDocuments(iterable).build();
+        String expected = "{\"response\":[{\"hello\":\"blob\"},{\"a\":{\"blob\":[\"hi\"]}}]}";
+        assertEquals(expected, output);
+    }
+
     private class TestFindIterable<T> implements FindIterable<T> {
 
         private final List<T> list;

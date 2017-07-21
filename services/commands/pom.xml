@@ -50,6 +50,41 @@
 
   <name>Thermostat Web Gateway Command Channel Service</name>
 
+  <properties>
+    <thermostat.microservice.name>commands</thermostat.microservice.name>
+  </properties>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-assembly-plugin</artifactId>
+        <version>3.0.0</version>
+        <dependencies>
+          <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-config-assembly</artifactId>
+            <version>${project.version}</version>
+          </dependency>
+        </dependencies>
+        <configuration>
+          <descriptorRefs>
+            <descriptorRef>config</descriptorRef>
+          </descriptorRefs>
+          <appendAssemblyId>true</appendAssemblyId>
+        </configuration>
+        <executions>
+          <execution>
+            <id>assemble-plugin</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
   
     <!-- Thermostat Web Gateway Dependencies -->
@@ -59,7 +94,7 @@
       <version>${project.version}</version>
       <scope>provided</scope>
     </dependency>
-        
+
     <!-- Websockets deps -->
     <dependency>
       <groupId>javax.websocket</groupId>

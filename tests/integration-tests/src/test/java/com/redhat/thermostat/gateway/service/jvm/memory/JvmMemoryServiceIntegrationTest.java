@@ -36,18 +36,20 @@
 
 package com.redhat.thermostat.gateway.service.jvm.memory;
 
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
-import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
 
 public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
 
     private static final String serviceName = "jvm-memory";
     private static final String versionNumber = "0.0.2";
+    private static final String memoryUrl = baseUrl + "/" + serviceName + "/" + versionNumber;
 
     public JvmMemoryServiceIntegrationTest() {
         super(serviceName + "/" + versionNumber, serviceName);
@@ -249,7 +251,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=1&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"a\":\"test\",\"b\":\"test1\"," +
                 "\"c\":\"test2\"}],\"metaData\":{\"payloadCount\":1,\"count\":3," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d1\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"next\":\"" + memoryUrl + "?o\\u003d1\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&l=1", 200, expectedResponse);
@@ -265,8 +267,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=2&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":3," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1", 200, expectedResponse);
@@ -284,8 +286,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"e\":\"test4\"," +
                 "\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":5," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue" +
-                "\\u0026l\\u003d1\\u0026o\\u003d0\",\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d4" +
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue" +
+                "\\u0026l\\u003d1\\u0026o\\u003d0\",\"next\":\"" + memoryUrl + "?o\\u003d4" +
                 "\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
@@ -304,8 +306,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=5&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":6," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=3&l=2", 200, expectedResponse);
@@ -322,8 +324,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=2&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":3," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1&l=1", 200, expectedResponse);
@@ -341,8 +343,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=3&l=2&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"e\":\"test4\"," +
                 "\"b\":\"test1\"}],\"metaData\":{\"payloadCount\":2,\"count\":6," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\\u0026o\\u003d0\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d3\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\\u0026o\\u003d0\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d3\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1&l=2", 200, expectedResponse);
@@ -360,8 +362,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=5&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":6," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=3&l=2", 200, expectedResponse);
@@ -378,8 +380,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=4&l=2&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":2,\"count\":6," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=2&l=2", 200, expectedResponse);
@@ -397,8 +399,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=4&l=2&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":2,\"count\":6," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=2&l=2", 200, expectedResponse);
@@ -417,8 +419,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedResponse = "{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"}," +
                 "{\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":6," +
-                "\"prev\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
-                "\"next\":\"http://127.0.0.1:30000/jvm-memory/0.0.2?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
+                "\"next\":\"" + memoryUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=2&l=3", 200, expectedResponse);

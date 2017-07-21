@@ -50,6 +50,7 @@ import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.UserIdentity;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.Test;
@@ -58,6 +59,7 @@ import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
+import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakRequestFilter;
 
 public class WebArchiveCoreServiceTest {
 
@@ -115,6 +117,11 @@ public class WebArchiveCoreServiceTest {
         assertTrue(securityHandler instanceof ConstraintSecurityHandler);
         assertTrue(securityHandler.getAuthenticator() instanceof KeycloakJettyAuthenticator);
         assertEquals(securityHandler.getRealmName(), "thermostat");
+
+        FilterHolder[] filters = webAppContext.getServletHandler().getFilters();
+
+        assertEquals(1, filters.length);
+        assertEquals(KeycloakRequestFilter.class, filters[0].getHeldClass());
     }
 
 

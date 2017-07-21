@@ -36,18 +36,25 @@
 
 package com.redhat.thermostat.gateway.server;
 
+import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import javax.servlet.ServletException;
 
+import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
@@ -60,11 +67,13 @@ import com.redhat.thermostat.gateway.server.webclient.StaticAssetsHandler;
 
 public class CoreServerBuilder {
 
+    private static final String THERMOSTAT_ALIAS = "thermostat";
     private final SwaggerUiHandler swaggerHandler;
     private final StaticAssetsHandler staticAssetsHandler;
     private final Server server = new Server();
     private CoreServiceBuilder coreServiceBuilder;
     private Configuration serverConfig;
+    private String gatewayHome;
 
     public CoreServerBuilder() {
         this(new SwaggerUiHandler(), new StaticAssetsHandler());
@@ -76,6 +85,8 @@ public class CoreServerBuilder {
         this.swaggerHandler = swaggerHandler;
     }
 
+
+
     public CoreServerBuilder setServiceBuilder(CoreServiceBuilder builder) {
         this.coreServiceBuilder = builder;
         return this;
@@ -83,6 +94,11 @@ public class CoreServerBuilder {
 
     public CoreServerBuilder setServerConfiguration(Configuration config) {
         this.serverConfig = config;
+        return this;
+    }
+
+    public CoreServerBuilder setGatewayHome(String gatewayHome) {
+        this.gatewayHome = gatewayHome;
         return this;
     }
 
@@ -134,19 +150,68 @@ public class CoreServerBuilder {
     }
 
     private void setupConnector() {
+        Map<String, Object> serverConfigMap = serverConfig.asMap();
+        String listenAddress = (String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
+        int listenPort = Integer.parseInt((String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
+        Connector connector;
+        if (isEnabled(serverConfigMap, ConfigurationKey.WITH_TLS)) {
+            connector = getHttpsConnector(listenAddress, listenPort, serverConfigMap);
+        } else {
+            connector = getHttpConnector(listenAddress, listenPort);
+        }
+        server.setConnectors(new Connector[]{connector} );
+    }
+
+    private Connector getHttpsConnector(String listenAddress, int listenPort, Map<String, Object> serverConfigMap) {
+        String keystoreCandidate = (String)serverConfigMap.get((GlobalConfiguration.ConfigurationKey.KEYSTORE_FILE.name()));
+        Path keystoreFile = Paths.get(keystoreCandidate);
+        if (!keystoreFile.isAbsolute()) {
+            // resolve relative to GW home
+            keystoreFile = Paths.get(gatewayHome, keystoreCandidate);
+        }
+        ServerConnector connector = getPreconfiguredHttpsConnector(keystoreFile.toFile());
+        return configureHostPort(connector, listenAddress, listenPort);
+    }
+
+    private Connector getHttpConnector(String listenAddress, int listenPort) {
+        ServerConnector connector = getPreconfiguredHttpConnector();
+        return configureHostPort(connector, listenAddress, listenPort);
+    }
+
+    private ServerConnector configureHostPort(ServerConnector connector, String listenAddress, int listenPort) {
+        connector.setPort(listenPort);
+        connector.setHost(listenAddress);
+        return connector;
+    }
+
+    private ServerConnector getPreconfiguredHttpConnector() {
         ServerConnector httpConnector = new ServerConnector(server);
 
         HttpConfiguration httpConfig = new HttpConfiguration();
         httpConnector.addConnectionFactory(new HttpConnectionFactory(httpConfig));
+        return httpConnector;
+    }
 
-        Map<String, Object> serverConfigMap = serverConfig.asMap();
-        String listenAddress = (String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.IP.toString());
-        int listenPort = Integer.parseInt((String)serverConfigMap.get(GlobalConfiguration.ConfigurationKey.PORT.toString()));
+    private ServerConnector getPreconfiguredHttpsConnector(File keystoreFile) {
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
+        // May be overridden by setting the property -Dorg.eclipse.jetty.ssl.password=<password>
+        sslContextFactory.setKeyStorePassword("OBF:1sot1v961saj1v9i1v941sar1v9g1sox");
+        // May be overridden by setting the property -Dorg.eclipse.jetty.ssl.keypassword=<password>
+        sslContextFactory.setKeyManagerPassword("OBF:1sot1v961saj1v9i1v941sar1v9g1sox");
+        sslContextFactory.setCertAlias(THERMOSTAT_ALIAS);
 
-        httpConnector.setHost(listenAddress);
-        httpConnector.setPort(listenPort);
+        HttpConfiguration httpsConfig = new HttpConfiguration();
+        httpsConfig.setSecureScheme("https");
+        httpsConfig.setSecurePort(8443);
+        SecureRequestCustomizer src = new SecureRequestCustomizer();
+        httpsConfig.addCustomizer(src);
 
-        server.setConnectors(new Connector[]{httpConnector});
+        ServerConnector https = new ServerConnector(server,
+                new SslConnectionFactory(sslContextFactory,
+                        HttpVersion.HTTP_1_1.asString()),
+                new HttpConnectionFactory(httpsConfig));
+        return https;
     }
 
 }

@@ -80,7 +80,7 @@ public class JvmMemoryHttpHandler {
             Integer offset = offsetParam.getValue();
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
             MongoDataResultContainer execResult = mongoExecutor.execGetRequest(
-                    storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections);
+                    storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections, null);
 
             MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
             response.queryDocuments(execResult.getQueryDataResult());
@@ -112,7 +112,7 @@ public class JvmMemoryHttpHandler {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-            MongoDataResultContainer putExec = mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries);
+            mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries, null);
 
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
@@ -129,7 +129,7 @@ public class JvmMemoryHttpHandler {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-            mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body);
+            mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, null);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST).build();
@@ -145,7 +145,7 @@ public class JvmMemoryHttpHandler {
         try {
             ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-            MongoDataResultContainer delExec = mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries);
+            MongoDataResultContainer delExec = mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries, null);
 
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {

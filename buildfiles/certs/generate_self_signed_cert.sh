@@ -35,48 +35,18 @@
 # to do so, delete this exception statement from your version.
 #
 
-_find_thermostat_gateway_home() {
-  # Compute THERMOSTAT_GATEWAY_HOME by finding the (symlink-resolved) location of the
-  # currently executing code's parent dir. See
-  # http://stackoverflow.com/a/246128/3561275 for implementation details.
-  SOURCE="${BASH_SOURCE[0]}"
-  while [ -h "$SOURCE" ]; do
-    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
-    SOURCE="$(readlink "$SOURCE")"
-    [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE"
-  done
-  DIR="$(cd -P "$(dirname "$SOURCE")" && cd .. && pwd)"
-  echo "$DIR"
-}
+ALIAS="thermostat"
+VALIDITY_DAYS="365"
+KEYSTORE_FILE=$(echo "$(pwd)/../../distribution/src/cert/thermostat.jks")
 
-if [ "$(uname -s | cut -b1-6)" == "CYGWIN" ]; then
-  ##echo "Running under Cygwin"
-  export CYGWIN_MODE=1
+if [ -e ${KEYSTORE_FILE} ]; then
+  rm ${KEYSTORE_FILE}
+fi
+echo "Generating self signed cert with alias ${ALIAS} in ${KEYSTORE_FILE} ..."
+keytool -genkey -keyalg RSA -alias ${ALIAS} -keystore ${KEYSTORE_FILE} -validity ${VALIDITY_DAYS} -keysize 4096 < generate_in.txt > /dev/null 2>&1
+if [ $? -eq 0 ]; then
+  echo "Completed successfully."
 else
-  ##echo "Running under Linux"
-  export CYGWIN_MODE=0
+  echo "Failed."
+  exit 1
 fi
-
-if [[ "${THERMOSTAT_GATEWAY_HOME}" = "" ]]; then
-  THERMOSTAT_GATEWAY_HOME="$(_find_thermostat_gateway_home)"
-fi
-
-# on cygwin, convert to Windows format
-if [ $CYGWIN_MODE -eq 1 ]; then
-  THERMOSTAT_GATEWAY_HOME="`cygpath -w $THERMOSTAT_GATEWAY_HOME`"
-fi
-
-LOGGING_ARGS=()
-LOG_CONFIG_FILE="${THERMOSTAT_GATEWAY_HOME}/etc/logging.properties"
-if [ -f "${LOG_CONFIG_FILE}" ] ; then
-  if [ $CYGWIN_MODE -eq 1 ]; then
-    LOGGING_ARGS=( "-Djava.util.logging.config.file=`cygpath -w ${LOG_CONFIG_FILE}`" )
-  else
-    LOGGING_ARGS=( "-Djava.util.logging.config.file=${LOG_CONFIG_FILE}" )
-  fi
-fi
-
-THERMOSTAT_GATEWAY_LIBS=${THERMOSTAT_GATEWAY_HOME}/libs
-
-export THERMOSTAT_GATEWAY_HOME
-exec java -cp "${THERMOSTAT_GATEWAY_LIBS}/*" "${LOGGING_ARGS[@]}" com.redhat.thermostat.gateway.server.Start
