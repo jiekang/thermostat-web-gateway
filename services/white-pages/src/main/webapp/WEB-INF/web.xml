@@ -50,7 +50,7 @@
                 jersey.config.server.provider.packages
             </param-name>
             <param-value>
-                com.redhat.thermostat.wp.service,
+                com.redhat.thermostat.gateway.service.wp,
             </param-value>
         </init-param>
     </servlet>

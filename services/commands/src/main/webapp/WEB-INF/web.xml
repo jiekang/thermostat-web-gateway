@@ -48,7 +48,7 @@
           jersey.config.server.provider.packages
         </param-name>
         <param-value>
-          com.redhat.thermostat.service.commands.http.handlers,
+          com.redhat.thermostat.gateway.service.commands.http.handlers,
         </param-value>
       </init-param>
     </servlet>
@@ -58,7 +58,7 @@
     </servlet-mapping>
     <!-- Listener for setting up the websocket handlers -->
     <listener>
-      <listener-class>com.redhat.thermostat.service.commands.servlet.SocketRegistrationListener</listener-class>
+      <listener-class>com.redhat.thermostat.gateway.service.commands.servlet.SocketRegistrationListener</listener-class>
     </listener>
     <security-constraint>
       <web-resource-collection>

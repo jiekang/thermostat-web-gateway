@@ -48,7 +48,7 @@
                 jersey.config.server.provider.packages
             </param-name>
             <param-value>
-                com.redhat.thermostat.service.system.memory.http,
+                com.redhat.thermostat.gateway.service.system.memory.http,
             </param-value>
         </init-param>
     </servlet>
