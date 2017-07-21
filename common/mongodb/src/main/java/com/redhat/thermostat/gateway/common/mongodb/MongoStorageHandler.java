@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.system.cpu.mongo;
+package com.redhat.thermostat.gateway.common.mongodb;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
@@ -42,11 +42,13 @@ import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.excludeId;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
+import static com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters.buildAnd;
+import static com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters.buildEq;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
+import com.redhat.thermostat.gateway.common.mongodb.filters.MongoQuery;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -62,36 +64,21 @@ import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilde
 
 public class MongoStorageHandler {
 
+    private static final String SET_FIELD_NAME = "set";
+
     private final MongoResponseBuilder.Builder mongoResponseBuilder = new MongoResponseBuilder.Builder();
 
-    public String getMany(MongoCollection<Document> collection, Integer limit, Integer offset, String sort, String queries, String includes, String excludes) {
-        FindIterable<Document> documents;
-        if (queries != null) {
-            List<String> queriesList = Arrays.asList(queries.split(","));
-            final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
-            documents = collection.find(query);
-        } else {
-            documents = collection.find();
-        }
-
-        documents = buildProjection(documents, includes, excludes);
-
-        final Bson sortObject = MongoSortFilters.createSortObject(sort);
-        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
-
-        return mongoResponseBuilder.queryDocuments(documents).build();
+    public String getMany(MongoCollection<Document> collection, String queries, Integer limit, Integer offset, String sort, String includes, String excludes) {
+        final MongoQuery query = queries == null ? null : new MongoQuery(MongoRequestFilters.buildQueriesFilter(queries));
+        return getMany(collection, query, limit, offset, sort, includes, excludes);
     }
 
-    public String getOne(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String includes, String excludes) {
-        Bson query = eq(Fields.SYSTEM_ID, systemId);
-        FindIterable<Document> documents = collection.find(query);
-
+    public String getMany(MongoCollection<Document> collection, Bson query, Integer limit, Integer offset, String sort, String includes, String excludes) {
+        FindIterable<Document> documents = query == null ? collection.find() : collection.find(query);
         documents = buildProjection(documents, includes, excludes);
-
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
-        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit + offset).cursorType(CursorType.NonTailable);
-
-        return mongoResponseBuilder.queryDocuments(documents).build();
+        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
+        return mongoResponseBuilder.addQueryDocuments(documents).build();
     }
 
     private FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
@@ -108,43 +95,63 @@ public class MongoStorageHandler {
         return documents;
     }
 
-    public void addMany(MongoCollection<DBObject> collection, String body, String systemId) {
+    public void addSystemObjects(MongoCollection<DBObject> collection, String systemId, String body) {
         if (body.length() > 0) {
             List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
             for (DBObject o : inputList) {
-                o.put(Fields.SYSTEM_ID, systemId);
+                o.put(ThermostatFields.SYSTEM_ID, systemId);
             }
             collection.insertMany(inputList);
         }
     }
 
-    public void delete(MongoCollection<Document> collection, String systemId) {
-        Bson query = eq(Fields.SYSTEM_ID, systemId);
-        deleteDocuments(collection, query);
+    public void addJvmObjects(MongoCollection<DBObject> collection, String systemId, String jvmId, String body) {
+        if (body.length() > 0) {
+            List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
+            for (DBObject o : inputList) {
+                o.put(ThermostatFields.SYSTEM_ID, systemId);
+                o.put(ThermostatFields.JVM_ID, jvmId);
+            }
+            collection.insertMany(inputList);
+        }
     }
 
-    private void deleteDocuments(MongoCollection<Document> collection, Bson query) {
+    public void deleteMany(MongoCollection<Document> collection, Bson query) {
         collection.deleteMany(query);
     }
 
-    public void updateOne(MongoCollection<Document> collection, String body, String systemId, String queries) {
-        Bson baseQuery = eq(Fields.SYSTEM_ID, systemId);
+    public void updateOneSystemObject(MongoCollection<Document> collection, final String systemId, String queries, String body) {
+        Bson sysQuery = buildEq(ThermostatFields.SYSTEM_ID, systemId);
+        Bson query  = buildAnd(sysQuery, MongoRequestFilters.buildQueriesFilter(queries));
 
         BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
-        BasicDBObject setObject = (BasicDBObject) inputObject.get(Fields.SET);
-        if (setObject.containsField(Fields.SYSTEM_ID)) {
-            throw new UnsupportedOperationException("Updating " +  Fields.SYSTEM_ID + " fields is not allowed");
-        }
+        BasicDBObject setObject = (BasicDBObject) inputObject.get(SET_FIELD_NAME);
 
-        final List<String> queriesList;
-        if (queries != null) {
-            queriesList = Arrays.asList(queries.split(","));
-        } else {
-            queriesList = Collections.emptyList();
+        if (setObject.containsField(ThermostatFields.SYSTEM_ID)) {
+            throw new UnsupportedOperationException("Updating " + ThermostatFields.SYSTEM_ID + " field is not allowed");
         }
 
         final Bson fields = new Document("$set", setObject);
 
-        collection.updateMany(and(baseQuery, MongoRequestFilters.buildQueriesFilter(queriesList)), fields);
+        collection.updateMany(query, fields);
+    }
+
+    public void updateOneJvmObject(MongoCollection<Document> collection, final String systemId, final String jvmId, String queries, String body) {
+        Bson sysQuery = buildEq(ThermostatFields.SYSTEM_ID, systemId);
+        Bson jvmQuery = buildEq(ThermostatFields.JVM_ID, jvmId);
+        Bson query  = buildAnd(buildAnd(sysQuery, jvmQuery), MongoRequestFilters.buildQueriesFilter(queries));
+
+        BasicDBObject inputObject = (BasicDBObject) JSON.parse(body);
+        BasicDBObject setObject = (BasicDBObject) inputObject.get(SET_FIELD_NAME);
+
+        if (setObject.containsField(ThermostatFields.SYSTEM_ID)) {
+            throw new UnsupportedOperationException("Updating " + ThermostatFields.SYSTEM_ID + " field is not allowed");
+        }
+        if (setObject.containsField(ThermostatFields.JVM_ID)) {
+            throw new UnsupportedOperationException("Updating " + ThermostatFields.JVM_ID + " field is not allowed");
+        }
+        final Bson fields = new Document("$set", setObject);
+
+        collection.updateMany(query, fields);
     }
 }

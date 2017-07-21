@@ -36,6 +36,7 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.executor;
 
+import static com.mongodb.client.model.Projections.exclude;
 import static com.mongodb.client.model.Projections.excludeId;
 import static com.mongodb.client.model.Projections.fields;
 import static com.mongodb.client.model.Projections.include;
@@ -46,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.redhat.thermostat.gateway.common.mongodb.MongoStorageHandler;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -60,31 +62,23 @@ import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoExecutor {
     public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
-                                                   String sort, String queries, String projections,
+                                                   String sort, String queries, String includes, String excludes,
                                                    Set<String> realms) throws IOException {
-        return execGetRequest(collection, limit, offset, sort, buildClientQueries(queries), projections, realms);
+        return execGetRequest(collection, limit, offset, sort, buildClientQueries(queries), includes, excludes, realms);
     }
 
     public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
-                                                   String sort, List<String> queries, String projections,
+                                                   String sort, List<String> queries, String includes, String excludes,
                                                    Set<String> realms) {
         FindIterable<Document> documents = collection.find();
         MongoDataResultContainer queryDataContainer = new MongoDataResultContainer();
 
         Bson query = MongoRequestFilters.buildQuery(queries, realms);
         documents = documents.filter(query);
-
         long count = collection.count(query);
         queryDataContainer.setGetReqCount(count);
         queryDataContainer.setRemainingNumQueryDocuments((int) (count - (limit + offset)));
-
-        if (projections != null) {
-            List<String> projectionsList = Arrays.asList(projections.split(","));
-            documents = documents.projection(fields(include(projectionsList), excludeId()));
-        } else {
-            documents = documents.projection(excludeId());
-        }
-
+        documents = buildProjection(documents, includes, excludes);
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
         documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
         queryDataContainer.setQueryDataResult(documents);
@@ -157,7 +151,6 @@ public class MongoExecutor {
         return metaDataContainer;
     }
 
-
     private List<String> buildClientQueries(String queries) throws IOException {
         if (queries != null) {
             List<String> queriesList = Arrays.asList(queries.split(","));
@@ -171,5 +164,19 @@ public class MongoExecutor {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public static FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
+        if (excludes != null) {
+            List<String> excludesList = Arrays.asList(excludes.split(","));
+            documents = documents.projection(fields(exclude(excludesList), excludeId()));
+        } else if (includes != null) {
+            List<String> includesList = Arrays.asList(includes.split(","));
+            documents = documents.projection(fields(include(includesList), excludeId()));
+        } else {
+            documents = documents.projection(excludeId());
+        }
+
+        return documents;
     }
 }

@@ -21,7 +21,8 @@ paths:
         - $ref: '#/parameters/limit'
         - $ref: '#/parameters/offset'
         - $ref: '#/parameters/sort'
-        - $ref: '#/parameters/projection'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
         - $ref: '#/parameters/query'
         - $ref: '#/parameters/metadata'
       responses:
@@ -141,32 +142,49 @@ parameters:
     schema:
       $ref: '#/definitions/put-body'
   limit:
-    name: l
+    name: limit
     in: query
     description: Limit of items to return. Example '1'
     type: integer
   offset:
-    name: o
+    name: offset
     in: query
     description: Offset of items to return. Example '0'
     type: integer
   sort:
-    name: s
+    name: sort
     in: query
     description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?s=+a,-b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
     type: string
   query:
-    name: q
+    name: query
     in: query
     description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?q=a==b,c!=d'. Keys are fields in documents and use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
     type: string
-  projection:
-    name: p
+  include:
+    name: include
     in: query
-    description: Projection string. Comma separated list of fields to include in the response. Example '?p=a,b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    description: >-
+      Inclusion string. Comma separated list of fields to include in the
+      response. Example '?include=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'exclude' parameter. Overriden by
+      'exclude' parameter
     type: string
+    required: false
+  exclude:
+    name: exclude
+    in: query
+    description: >-
+      Exclusion string. Comma separated list of fields to exclude in the
+      response. Example '?exclude=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'include' parameter; takes
+      precedence over 'include' parameter
+    type: string
+    required: false
   metadata:
-    name: m
+    name: metadata
     type: boolean
     in: query
     description: "Metadata flag. If set to 'true', the subsequent request response will return metadata information. If set to 'false', such metadata information will be omitted."

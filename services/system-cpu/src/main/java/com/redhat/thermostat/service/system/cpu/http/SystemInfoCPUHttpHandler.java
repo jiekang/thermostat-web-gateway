@@ -37,6 +37,7 @@
 package com.redhat.thermostat.service.system.cpu.http;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -50,84 +51,65 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-
-import com.mongodb.DBObject;
-import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
-import com.redhat.thermostat.service.system.cpu.mongo.MongoStorageHandler;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 
 @Path("/")
 public class SystemInfoCPUHttpHandler {
-    private final MongoStorageHandler mongoStorageHandler = new MongoStorageHandler();
     private final String collectionName = "cpu-info";
+    private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
 
     @GET
-    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response getCPUInfo(@PathParam(Parameters.SYSTEM_ID) String systemId,
-                                  @QueryParam(Parameters.LIMIT) @DefaultValue("1") Integer limit,
-                                  @QueryParam(Parameters.OFFSET) @DefaultValue("0") Integer offset,
-                                  @QueryParam(Parameters.SORT) String sort,
-                                  @QueryParam(Parameters.INCLUDE) String includes,
-                                  @QueryParam(Parameters.EXCLUDE) String excludes,
-                                  @Context ServletContext context
-    ) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            String message = mongoStorageHandler.getOne(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, includes, excludes);
-            return Response.status(Response.Status.OK).entity(message).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+    public Response getCPUInfo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                               @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
+                               @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
+                               @QueryParam(RequestParameters.SORT) String sort,
+                               @QueryParam(RequestParameters.QUERY) String queries,
+                               @QueryParam(RequestParameters.INCLUDE) String includes,
+                               @QueryParam(RequestParameters.EXCLUDE) String excludes,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @Context ServletContext context,
+                               @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, limit, offset, sort, queries, includes, excludes, metadata);
     }
 
     @PUT
-    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response putCPUInfo(String body,
-                                  @PathParam(Parameters.SYSTEM_ID) String systemId,
-                                  @QueryParam(Parameters.QUERY) String queries,
-                                  @Context ServletContext context) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoStorageHandler.updateOne(storage.getDatabase().getCollection(collectionName), body, systemId, queries);
-            return Response.status(Response.Status.OK).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+                               @PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                               @QueryParam(RequestParameters.QUERY) String queries,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @Context ServletContext context,
+                               @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handlePutWithSystemId(httpServletRequest, context, systemId, queries, metadata, body);
     }
 
     @POST
-    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response postCPUInfo(String body,
-                                   @PathParam(Parameters.SYSTEM_ID) String systemId,
-                                   @Context ServletContext context) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoStorageHandler.addMany(storage.getDatabase().getCollection(collectionName, DBObject.class), body, systemId);
-            return Response.status(Response.Status.OK).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+                                @PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                @Context ServletContext context,
+                                @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handlePostWithSystemID(httpServletRequest, context, systemId, metadata, body);
     }
 
     @DELETE
-    @Path("/systems/{" + Parameters.SYSTEM_ID +"}")
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response deleteCPUInfo(@PathParam(Parameters.SYSTEM_ID) String systemId,
-                                     @QueryParam(Parameters.QUERY) String queries,
-                                     @Context ServletContext context) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            mongoStorageHandler.delete(storage.getDatabase().getCollection(collectionName), systemId);
-            return Response.status(Response.Status.OK).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+    public Response deleteCPUInfo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                                  @QueryParam(RequestParameters.QUERY) String queries,
+                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                  @Context ServletContext context,
+                                  @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handleDeleteWithSystemID(httpServletRequest, context, systemId, queries, metadata);
     }
 }

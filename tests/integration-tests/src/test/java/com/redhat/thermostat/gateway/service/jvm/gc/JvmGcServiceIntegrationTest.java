@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.bson.Document;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
@@ -58,7 +60,6 @@ import com.google.gson.reflect.TypeToken;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 
 public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
@@ -67,6 +68,14 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     private static final String gcUrl = baseUrl + "/" + serviceName + "/" + versionNumber;
     private final String data = "[{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }, { \"d\" : \"test3\"}," +
             "{\"e\" : \"test4\" }]";
+
+    private static final String QUERY_PREFIX = "query";
+    private static final String LIMIT_PREFIX = "limit";
+    private static final String SORT_PREFIX = "sort";
+    private static final String OFFSET_PREFIX = "offset";
+    private static final String METADATA_PREFIX = "metadata";
+    private static final String INCLUDE_PREFIX = "include";
+    private static final String IEXCLUDE_PREFIX = "exclude";
 
     public JvmGcServiceIntegrationTest() {
         super(serviceName + "/" + versionNumber, serviceName);
@@ -108,7 +117,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testGetLimitParam() throws InterruptedException, TimeoutException, ExecutionException {
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?l=2","{\"response\":[{\"a\":\"test\",\"b\":"+
+        makeHttpGetRequest(gcUrl + '?' + LIMIT_PREFIX + "=2","{\"response\":[{\"a\":\"test\",\"b\":"+
                 "\"test1\",\"c\":\"test2\"},{\"d\":\"test3\"}]}", 200);
     }
 
@@ -117,33 +126,33 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         String data ="[{\"a\":\"1\"}, {\"a\":\"2\"}]";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?l=3&s=-a","{\"response\":[{\"a\":\"2\"},{\"a\":"+
+        makeHttpGetRequest(gcUrl + '?' + LIMIT_PREFIX + "=2&" + SORT_PREFIX + "=-a","{\"response\":[{\"a\":\"2\"},{\"a\":"+
                 "\"1\"}]}", 200);
     }
 
     @Test
     public void testGetProjectParam() throws InterruptedException, TimeoutException, ExecutionException {
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?p=b,c","{\"response\":[{\"b\":\"test1\",\"c\":"+
+        makeHttpGetRequest(gcUrl + '?' + INCLUDE_PREFIX + "=b,c","{\"response\":[{\"b\":\"test1\",\"c\":"+
                 "\"test2\"}]}", 200);
     }
 
     @Test
     public void testGetOffsetParam() throws InterruptedException, TimeoutException, ExecutionException {
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?o=1","{\"response\":[{\"d\":\"test3\"}]}", 200);
+        makeHttpGetRequest(gcUrl + '?' + OFFSET_PREFIX + "=1","{\"response\":[{\"d\":\"test3\"}]}", 200);
     }
 
     @Test
     public void testGetQueryParam() throws InterruptedException, TimeoutException, ExecutionException {
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1","{\"response\":[{\"a\":\"test\",\"b\":"+
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1","{\"response\":[{\"a\":\"test\",\"b\":"+
                 "\"test1\",\"c\":\"test2\"}]}", 200);
     }
 
     @Test
     public void testPostJSON() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"?m=true","[{\"f1\":\"test\"}]","application/json",
+        makeHttpMethodRequest(HttpMethod.POST, '?' + METADATA_PREFIX + "=true","[{\"f1\":\"test\"}]","application/json",
                 "{\"response\":[{\"f1\":\"test\"}]}", 200);
     }
 
@@ -165,7 +174,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     @Test
     public void testNonExistentDataDelete() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.DELETE,"?q=nonExist==Null","","","", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE,'?' + QUERY_PREFIX + "=nonExist==Null","","","", 200);
     }
 
     @Test
@@ -173,7 +182,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         makeHttpMethodRequest(HttpMethod.POST,"","[{\"f1\":\"test\"}]","application/json",
                 "{\"response\":[{\"f1\":\"test\"}]}", 200);
 
-        makeHttpMethodRequest(HttpMethod.PUT,"?q=f1==test","{\"set\": {\"f1\":\"newdata\"}}",
+        makeHttpMethodRequest(HttpMethod.PUT,'?' + QUERY_PREFIX + "=f1==test","{\"set\": {\"f1\":\"newdata\"}}",
                 "application/json","{\"response\":[{\"f1\":\"newdata\"}]}", 200);
 
         makeHttpMethodRequest(HttpMethod.DELETE,"?q=f1==test","","","", 200);
@@ -189,10 +198,10 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=1&l=1&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}],"+
                 "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
-                "\"next\":\"" + gcUrl + "?o\\u003d1\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d1\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX  +"\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&l=1", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", expectedResponse, 200);
     }
 
     @Test
@@ -205,11 +214,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=2&l=1&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d2\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=1", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
     @Test
@@ -223,11 +232,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=5&l=1&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d1\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=3&l=2", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=3", expectedResponse, 200);
     }
 
     @Test
@@ -240,11 +249,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=2&l=1&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d2\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=1&l=1", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1&" + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
     @Test
@@ -258,11 +267,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=3&l=2&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"b\":\"test1\"},{\"e\":\"test4\",\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":2,\"count\":6,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\\u0026o\\u003d0\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d3\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d3\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=1&l=2", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
     @Test
@@ -277,11 +286,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=5&l=1&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d1\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=3&l=2", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=3", expectedResponse, 200);
     }
 
     @Test
@@ -295,11 +304,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=4&l=2&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":2,\"count\":6,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d4\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=2", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=2", expectedResponse, 200);
     }
 
     @Test
@@ -314,10 +323,10 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=4&l=2&q===test1&m=true"}}
         String expectedResponse ="{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":2,\"count\":6,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
+            "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d4\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=2", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=2", expectedResponse, 200);
     }
 
     @Test
@@ -333,10 +342,10 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         String expectedResponse ="{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},"+
                 "{\"b\":\"test1\"},{\"b\":\"test1\"}],"+
                 "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
-                "\"prev\":\"" + gcUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\","+
-                "\"next\":\"" + gcUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + gcUrl + "?" +QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
         makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
-        makeHttpGetRequest(gcUrl +"?q=b==test1&m=true&o=2&l=3", expectedResponse, 200);
+        makeHttpGetRequest(gcUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=3&" + OFFSET_PREFIX + "=2", expectedResponse, 200);
     }
 
     @Test
@@ -398,7 +407,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         String updateString = "{\"set\" : {\"item\" : 5}}";
         StringContentProvider stringContentProvider = new StringContentProvider(updateString, "UTF-8");
-        ContentResponse response = client.newRequest(gcUrl).param("q", "realms==[\"a\"]")
+        ContentResponse response = client.newRequest(gcUrl).param(RequestParameters.QUERY, "realms==[\"a\"]")
                 .method(HttpMethod.PUT).content(stringContentProvider, "application/json")
                 .send();
         assertEquals(400, response.getStatus());
@@ -466,7 +475,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         String expected = "{\"response\":[{\"item\":1.0}]}";
 
-        makeHttpGetRequest(gcUrl + "?p=realms,item",expected, 200);
+        makeHttpGetRequest(gcUrl + "?" + RequestParameters.INCLUDE + "=realms,item",expected, 200);
     }
 
     @Test
@@ -481,7 +490,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         collection.insertMany(insertDocuments);
 
         ContentResponse response = client.newRequest(gcUrl)
-                .param("q", "realms==[\"a\"]").method(HttpMethod.GET).send();
+                .param(RequestParameters.QUERY, "realms==[\"a\"]").method(HttpMethod.GET).send();
 
         assertEquals(400, response.getStatus());
     }
@@ -517,7 +526,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         collection.insertMany(insertDocuments);
 
         ContentResponse response = client.newRequest(gcUrl)
-                .param("q", "realms==[\"a\",\"b\"]").method(HttpMethod.DELETE)
+                .param(RequestParameters.QUERY, "realms==[\"a\",\"b\"]").method(HttpMethod.DELETE)
                 .send();
         assertEquals(400, response.getStatus());
 

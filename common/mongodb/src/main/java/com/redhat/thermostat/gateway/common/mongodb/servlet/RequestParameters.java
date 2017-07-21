@@ -34,15 +34,20 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.systems.mongo;
+package com.redhat.thermostat.gateway.common.mongodb.servlet;
 
-class Fields {
-    static final String SYSTEM_ID = "systemId";
+public interface RequestParameters {
+    String SYSTEM_ID = "systemId";
+    String JVM_ID = "jvmId";
 
-    static final String SET = "set";
-    static final String LAST_UPDATED = "lastUpdated";
-    static final String STOP_TIME = "stopTime";
+    String METADATA = "metadata";
+    String SORT = "sort";
+    String QUERY = "query";
+    String OFFSET = "offset";
+    String LIMIT = "limit";
+    String INCLUDE = "include";
+    String EXCLUDE = "exclude";
 
-    static final String RESPONSE = "response";
-    static final String SYSTEMS = "systems";
+    String TIMESTAMP = "timeStamp";
+    String ALIVE_ONLY = "aliveOnly";
 }

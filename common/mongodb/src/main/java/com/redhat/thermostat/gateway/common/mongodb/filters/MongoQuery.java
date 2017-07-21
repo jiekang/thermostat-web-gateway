@@ -34,11 +34,22 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.system.memory.mongo;
+package com.redhat.thermostat.gateway.common.mongodb.filters;
 
-class Fields {
-    static final String SYSTEM_ID = "systemId";
-    static final String SET = "set";
-    static final String LAST_UPDATED = "lastUpdated";
-    static final String RESPONSE = "response";
+import org.bson.BsonDocument;
+import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
+
+public class MongoQuery implements Bson {
+
+    private final Bson bson;
+
+    public MongoQuery(Bson bson) {
+        this.bson = bson;
+    }
+
+    @Override
+    public <TDocument> BsonDocument toBsonDocument(Class<TDocument> aClass, CodecRegistry codecRegistry) {
+        return bson.toBsonDocument(aClass, codecRegistry);
+    }
 }

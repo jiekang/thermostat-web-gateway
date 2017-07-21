@@ -34,17 +34,15 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.service.system.network.http;
+package com.redhat.thermostat.service.jvms.mongo;
 
-class Parameters {
-    static final String SYSTEM_ID = "systemId";
+import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 
-    static final String SORT = "sort";
-    static final String QUERY = "query";
-    static final String OFFSET = "offset";
-    static final String LIMIT = "limit";
-    static final String INCLUDE = "include";
-    static final String EXCLUDE = "exclude";
+public interface StorageFields extends ThermostatFields {
 
-    static final String TIMESTAMP = "timeStamp";
+    String LAST_UPDATED = "lastUpdated";
+    String STOP_TIME = "stopTime";
+
+    String RESPONSE = "response";
+    String JVMS = "jvms";
 }

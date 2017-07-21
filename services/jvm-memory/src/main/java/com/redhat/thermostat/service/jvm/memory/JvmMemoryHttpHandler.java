@@ -50,106 +50,58 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import com.mongodb.DBObject;
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
-import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
-import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
-import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 
 @Path("/")
 public class JvmMemoryHttpHandler {
-    private final MongoExecutor mongoExecutor = new MongoExecutor();
-    private final String collectionName = "jvm-memory";
+    private static final String collectionName = "jvm-memory";
+    private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
 
     @GET
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response getJvmMemory(@QueryParam("l") @DefaultValue("1") Integer limit,
-                                 @QueryParam("o") @DefaultValue("0") OffsetParameter offsetParam,
-                                 @QueryParam("s") String sort,
-                                 @QueryParam("q") String queries,
-                                 @QueryParam("p") String projections,
-                                 @QueryParam("m") @DefaultValue("false") Boolean metadata,
+    public Response getJvmMemory(@QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
+                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offsetParam,
+                                 @QueryParam(RequestParameters.SORT) String sort,
+                                 @QueryParam(RequestParameters.QUERY) String queries,
+                                 @QueryParam(RequestParameters.INCLUDE) String includes,
+                                 @QueryParam(RequestParameters.EXCLUDE) String excludes,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
                                  @Context ServletContext context,
-                                 @Context HttpServletRequest requestInfo) {
-        try {
-            Integer offset = offsetParam.getValue();
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            MongoDataResultContainer execResult = mongoExecutor.execGetRequest(
-                    storage.getDatabase().getCollection(collectionName), limit, offset, sort, queries, projections, null);
-
-            MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
-            response.queryDocuments(execResult.getQueryDataResult());
-            if (metadata) {
-                MongoMetaDataResponseBuilder.MetaBuilder metaDataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
-
-                MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(limit, offset, sort, queries,
-                        projections, requestInfo, execResult);
-
-                metaDataGenerator.setDocAndPayloadCount(metaDataResponse);
-                metaDataGenerator.setPrev(metaDataResponse);
-                metaDataGenerator.setNext(metaDataResponse);
-
-                response.metaData(metaDataResponse.build());
-            }
-            return Response.status(Response.Status.OK).entity(response.build()).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+                                 @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handleGet(httpServletRequest, context, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
     }
 
     @PUT
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response putJvmMemory(String body,
-                                 @QueryParam("q") String queries,
-                                 @QueryParam("m") @DefaultValue("false") String metadata,
-                                 @Context ServletContext context) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-
-            mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries, null);
-
-            return Response.status(Response.Status.OK).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+                                 @QueryParam(RequestParameters.QUERY) String queries,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @Context ServletContext context,
+                                 @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handlePut(httpServletRequest, context, queries, metadata, body);
     }
 
     @POST
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response postJvmMemory(String body,
-                                  @QueryParam("m") @DefaultValue("false") String metadata,
-                                  @Context ServletContext context) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-
-            mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, null);
-            return Response.status(Response.Status.OK).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                  @Context ServletContext context,
+                                  @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handlePost(httpServletRequest, context, metadata, body);
     }
 
     @DELETE
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response deleteJvmMemory(@QueryParam("q") String queries,
-                                    @QueryParam("m") @DefaultValue("false") String metadata,
-                                    @Context ServletContext context) {
-        try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-
-            MongoDataResultContainer delExec = mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries, null);
-
-            return Response.status(Response.Status.OK).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
-        }
+    public Response deleteJvmMemory(@QueryParam(RequestParameters.QUERY) String queries,
+                                    @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                    @Context ServletContext context,
+                                    @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handleDelete(httpServletRequest, context, queries, metadata);
     }
 }

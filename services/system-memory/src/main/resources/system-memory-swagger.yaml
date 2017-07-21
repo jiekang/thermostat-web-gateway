@@ -1,7 +1,7 @@
 swagger: '2.0'
 info:
   version: 0.0.1
-  title: Thermostat Web Gateway Memory Info API
+  title: Thermostat Web Gateway System Memory Info API
   license:
     name: GPL v2 with Classpath Exception
     url: 'http://www.gnu.org/licenses'
@@ -154,7 +154,7 @@ parameters:
       Inclusion string. Comma separated list of fields to include in the
       response. Example '?include=a,b' Fields use dot notation for embedded
       documents. Example 'outer.inner' refers to field inner contained in field
-      outer. Cannot be used in combination with 'exclude' parameter Overriden by
+      outer. Cannot be used in combination with 'exclude' parameter. Overriden by
       'exclude' parameter
     type: string
     required: false
