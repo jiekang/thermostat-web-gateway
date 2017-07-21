@@ -78,7 +78,6 @@
         <license.skip>false</license.skip>
 
         <maven.itest.skip>false</maven.itest.skip>
-        <maven.ptest.skip>true</maven.ptest.skip>
 
         <!-- Intentionally empty. See java-7 profile -->
         <surefire.argline></surefire.argline>

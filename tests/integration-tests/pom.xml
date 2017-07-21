@@ -60,7 +60,13 @@
                     <execution>
                         <configuration>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
-                            <skip>${maven.itest.skip}</skip>
+                            <skipITs>${maven.itest.skip}</skipITs>
+                            <environmentVariables>
+                                <THERMOSTAT_GATEWAY_HOME>${project.build.directory}/../../../distribution/target/image</THERMOSTAT_GATEWAY_HOME>
+                            </environmentVariables>
+                            <includes>
+                                <include>**/*Test.java</include>
+                            </includes>
                         </configuration>
                         <goals>
                             <goal>integration-test</goal>
@@ -73,9 +79,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <environmentVariables>
-                        <THERMOSTAT_GATEWAY_HOME>${project.build.directory}/../../../distribution/target/image</THERMOSTAT_GATEWAY_HOME>
-                    </environmentVariables>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
             <plugin>
