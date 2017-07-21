@@ -39,6 +39,7 @@ package com.redhat.thermostat.service.commands.socket;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeUnit;
 
 import javax.websocket.PongMessage;
 import javax.websocket.Session;
@@ -51,13 +52,20 @@ import com.redhat.thermostat.service.commands.channel.model.WebSocketResponse;
 
 class CommandChannelAgentSocket extends CommandChannelSocket {
 
+    private static final long SOCKET_SESSION_IDLE_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
     private static final String UNKNOWN_PAYLOAD = "UNKNOWN";
     private static final String AGENT_PROVIDER_PREFIX = "thermostat-commands-provider-";
-    private final long socketTimeout;
 
     CommandChannelAgentSocket(String id, Session session) {
         super(id, session);
-        this.socketTimeout = session.getMaxIdleTimeout();
+        // Be sure to have the socket timeout the same as on the
+        // agent side. Otherwise the agent socket might
+        // time out. Note that the time period upon
+        // which we will send ping messages is relative to the
+        // configured socket timeout. It must be strictly less than
+        // the used socket timeout on both sides. This ensures that
+        // the agent socket does not close on us and is kept alive.
+        session.setMaxIdleTimeout(SOCKET_SESSION_IDLE_TIMEOUT);
     }
 
     @Override
@@ -70,14 +78,14 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
         //        connects in that window it will get an error back,
         //        believing that the agent it wants to talk to has not
         //        connected.
-        AgentSocketsRegistry reg = AgentSocketsRegistry.getInstance(socketTimeout);
+        AgentSocketsRegistry reg = AgentSocketsRegistry.getInstance(SOCKET_SESSION_IDLE_TIMEOUT);
         reg.addSocket(agentId, this.session);
     }
 
     @Override
     public void onClose(int closeCode, String reason) {
         super.onClose(closeCode, reason);
-        AgentSocketsRegistry reg = AgentSocketsRegistry.getInstance(socketTimeout);
+        AgentSocketsRegistry reg = AgentSocketsRegistry.getInstance(SOCKET_SESSION_IDLE_TIMEOUT);
         reg.removeSocket(agentId);
     }
 
