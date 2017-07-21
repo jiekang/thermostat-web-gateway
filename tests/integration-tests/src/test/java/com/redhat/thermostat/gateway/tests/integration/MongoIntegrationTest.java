@@ -75,7 +75,7 @@ public class MongoIntegrationTest extends IntegrationTest {
     private static void setupMongoCredentials() throws IOException, InterruptedException {
         Path mongoSetup = distributionImage.resolve("etc/mongo-dev-setup.js");
 
-        ProcessBuilder processBuilder = new ProcessBuilder().command("mongo", mongodTestUtil.listenAddress, mongoSetup.toAbsolutePath().toString()).inheritIO();
+        ProcessBuilder processBuilder = new ProcessBuilder().command("mongo", mongodTestUtil.listenAddress, mongoSetup.toAbsolutePath().toString());
         Process mongoProcess = processBuilder.start();
         mongoProcess.waitFor();
     }

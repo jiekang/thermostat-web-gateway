@@ -48,7 +48,7 @@
                 jersey.config.server.provider.packages
             </param-name>
             <param-value>
-                com.redhat.thermostat.service.jvm.gc,
+                com.redhat.thermostat.gateway.service.jvm.gc,
             </param-value>
         </init-param>
     </servlet>

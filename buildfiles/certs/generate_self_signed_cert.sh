@@ -35,9 +35,21 @@
 # to do so, delete this exception statement from your version.
 #
 
+if [ "$(uname -s | cut -b1-6)" == "CYGWIN" ]; then
+  ##echo "Running under Cygwin"
+  export CYGWIN_MODE=1
+else
+  ##echo "Running under Linux"
+  export CYGWIN_MODE=0
+fi
+
 ALIAS="thermostat"
 VALIDITY_DAYS="365"
 KEYSTORE_FILE=$(echo "$(pwd)/../../distribution/src/cert/thermostat.jks")
+
+if [ $CYGWIN_MODE -eq 1 ]; then
+    KEYSTORE_FILE=$(cygpath -w -p "KEYSTORE_FILE")
+fi
 
 if [ -e ${KEYSTORE_FILE} ]; then
   rm ${KEYSTORE_FILE}

@@ -42,6 +42,7 @@ import static org.mockito.Mockito.when;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,13 +57,13 @@ public class MongoMetaDataGeneratorTest {
     public void setup() {
         HttpServletRequest requestInfo = mock(HttpServletRequest.class);
         when(requestInfo.getRequestURL()).thenReturn(new StringBuffer("127.0.0.1:8080/base/"));
-        when(requestInfo.getQueryString()).thenReturn("l=2&o=2&m=true");
+        when(requestInfo.getQueryString()).thenReturn(RequestParameters.LIMIT + "=2&" + RequestParameters.OFFSET + "=2&" + RequestParameters.METADATA + "=true");
 
         MongoDataResultContainer container = new MongoDataResultContainer();
         container.setRemainingNumQueryDocuments(1);
         container.setGetReqCount(4);
 
-        fullGenerator = new MongoMetaDataGenerator(2, 2, "", "test1==b", "", requestInfo, container);
+        fullGenerator = new MongoMetaDataGenerator(2, 2, "", "test1==b", "", "", requestInfo, container);
         response = new MongoMetaDataResponseBuilder.MetaBuilder();
     }
 
@@ -81,7 +82,7 @@ public class MongoMetaDataGeneratorTest {
         String output = response.build().toString();
 
         // {"prev":"127.0.0.1:8080/base/?m=true&l=2&o=0"}
-        String expected = "{\"prev\":\"127.0.0.1:8080/base/?m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"}";
+        String expected = "{\"prev\":\"127.0.0.1:8080/base/?" + RequestParameters.METADATA + "\\u003dtrue\\u0026" + RequestParameters.LIMIT + "\\u003d2\\u0026" + RequestParameters.OFFSET + "\\u003d0\"}";
 
         assertEquals(expected, output);
     }
@@ -92,7 +93,7 @@ public class MongoMetaDataGeneratorTest {
         String output = response.build().toString();
 
         // {"payloadCount":1,"next":"127.0.0.1:8080/base/?o=4&l=1&m=true"}//{"payloadCount":1,"next":"127.0.0.1:8080/base/?o=4&l=1&m=true"}
-        String expected = "{\"payloadCount\":1,\"next\":\"127.0.0.1:8080/base/?o\\u003d4\\u0026l\\u003d1\\u0026m\\u003dtrue\"}";
+        String expected = "{\"payloadCount\":1,\"next\":\"127.0.0.1:8080/base/?offset\\u003d4\\u0026limit\\u003d1\\u0026" + RequestParameters.METADATA + "\\u003dtrue\"}";
 
         assertEquals(expected, output);
     }

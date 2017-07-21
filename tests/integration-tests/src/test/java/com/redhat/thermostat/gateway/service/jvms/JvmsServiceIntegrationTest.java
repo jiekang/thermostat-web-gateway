@@ -49,6 +49,7 @@ import org.junit.Test;
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 
 public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
+
     private static final String jvmsUrl = baseUrl + "/jvms/0.0.1";
 
     private final String postData = "[{ \"agentId\" : \"aid\", \"jvmId\" : \"jid1\", \"jvmPid\" : 1, \"startTime\" :" +

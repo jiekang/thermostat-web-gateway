@@ -36,23 +36,31 @@
 
 package com.redhat.thermostat.gateway.service.jvm.memory;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
-import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
 
     private static final String serviceName = "jvm-memory";
     private static final String versionNumber = "0.0.2";
-    private static final String memoryUrl = baseUrl + "/" + serviceName + "/" + versionNumber;
+
+    private static final String QUERY_PREFIX = "query";
+    private static final String LIMIT_PREFIX = "limit";
+    private static final String SORT_PREFIX = "sort";
+    private static final String OFFSET_PREFIX = "offset";
+    private static final String METADATA_PREFIX = "metadata";
+    private static final String INCLUDE_PREFIX = "include";
+
+    private final String returnedUrl;
 
     public JvmMemoryServiceIntegrationTest() {
         super(serviceName + "/" + versionNumber, serviceName);
+        this.returnedUrl = resourceUrl;
     }
 
     @Test
@@ -72,11 +80,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedFirst = "{\"response\":[{\"a\":\"b\",\"c\":\"d\",\"e\":\"f\"}]}";
         String expectedAll = "{\"response\":[{\"a\":\"b\",\"c\":\"d\",\"e\":\"f\"},{\"x\":\"y\"},{\"z\":\"z\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"b\",\"c\":\"d\",\"e\":\"f\"},{\"x\":\"y\"},{\"z\":\"z\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedAll);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=a==b", 200, expectedFirst);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=c==d", 200, expectedFirst);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=a==b,c==d", 200, expectedFirst);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=a==b,c==none", 200, HttpTestUtil.EMPTY_RESPONSE);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedAll);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=a==b", 200, expectedFirst);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=c==d", 200, expectedFirst);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=a==b,c==d", 200, expectedFirst);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=a==b,c==none", 200, HttpTestUtil.EMPTY_RESPONSE);
     }
 
     @Test
@@ -84,11 +92,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedAll = "{\"response\":[{\"a\":\"b\"},{\"c\":\"d\"}]}";
         String expectedAmpersand = "{\"response\":[{\"a\":\"b\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"b\"},{\"c\":\"d\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedAll);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedAll);
 
         // Since q=a==b&c==d means "q= 'a==b'" and "c= '=d'", we should only
         // get 'a: b' back.
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=a==b&c==d", 200, expectedAmpersand);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=a==b&c==d", 200, expectedAmpersand);
 
         // The following should find the one with multiple matches, not the
         // single match. This means we will evaluate u==v only, and should get
@@ -96,8 +104,8 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedSingleMatch = "{\"response\":[{\"u\":\"v\",\"x\":\"y\"}]}";
         String expectedMultiMatch = "{\"response\":[{\"u\":\"v\",\"x\":\"y\"},{\"u\":\"v\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"x\":\"y\"},{\"u\":\"v\",\"x\":\"y\"},{\"u\":\"v\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=u==v&q=x==y", 200, expectedSingleMatch);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=u==v&q=x==y&l=5", 200, expectedMultiMatch);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=u==v&" + QUERY_PREFIX + "=x==y", 200, expectedSingleMatch);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=u==v&" + QUERY_PREFIX + "=x==y&" + LIMIT_PREFIX + "=5", 200, expectedMultiMatch);
     }
 
     @Test
@@ -105,7 +113,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedResponse = "{\"response\":[{\"fakedata\":\"test\"},{\"new\":\"data\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"new\":\"data\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedResponse);
     }
 
     @Test
@@ -114,7 +122,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedDataAfterPut = "{\"response\":[{\"a\":\"b\",\"x\":\"y\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"b\"},{\"a\":\"c\"}]");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataBeforePut);
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?q=a==b", "{\"set\":{\"x\":\"y\"}}", 200);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?" + QUERY_PREFIX + "=a==b", "{\"set\":{\"x\":\"y\"}}", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataAfterPut);
     }
 
@@ -125,20 +133,20 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedAllDataAfterPut = "{\"response\":[{\"a\":\"c\"},{\"x\":\"y\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"b\"},{\"x\":\"y\"}]");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataBeforePut);
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?q=a==b", "{\"set\":{\"a\":\"c\"}}", 200);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?" + QUERY_PREFIX + "=a==b", "{\"set\":{\"a\":\"c\"}}", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataAfterPut);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedAllDataAfterPut);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedAllDataAfterPut);
     }
 
     @Test
     public void testDeleteProperlyDeletesData() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, resourceUrl + "?q=fakedata==test", 200);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, resourceUrl + "?" + QUERY_PREFIX + "=fakedata==test", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, HttpTestUtil.EMPTY_RESPONSE);
 
         String expectedAfterDeletion = "{\"response\":[{\"c\":\"d\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, resourceUrl + "?q=a==b", 200);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, resourceUrl + "?" + QUERY_PREFIX + "=a==b", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedAfterDeletion);
     }
 
@@ -147,7 +155,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedDataResponse = "{\"response\":[{\"fakedata\":\"test\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataResponse);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, resourceUrl + "?q=nosuchkey==", 200);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, resourceUrl + "?" + QUERY_PREFIX + "=nosuchkey==", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataResponse);
     }
 
@@ -160,10 +168,10 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testPostAndPutWithInvalidData() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedDataResponse = "{\"response\":[{\"fakedata\":\"test\"}]}";
-        String urlQuery = resourceUrl + "?q=nosuchkey==nosuchvalue";
+        String urlQuery = resourceUrl + "?" + QUERY_PREFIX + "=nosuchkey==nosuchvalue";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
         HttpTestUtil.testContentResponse(client, HttpMethod.PUT, urlQuery, "{\"set\":{\"fakedata\":\"somethingnew\"}}", 200);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedDataResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedDataResponse);
     }
 
     @Test
@@ -171,33 +179,33 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedDataResponse = "{\"response\":[{\"fakedata\":\"test\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"fakedata\":\"test\"}]");
         HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl, "{\"set\":{\"fakedata\":\"test\"}}", 200);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedDataResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedDataResponse);
     }
 
     @Test
     public void testPutDifferentData() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedDataResponse = "{\"response\":[{\"a\":\"b\",\"c\":\"d\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"b\"}]");
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?q=a==b", "{\"set\":{\"c\":\"d\"}}", 200);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedDataResponse);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?" + QUERY_PREFIX + "=a==b", "{\"set\":{\"c\":\"d\"}}", 200);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedDataResponse);
     }
 
     @Test
     public void testChangeDataWithPutMultipleTimes() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedData = "{\"response\":[{\"a\":\"a2\",\"b\":\"b2\",\"c\":\"c2\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"a2\"}]");
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?q=a==a2", "{\"set\":{\"b\":\"b2\"}}", 200);
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?q=a==a2", "{\"set\":{\"c\":\"c2\"}}", 200);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?" + QUERY_PREFIX + "=a==a2", "{\"set\":{\"b\":\"b2\"}}", 200);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?" + QUERY_PREFIX + "=a==a2", "{\"set\":{\"c\":\"c2\"}}", 200);
 
         // It won't find the target from the query, so the addition should not occur to any object.
-        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?q=a==none", "{\"set\":{\"d\":\"d2\"}}", 200);
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, resourceUrl + "?" + QUERY_PREFIX + "=a==none", "{\"set\":{\"d\":\"d2\"}}", 200);
 
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5", 200, expectedData);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5", 200, expectedData);
     }
 
     @Test
     public void testGetWithBadUrlQuery() throws InterruptedException, TimeoutException, ExecutionException {
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=2", 400);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=2", 400);
     }
 
     @Test
@@ -206,23 +214,23 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedDataAll = "{\"response\":[{\"a\":\"a2\"},{\"b\":\"b2\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"a2\"},{\"b\":\"b2\"}]");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl, 200, expectedDataOne);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=2", 200, expectedDataAll);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=2", 200, expectedDataAll);
     }
 
     @Test
     public void testQueryOffset() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedOffsetRestOfData = "{\"response\":[{\"b\":\"2\"},{\"c\":\"3\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"1\"},{\"b\":\"2\"},{\"c\":\"3\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?o=1", 200, "{\"response\":[{\"b\":\"2\"}]}");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?o=3", 200, HttpTestUtil.EMPTY_RESPONSE);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=5&o=1", 200, expectedOffsetRestOfData);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + OFFSET_PREFIX + "=1", 200, "{\"response\":[{\"b\":\"2\"}]}");
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + OFFSET_PREFIX + "=3", 200, HttpTestUtil.EMPTY_RESPONSE);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=5&" + OFFSET_PREFIX + "=1", 200, expectedOffsetRestOfData);
     }
 
     @Test
     public void testNegativeOffsetQuery() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"1\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?o=-1", 400);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?o=-582", 400);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + OFFSET_PREFIX + "=-1", 400);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + OFFSET_PREFIX + "=-582", 400);
     }
 
     @Test
@@ -230,15 +238,15 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedGet = "{\"response\":[{\"a\":1},{\"a\":2}]}";
         String expectedGetReverse = "{\"response\":[{\"a\":2},{\"a\":1}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":1},{\"a\":2}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=10&s=+a", 200, expectedGet);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?l=10&s=-a", 200, expectedGetReverse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=10&" + SORT_PREFIX + "=+a", 200, expectedGet);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + LIMIT_PREFIX + "=10&" + SORT_PREFIX + "=-a", 200, expectedGetReverse);
     }
 
     @Test
     public void testQueryProjection() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedGet = "{\"response\":[{\"b\":\"2\",\"c\":\"3\"}]}";
         HttpTestUtil.addRecords(client, resourceUrl, "[{\"a\":\"1\",\"b\":\"2\",\"c\":\"3\"}]");
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?p=b,c", 200, expectedGet);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + INCLUDE_PREFIX + "=b,c", 200, expectedGet);
     }
 
     @Test
@@ -251,10 +259,10 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=1&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"a\":\"test\",\"b\":\"test1\"," +
                 "\"c\":\"test2\"}],\"metaData\":{\"payloadCount\":1,\"count\":3," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d1\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d1\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&l=1", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", 200, expectedResponse);
     }
 
     @Test
@@ -267,11 +275,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=2&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":3," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d2\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=1", 200, expectedResponse);
     }
 
     @Test
@@ -286,12 +294,12 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"e\":\"test4\"," +
                 "\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":5," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue" +
-                "\\u0026l\\u003d1\\u0026o\\u003d0\",\"next\":\"" + memoryUrl + "?o\\u003d4" +
-                "\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue" +
+                "\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + OFFSET_PREFIX + "\\u003d0\",\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d4" +
+                "\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1&l=3", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=1&" + LIMIT_PREFIX + "=3", 200, expectedResponse);
     }
 
     @Test
@@ -306,11 +314,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=5&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":6," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d1\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=3&l=2", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=3&" + LIMIT_PREFIX + "=2", 200, expectedResponse);
     }
 
     @Test
@@ -324,11 +332,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=2&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":3," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d2\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d2\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1&l=1", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=1&" + LIMIT_PREFIX + "=1", 200, expectedResponse);
     }
 
     @Test
@@ -343,11 +351,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=3&l=2&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"e\":\"test4\"," +
                 "\"b\":\"test1\"}],\"metaData\":{\"payloadCount\":2,\"count\":6," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d1\\u0026o\\u003d0\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d3\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + OFFSET_PREFIX + "\\u003d0\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d3\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=1&l=2", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=1&" + LIMIT_PREFIX + "=2", 200, expectedResponse);
     }
 
     @Test
@@ -362,11 +370,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=5&l=1&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":6," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d1\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d1\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=3&l=2", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=3&" +LIMIT_PREFIX + "=2", 200, expectedResponse);
     }
 
     @Test
@@ -380,11 +388,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=4&l=2&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":2,\"count\":6," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d4\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=2&l=2", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=2&" + LIMIT_PREFIX + "=2", 200, expectedResponse);
     }
 
     @Test
@@ -399,11 +407,11 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         // "next":"http://127.0.0.1:30000/jvm-memory/0.0.2?o=4&l=2&q===test1&m=true"}}
         String expectedResponse = "{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":2,\"count\":6," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d4\\u0026l\\u003d2\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d4\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=2&l=2", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=2&" + LIMIT_PREFIX + "=2", 200, expectedResponse);
     }
 
     @Test
@@ -419,10 +427,10 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         String expectedResponse = "{\"response\":[{\"e\":\"test4\",\"b\":\"test1\"}," +
                 "{\"b\":\"test1\"},{\"b\":\"test1\"}]," +
                 "\"metaData\":{\"payloadCount\":1,\"count\":6," +
-                "\"prev\":\"" + memoryUrl + "?q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\\u0026l\\u003d2\\u0026o\\u003d0\"," +
-                "\"next\":\"" + memoryUrl + "?o\\u003d5\\u0026l\\u003d1\\u0026q\\u003db\\u003d\\u003dtest1\\u0026m\\u003dtrue\"}}";
+                "\"prev\":\"" + returnedUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\"," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
         HttpTestUtil.addRecords(client, resourceUrl, data);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?q=b==test1&m=true&o=2&l=3", 200, expectedResponse);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, resourceUrl + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=2&" + LIMIT_PREFIX + "=3", 200, expectedResponse);
     }
 }

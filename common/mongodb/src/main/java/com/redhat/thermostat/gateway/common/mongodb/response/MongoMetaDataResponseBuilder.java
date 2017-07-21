@@ -38,6 +38,7 @@ package com.redhat.thermostat.gateway.common.mongodb.response;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 
 /*
  *  Builds the appropriate metadata for the response after executing the request's MongoDB Query.
@@ -123,7 +124,7 @@ public class MongoMetaDataResponseBuilder {
             StringBuilder queryString = new StringBuilder();
             String sep = "";
             for (String arg : URLQueryPath) {
-                if (!(arg.contains("limit") || arg.contains("offset") || arg.contains("o") || arg.contains("l"))) {
+                if (!(arg.contains(RequestParameters.LIMIT) || arg.contains(RequestParameters.OFFSET))) {
                     queryString.append(sep).append(arg);
                     sep = "&";
                 }

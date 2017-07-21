@@ -38,6 +38,7 @@ package com.redhat.thermostat.gateway.common.mongodb.response;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 
 public class MongoMetaDataGenerator {
@@ -46,18 +47,20 @@ public class MongoMetaDataGenerator {
     private final Integer offset;
     private final String sort;
     private final String queries;
-    private final String projections;
+    private final String includes;
+    private final String excludes;
     private final MongoDataResultContainer execResult;
     private final HttpServletRequest requestInfo;
     private final String baseURL;
 
-    public MongoMetaDataGenerator(Integer limit, Integer offset, String sort, String queries, String projections,
+    public MongoMetaDataGenerator(Integer limit, Integer offset, String sort, String queries, String includes, String excludes,
                                   HttpServletRequest requestInfo, MongoDataResultContainer execResult) {
         this.limit = limit;
         this.offset = offset;
         this.sort = sort;
         this.queries = queries;
-        this.projections = projections;
+        this.includes = includes;
+        this.excludes = excludes;
         this.execResult = execResult;
         this.requestInfo = requestInfo;
         this.baseURL = requestInfo.getRequestURL().toString();
@@ -80,9 +83,9 @@ public class MongoMetaDataGenerator {
             if (limit > 1) {
                 int newLim = (offset >= limit) ? limit : offset;
                 int newOff = (offset >= limit) ? (offset - limit) : 0;
-                prev.append("&").append("l=").append(newLim).append("&").append("o=").append(newOff);
+                prev.append("&").append(RequestParameters.LIMIT + '=').append(newLim).append("&").append(RequestParameters.OFFSET + '=').append(newOff);
             } else {
-                prev.append("&").append("l=").append(offset);
+                prev.append("&").append(RequestParameters.LIMIT + '=').append(offset);
             }
 
             response.prev(prev.toString());
@@ -95,7 +98,7 @@ public class MongoMetaDataGenerator {
             if (!limit.equals(0) && remaining != 0) {
                 StringBuilder next = new StringBuilder();
                 int nextLimit = (remaining > limit) ? limit : remaining;
-                next.append(baseURL).append("?o=").append(offset + limit).append("&l=").append(nextLimit).append("&");
+                next.append(baseURL).append('?' + RequestParameters.OFFSET + '=').append(offset + limit).append('&' + RequestParameters.LIMIT + '=').append(nextLimit).append("&");
 
                 String[] arguments = requestInfo.getQueryString().split("&");
                 next.append(response.getQueryArgumentsNoOffsetLimit(arguments));

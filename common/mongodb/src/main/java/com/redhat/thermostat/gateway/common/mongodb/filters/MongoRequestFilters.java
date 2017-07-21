@@ -45,8 +45,11 @@ import static com.mongodb.client.model.Filters.lt;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Filters.ne;
 import static com.mongodb.client.model.Filters.size;
+import static com.mongodb.client.model.Filters.or;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -59,11 +62,25 @@ import org.bson.json.JsonParseException;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoRequestFilters {
-    public static Bson buildQueriesFilter(List<String> queries) {
-        List<Bson> filters = new ArrayList<>();
+
+    private static final Pattern operatorPattern = Pattern.compile("(<=|>=|<|>|==|!=)");
+
+    public static Bson buildEq(final String key, final String value) {
+        return eq(key, value);
+    }
+
+    public static Bson buildAnd(final Bson a1, final Bson a2) {
+        return and(a1, a2);
+    }
+
+    public static Bson buildOr(final Bson a1, final Bson a2) {
+        return or(a1, a2);
+    }
+
+    public static List<Bson> buildQueriesList(List<String> queries) {
+        final List<Bson> filters = new ArrayList<>();
         for (String filter : queries) {
-            Pattern p = Pattern.compile("(<=|>=|<|>|==|!=)");
-            Matcher m = p.matcher(filter);
+            final Matcher m = operatorPattern.matcher(filter);
             if (m.find()) {
                 String key = filter.substring(0, m.start());
                 String comparator = filter.substring(m.start(), m.end());
@@ -105,7 +122,25 @@ public class MongoRequestFilters {
                 throw new JsonParseException("No relation found in: " + filter);
             }
         }
-        return and(filters);
+        return filters;
+    }
+
+    public static List<Bson> buildQueriesList(final String queryStr) {
+        if (queryStr == null || queryStr.isEmpty()) {
+            return Collections.EMPTY_LIST;
+        } else {
+            final List<String> queries = Arrays.asList(queryStr.split(","));
+            final List<Bson> filters = buildQueriesList(queries);
+            return filters;
+        }
+    }
+
+    public static Bson buildQueriesFilter(final List<String> queries) {
+        return and(buildQueriesList(queries));
+    }
+
+    public static Bson buildQueriesFilter(final String queryStr) {
+        return and(buildQueriesList(queryStr));
     }
 
     public static Bson buildRealmsFilter(Set<String> realms) {

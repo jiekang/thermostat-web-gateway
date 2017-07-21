@@ -38,6 +38,7 @@ package com.redhat.thermostat.gateway.common.mongodb.response;
 
 import java.util.ArrayList;
 
+import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 import org.bson.Document;
 
 import com.google.gson.Gson;
@@ -45,6 +46,8 @@ import com.google.gson.GsonBuilder;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
+
+import javax.servlet.http.HttpServletRequest;
 
 /*
  *  Builds the appropriate response after executing the request's MongoDB Query.
@@ -63,7 +66,7 @@ public class MongoResponseBuilder {
         private MongoMetaDataResponseBuilder metaData;
         private final Gson gson = new GsonBuilder().create();
 
-        public Builder queryDocuments(FindIterable<Document> documents) {
+        public Builder addQueryDocuments(FindIterable<Document> documents) {
             queryDocuments = new ArrayList<>();
             documents.forEach(new Block<Document>() {
                 @Override
@@ -77,7 +80,7 @@ public class MongoResponseBuilder {
             return this;
         }
 
-        public Builder metaData(MongoMetaDataResponseBuilder metaData) {
+        public Builder addMetaData(MongoMetaDataResponseBuilder metaData) {
             this.metaData = metaData;
             return this;
         }
@@ -86,6 +89,24 @@ public class MongoResponseBuilder {
             MongoResponseBuilder data = new MongoResponseBuilder(this);
             return gson.toJson(data);
         }
+    }
+
+    public static String build(final MongoDataResultContainer execResult) {
+        final MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
+        response.addQueryDocuments(execResult.getQueryDataResult());
+        return response.build();
+    }
+
+    public static String buildWithMetadata(final MongoDataResultContainer execResult, int limit, int offset, String sort, String queries, String includes, String excludes, HttpServletRequest requestInfo) {
+        final MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
+        response.addQueryDocuments(execResult.getQueryDataResult());
+        final MongoMetaDataResponseBuilder.MetaBuilder metaDataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
+        final MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(limit, offset, sort, queries, includes, excludes, requestInfo, execResult);
+        metaDataGenerator.setDocAndPayloadCount(metaDataResponse);
+        metaDataGenerator.setPrev(metaDataResponse);
+        metaDataGenerator.setNext(metaDataResponse);
+        response.addMetaData(metaDataResponse.build());
+        return response.build();
     }
 
     private MongoResponseBuilder(Builder builder) {

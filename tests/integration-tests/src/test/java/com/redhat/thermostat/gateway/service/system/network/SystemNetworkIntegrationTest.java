@@ -190,8 +190,7 @@ public class SystemNetworkIntegrationTest extends MongoIntegrationTest {
     private ContentResponse post(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
         final Request request = client.newRequest(serviceURL + "/systems/" + systemid);
         request.header(HttpHeader.CONTENT_TYPE, "application/json");
-        //request.content(new StringContentProvider("[" + createJSON() + "]"));
-        request.content(new StringContentProvider(createJSON()));
+        request.content(new StringContentProvider( '[' + createJSON() + ']'));
         ContentResponse response = request.method(HttpMethod.POST).send();
         assertEquals(HTTP_200_OK, response.getStatus());
         final String expected = "";

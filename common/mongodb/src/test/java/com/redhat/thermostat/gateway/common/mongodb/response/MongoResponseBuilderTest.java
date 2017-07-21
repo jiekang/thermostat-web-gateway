@@ -75,7 +75,7 @@ public class MongoResponseBuilderTest {
 
         FindIterable<Document> iterable = new TestFindIterable<>(list);
 
-        String output = mongoResponseBuilder.queryDocuments(iterable).build();
+        String output = mongoResponseBuilder.addQueryDocuments(iterable).build();
         String expected = "{\"response\":[{\"hello\":\"blob\"},{\"a\":{\"blob\":[\"hi\"]}}]}";
         assertEquals(expected, output);
     }
@@ -84,7 +84,7 @@ public class MongoResponseBuilderTest {
     public void testBuildEmptyGetResponse() {
         FindIterable<Document> iterable = new TestFindIterable<>(Collections.<Document>emptyList());
 
-        String output = mongoResponseBuilder.queryDocuments(iterable).build();
+        String output = mongoResponseBuilder.addQueryDocuments(iterable).build();
         String expected = "{\"response\":[]}";
         assertEquals(expected, output);
     }
@@ -99,7 +99,7 @@ public class MongoResponseBuilderTest {
 
         FindIterable<Document> iterable = new TestFindIterable<>(list);
 
-        String output = mongoResponseBuilder.queryDocuments(iterable).build();
+        String output = mongoResponseBuilder.addQueryDocuments(iterable).build();
         String expected = "{\"response\":[{\"hello\":\"blob\"},{\"a\":{\"blob\":[\"hi\"]}}]}";
         assertEquals(expected, output);
     }
