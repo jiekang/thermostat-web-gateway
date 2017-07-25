@@ -44,11 +44,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.servlet.GatewayHomeSettingContextListener;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
-import com.redhat.thermostat.gateway.common.core.servlet.ServiceConfigGettingContextListener;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 
-public class StorageConnectionSettingListener extends ServiceConfigGettingContextListener {
+public class StorageConnectionSettingListener extends GatewayHomeSettingContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent event) {
@@ -71,8 +71,10 @@ public class StorageConnectionSettingListener extends ServiceConfigGettingContex
     }
 
     Map<String, String> getMongoStorageConfig(ServletContext ctx) {
-        String serviceName = ctx.getInitParameter(GlobalConstants.SERVICE_NAME_KEY);
-        Configuration serviceConfig = getServiceConfig(serviceName);
+        Configuration serviceConfig = (Configuration) ctx.getAttribute(GlobalConstants.SERVICE_CONFIG_KEY);
+        if (serviceConfig == null) {
+            throw new IllegalStateException("No service configuration for service: " + ctx.getInitParameter(GlobalConstants.SERVICE_NAME_KEY));
+        }
         Configuration mongoConfiguration = new MongoConfigurationAdapter(serviceConfig);
         return convert(mongoConfiguration.asMap());
     }

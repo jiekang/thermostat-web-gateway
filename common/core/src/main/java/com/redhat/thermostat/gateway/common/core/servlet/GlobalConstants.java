@@ -41,4 +41,5 @@ public interface GlobalConstants {
     public static final String GATEWAY_HOME_KEY = GATEWAY_PREFIX + ".HOME";
     public static final String GATEWAY_HOME_ENV = "THERMOSTAT_GATEWAY_HOME";
     public static final String SERVICE_NAME_KEY = GATEWAY_PREFIX + ".SERVICE_NAME";
+    public static final String SERVICE_CONFIG_KEY = GATEWAY_PREFIX + ".SERVICE_CONFIG";
 }
