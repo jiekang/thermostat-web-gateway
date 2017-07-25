@@ -192,4 +192,4 @@ parameters:
     name: X-Thermostat-Realms
     type: string
     in: header
-    description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valid realms at all will result in a 400 Bad Request response. Expects a comma separated list of realms Example 'X-Thermostat-Realms: realm-one, realm-two'"
+    description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valid realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"

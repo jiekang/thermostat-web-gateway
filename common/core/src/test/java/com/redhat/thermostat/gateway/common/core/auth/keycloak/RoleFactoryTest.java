@@ -54,11 +54,11 @@ public class RoleFactoryTest {
 
     @Test
     public void testValidRole() {
-        String role = "a-role";
+        String role = "a-valid,role";
         assertTrue(roleFactory.isValidRole(role));
 
         Role r = roleFactory.buildRole(role);
-        verifyRole(r, "a", "role");
+        verifyRole(r, "a", "valid,role");
     }
 
     @Test
@@ -93,8 +93,8 @@ public class RoleFactoryTest {
     }
 
     @Test
-    public void testRealmWithCommaIsInvalid() {
-        String role = "a-invalid,realm";
+    public void testRealmWithSpaceIsInvalid() {
+        String role = "a-invalid realm";
         assertFalse(roleFactory.isValidRole(role));
     }
 
