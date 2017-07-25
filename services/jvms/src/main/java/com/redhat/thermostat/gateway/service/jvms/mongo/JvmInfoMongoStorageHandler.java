@@ -52,8 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.redhat.thermostat.gateway.common.mongodb.MongoStorageHandler;
-
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -62,7 +60,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 
-public class JvmInfoMongoStorageHandler extends MongoStorageHandler {
+public class JvmInfoMongoStorageHandler  {
 
     private static final String SET_KEY = "$set";
 
