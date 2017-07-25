@@ -201,7 +201,7 @@ public class MongoExecutor {
             }
             return isNullOrEmpty(originalQuery) ? sysQuery : sysQuery + ',' + originalQuery;
         } else {
-            final String jvmQuery = ThermostatFields.JVM_ID + "==\"" + jvmId ;
+            final String jvmQuery = ThermostatFields.JVM_ID + "==\"" + jvmId + '"';
             final String sysJvmQuery = jvmQuery + (isNullOrEmpty(systemId) ? "" : ',' + ThermostatFields.SYSTEM_ID + "==\"" + systemId + '"');
             return isNullOrEmpty(originalQuery) ? sysJvmQuery : sysJvmQuery + ',' + originalQuery;
         }
