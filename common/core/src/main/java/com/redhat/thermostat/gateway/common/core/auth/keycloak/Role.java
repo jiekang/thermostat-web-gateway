@@ -40,7 +40,7 @@ import java.util.Objects;
 
 public class Role {
     public static final String ROLE_DELIMITER = "-";
-    public static final String[] RESTRICTED_CHARACTERS = new String[]{","};
+    public static final String[] RESTRICTED_CHARACTERS = new String[]{" "};
 
     private final String actions;
     private final String realm;

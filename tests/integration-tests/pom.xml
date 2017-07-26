@@ -80,6 +80,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <skip>true</skip>
+                    <environmentVariables>
+                        <!--
+                        intellij can use this variable when running tests within IDE,
+                        but cannot draw it from the maven-failsafe declaration. Having
+                        it also declared here allows developers to run integration
+                        tests from IDE with less hassle
+                        -->
+                        <THERMOSTAT_GATEWAY_HOME>${project.build.directory}/../../../distribution/target/image</THERMOSTAT_GATEWAY_HOME>
+                    </environmentVariables>
                 </configuration>
             </plugin>
             <plugin>

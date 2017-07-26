@@ -54,6 +54,8 @@ import javax.servlet.ServletContextEvent;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.configuration.MongoConfiguration;
@@ -70,7 +72,7 @@ public class StorageConnectionSettingListenerTest {
         when(evt.getServletContext()).thenReturn(ctxt);
         when(ctxt.getInitParameter(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
         when(ctxt.getAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
-        when(ctxt.getInitParameter(eq(GlobalConstants.SERVICE_NAME_KEY))).thenReturn("foo-service");
+        when(ctxt.getAttribute(eq(GlobalConstants.SERVICE_CONFIG_KEY))).thenReturn(getTestGatewayConfiguration());
     }
 
     @Test
@@ -95,6 +97,10 @@ public class StorageConnectionSettingListenerTest {
     private String getTestGatewayRoot() {
         URL rootUrl = StorageConnectionSettingListener.class.getResource("/gateway-root");
         return decodeFilePath(rootUrl);
+    }
+
+    private Configuration getTestGatewayConfiguration() {
+        return new ConfigurationFactory(getTestGatewayRoot()).createServiceConfiguration("foo-service");
     }
 
     private String decodeFilePath(URL url) {

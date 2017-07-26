@@ -266,6 +266,35 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
+    public void testGetSysJvm() throws InterruptedException, ExecutionException, TimeoutException {
+        String url = jvmsUrl + "/systems/1";
+
+        ContentResponse postResponse = client.newRequest(url).method(HttpMethod.POST)
+                .content(new StringContentProvider(postData), "application/json").send();
+        assertEquals(200, postResponse.getStatus());
+
+        String query = "/jvms/jid2";
+        ContentResponse getResponse = client.newRequest(url + query).method(HttpMethod.GET).send();
+        assertEquals(200, getResponse.getStatus());
+        String expected = "{\"response\":[{\"agentId\":\"aid\",\"jvmId\":\"jid2\",\"jvmPid\":2," +
+                "\"startTime\":1495727607481,\"stopTime\":1495727607482,\"javaVersion\":\"1.8.0_131\"," +
+                "\"javaHome\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre\"," +
+                "\"mainClass\":\"mc\",\"javaCommandLine\":\"j cl\",\"jvmName\":\"vm\",\"vmArguments\":" +
+                "\"-Djline.log.jul\\u003dtrue\",\"jvmInfo\":\"mixed mode\",\"lastUpdated\":333,\"jvmVersion\":" +
+                "\"25.131-b12\",\"environment\":[{\"key\":\"PATH\",\"value\":\"/usr/local/bin:/usr/local/sbin:/usr/bin:/usr/sbin\"}," +
+                "{\"key\":\"XAUTHORITY\",\"value\":\"/run/user/1000/gdm/Xauthority\"},{\"key\":\"GDMSESSION\",\"value\":\"i3\"}," +
+                "{\"key\":\"fish_greeting\",\"value\":\"\"},{\"key\":\"TERM\",\"value\":\"xterm-256color\"},{\"key\":\"DARWIN_MODE\"," +
+                "\"value\":\"0\"},{\"key\":\"LANG\",\"value\":\"en_US.UTF-8\"},{\"key\":\"DBUS_SESSION_BUS_ADDRESS\"," +
+                "\"value\":\"unix:path\\u003d/run/user/1000/bus\"},{\"key\":\"XDG_SESSION_ID\",\"value\":\"2\"}," +
+                "{\"key\":\"XDG_SESSION_TYPE\",\"value\":\"x11\"},{\"key\":\"XDG_CURRENT_DESKTOP\",\"value\":\"i3\"}," +
+                "{\"key\":\"DISPLAY\",\"value\":\":0\"},{\"key\":\"CYGWIN_MODE\",\"value\":\"0\"},{\"key\":\"COLORTERM\"," +
+                "\"value\":\"truecolor\"},{\"key\":\"_\",\"value\":\"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\"}]," +
+                "\"uid\":1000,\"username\":\"user\",\"systemId\":\"1\"}]}";
+
+        assertEquals(expected, getResponse.getContentAsString());
+    }
+
+    @Test
     public void testGetInclude() throws InterruptedException, ExecutionException, TimeoutException {
         String url = jvmsUrl + "/systems/1";
 

@@ -37,6 +37,7 @@
 package com.redhat.thermostat.gateway.server.services;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -58,6 +59,7 @@ import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakRequestFilter;
 
@@ -89,6 +91,20 @@ public class WebArchiveCoreServiceTest {
 
         assertEquals(webAppContext.getContextPath(), contextPath);
         assertEquals(webAppContext.getWar(), warPath);
+    }
+
+    @Test
+    public void testServiceConfigIsAdded() {
+        Map<String, Object> configurationMap = new HashMap<>();
+
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.asMap()).thenReturn(configurationMap);
+
+        WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath, configuration);
+        ServletContextHandler servletContextHandler = service.createServletContextHandler(mock(Server.class));
+        WebAppContext webAppContext = (WebAppContext) servletContextHandler;
+
+        assertSame(configuration, webAppContext.getAttribute(GlobalConstants.SERVICE_CONFIG_KEY));
     }
 
     @Test

@@ -47,7 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import com.redhat.thermostat.gateway.common.mongodb.MongoStorageHandler;
+import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -61,13 +61,13 @@ import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoExecutor {
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, int limit, int offset,
                                                    String sort, String queries, String includes, String excludes,
                                                    Set<String> realms) throws IOException {
         return execGetRequest(collection, limit, offset, sort, buildClientQueries(queries), includes, excludes, realms);
     }
 
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, int limit, int offset,
                                                    String sort, List<String> queries, String includes, String excludes,
                                                    Set<String> realms) {
         FindIterable<Document> documents = collection.find();
@@ -87,8 +87,9 @@ public class MongoExecutor {
     }
 
     public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body,
-                                                   String queries, Set<String> realms) throws IOException {
-        return execPutRequest(collection, body, buildClientQueries(queries), realms);
+                                                   String queries, Set<String> realms, String systemId, String jvmId) throws IOException {
+        List<String> queryList = buildClientQueries(queries, systemId, jvmId);
+        return execPutRequest(collection, body, queryList, realms);
     }
 
     public MongoDataResultContainer execPutRequest(MongoCollection<Document> collection, String body,
@@ -98,6 +99,9 @@ public class MongoExecutor {
 
         Document setDocument = inputDocument.get("set", Document.class);
         setDocument.remove(KeycloakFields.REALMS_KEY);
+        setDocument.remove(ThermostatFields.SYSTEM_ID);
+        setDocument.remove(ThermostatFields.JVM_ID);
+
         final Bson fields = new Document("$set", setDocument);
 
         final Bson bsonQueries = MongoRequestFilters.buildQuery(queries, realms);
@@ -115,7 +119,7 @@ public class MongoExecutor {
         return execDeleteRequest(collection, buildClientQueries(queries), realms);
     }
 
-    public MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, List<String> queries,
+    private MongoDataResultContainer execDeleteRequest(MongoCollection<Document> collection, List<String> queries,
                                                       Set<String> realms) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
         if (queries != null && !queries.isEmpty() || realms != null && !realms.isEmpty()) {
@@ -131,7 +135,7 @@ public class MongoExecutor {
     }
 
     public MongoDataResultContainer execPostRequest(MongoCollection<DBObject> collection, String body,
-                                                    Set<String> realms) {
+                                                    Set<String> realms, String systemId, String jvmId) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
 
         if (body.length() > 0) {
@@ -142,13 +146,22 @@ public class MongoExecutor {
                 if (realms != null && !realms.isEmpty())  {
                     object.put(KeycloakFields.REALMS_KEY, realms);
                 }
-
+                if (systemId != null && !systemId.isEmpty()) {
+                    object.put(ThermostatFields.SYSTEM_ID, systemId);
+                }
+                if (jvmId != null && !jvmId.isEmpty()) {
+                    object.put(ThermostatFields.JVM_ID, jvmId);
+                }
             }
 
             collection.insertMany(inputList);
         }
 
         return metaDataContainer;
+    }
+
+    private List<String> buildClientQueries(String queries, String systemId, String jvmId) throws IOException {
+        return buildClientQueries(andSystemIdJvmIdQuery(queries, systemId, jvmId));
     }
 
     private List<String> buildClientQueries(String queries) throws IOException {
@@ -166,7 +179,7 @@ public class MongoExecutor {
         }
     }
 
-    public static FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
+    private static FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
         if (excludes != null) {
             List<String> excludesList = Arrays.asList(excludes.split(","));
             documents = documents.projection(fields(exclude(excludesList), excludeId()));
@@ -178,5 +191,23 @@ public class MongoExecutor {
         }
 
         return documents;
+    }
+
+    private String andSystemIdJvmIdQuery(final String originalQuery, final String systemId, final String jvmId) {
+        if (jvmId == null || jvmId.isEmpty()) {
+            final String sysQuery = (isNullOrEmpty(systemId) ? null : ThermostatFields.SYSTEM_ID + "==\"" + systemId + '"');
+            if (sysQuery == null) {
+                return originalQuery;
+            }
+            return isNullOrEmpty(originalQuery) ? sysQuery : sysQuery + ',' + originalQuery;
+        } else {
+            final String jvmQuery = ThermostatFields.JVM_ID + "==\"" + jvmId + '"';
+            final String sysJvmQuery = jvmQuery + (isNullOrEmpty(systemId) ? "" : ',' + ThermostatFields.SYSTEM_ID + "==\"" + systemId + '"');
+            return isNullOrEmpty(originalQuery) ? sysJvmQuery : sysJvmQuery + ',' + originalQuery;
+        }
+    }
+
+    private boolean isNullOrEmpty(final String s) {
+        return s == null || s.isEmpty();
     }
 }

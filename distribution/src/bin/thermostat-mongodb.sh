@@ -96,12 +96,20 @@ if [ $1 == "start" ]; then
     mkdir -p ${DB_PATH}
     mkdir -p ${DATA_PATH}
 
-    mongod --quiet ${MONGO_FORK_ARG} --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT} --auth
-
-    if [ ! -f ${SETUP_PATH} ]; then
-        sleep 3
-        touch ${SETUP_PATH}
-        mongo ${IP}:${PORT} ${JS_PATH}
+    if [ $CYGWIN_MODE -eq 1 ]; then
+        mongod --quiet --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT} --auth&
+        if [ ! -f ${SETUP_PATH} ]; then
+            sleep 3
+            touch ${SETUP_PATH}
+            mongo ${IP}:${PORT} `cygpath -w ${JS_PATH}`
+        fi
+    else
+        mongod --quiet ${MONGO_FORK_ARG} --nohttpinterface --bind_ip ${IP} --nojournal --dbpath ${DATA_PATH} --logpath ${LOG_PATH} --pidfilepath ${PID_PATH} --port ${PORT} --auth
+        if [ ! -f ${SETUP_PATH} ]; then
+            sleep 3
+            touch ${SETUP_PATH}
+            mongo ${IP}:${PORT} ${JS_PATH}
+        fi
     fi
 fi
 

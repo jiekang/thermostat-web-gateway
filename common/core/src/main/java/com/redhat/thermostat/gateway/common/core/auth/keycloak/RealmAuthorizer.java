@@ -49,6 +49,7 @@ import org.keycloak.KeycloakSecurityContext;
 public class RealmAuthorizer {
 
     public static final String REALMS_HEADER = "X-Thermostat-Realms";
+    private static final String REALMS_HEADER_DELIMITER_REGEX = " +";
 
     private final Set<Role> clientRoles;
     private final RoleFactory roleFactory = new RoleFactory();
@@ -148,8 +149,8 @@ public class RealmAuthorizer {
      * @throws ServletException If realms header contains realms the client does not have or no valid realms
      */
     private Set<Role> buildClientPreferredRoles(Set<Role> trustedRoles, String realmsHeader) throws ServletException {
-        realmsHeader = realmsHeader.replaceAll("\\s+", "");
-        Set<String> preferredRealms = new HashSet<>(Arrays.asList(realmsHeader.split(",")));
+        realmsHeader = realmsHeader.trim();
+        Set<String> preferredRealms = new HashSet<>(Arrays.asList(realmsHeader.split(REALMS_HEADER_DELIMITER_REGEX)));
         Set<Role> selectedRoles = new HashSet<>();
 
         for (String preferredRealm : preferredRealms) {

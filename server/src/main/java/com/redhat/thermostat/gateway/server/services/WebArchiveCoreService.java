@@ -58,6 +58,7 @@ import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfiguration;
@@ -82,6 +83,10 @@ class WebArchiveCoreService implements CoreService {
 
         webAppContext.setContextPath(contextPath);
         webAppContext.setWar(warPath);
+
+        webAppContext.setAttribute(GlobalConstants.SERVICE_CONFIG_KEY, serviceConfig);
+        webAppContext.addSystemClass(Configuration.class.getName());
+
         initializeWebSockets(server, webAppContext);
 
         setupAuthForContext(webAppContext);
