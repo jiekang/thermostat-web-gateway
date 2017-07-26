@@ -63,6 +63,9 @@ public class JvmsHttpHandler {
     private final JvmInfoMongoStorageHandler mongoStorageHandler = new JvmInfoMongoStorageHandler();
     private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
 
+    private static final int LIMIT_1 = 1;
+    private static final int OFFSET_ZERO = 0;
+
     @GET
     @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
     @Consumes({ "application/json" })
@@ -117,7 +120,7 @@ public class JvmsHttpHandler {
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest
     ) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, null, null, null, null, includes, excludes, metadata);
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, LIMIT_1, OFFSET_ZERO, null, null, includes, excludes, metadata);
     }
 
     @PUT

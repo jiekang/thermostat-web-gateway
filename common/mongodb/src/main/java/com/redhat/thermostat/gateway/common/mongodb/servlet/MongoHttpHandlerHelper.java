@@ -81,15 +81,15 @@ public class MongoHttpHandlerHelper {
      *  HTTP GET handling
      */
 
-    public Response handleGetWithSystemID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, Integer limit, Integer offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
+    public Response handleGetWithSystemID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
         return handleGet(httpServletRequest, context, limit, offset, sort, andSystemIdQuery(queries, systemId), includes, excludes, returnMetadata);
     }
 
-    public Response handleGetWithJvmID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, Integer limit, Integer offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
+    public Response handleGetWithJvmID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
         return handleGet(httpServletRequest, context, limit, offset, sort, andSystemIdJvmIdQuery(queries, systemId, jvmId), includes, excludes, returnMetadata);
     }
 
-    public Response handleGet(HttpServletRequest httpServletRequest, ServletContext context, Integer limit, Integer offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
+    public Response handleGet(HttpServletRequest httpServletRequest, ServletContext context, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
         try {
             boolean metadata = Boolean.valueOf(returnMetadata);
             RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());

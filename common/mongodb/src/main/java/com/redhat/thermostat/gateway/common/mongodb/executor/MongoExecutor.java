@@ -61,13 +61,13 @@ import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoExecutor {
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, int limit, int offset,
                                                    String sort, String queries, String includes, String excludes,
                                                    Set<String> realms) throws IOException {
         return execGetRequest(collection, limit, offset, sort, buildClientQueries(queries), includes, excludes, realms);
     }
 
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, Integer limit, Integer offset,
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, int limit, int offset,
                                                    String sort, List<String> queries, String includes, String excludes,
                                                    Set<String> realms) {
         FindIterable<Document> documents = collection.find();
@@ -179,7 +179,7 @@ public class MongoExecutor {
         }
     }
 
-    public static FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
+    private static FindIterable<Document> buildProjection(FindIterable<Document> documents, String includes, String excludes) {
         if (excludes != null) {
             List<String> excludesList = Arrays.asList(excludes.split(","));
             documents = documents.projection(fields(exclude(excludesList), excludeId()));
@@ -207,7 +207,7 @@ public class MongoExecutor {
         }
     }
 
-    private final boolean isNullOrEmpty(final String s) {
+    private boolean isNullOrEmpty(final String s) {
         return s == null || s.isEmpty();
     }
 }
