@@ -60,7 +60,10 @@ public class MessageDecoderTest {
                       "   \"payload\": {" +
                       "       \"param1\": \"value1\"," +
                       "       \"param2\": \"value2\"" +
-                      "   }" +
+                      "   }," +
+                      "   \"action\": \"dump_heap\"," +
+                      "   \"jvmId\": \"jvm_id\"," +
+                      "   \"systemId\": \"system_id\"" +
                       "}";
         MessageDecoder decoder = new MessageDecoder();
         Message actual = decoder.decode(json);
@@ -70,6 +73,9 @@ public class MessageDecoderTest {
         assertEquals(2312, request.getSequenceId());
         assertEquals("value1", request.getParam("param1"));
         assertEquals("value2", request.getParam("param2"));
+        assertEquals("dump_heap", request.getAction());
+        assertEquals("jvm_id", request.getJvmId());
+        assertEquals("system_id", request.getSystemId());
     }
 
     @Test
@@ -80,7 +86,10 @@ public class MessageDecoderTest {
                       "   \"payload\": {" +
                       "       \"param1\": \"value1 } {, RULE foo\nparam()\"," +
                       "       \"param2\": \"value2\"" +
-                      "   }" +
+                      "   }," +
+                      "   \"action\": \"dump_heap\"," +
+                      "   \"jvmId\": \"jvm_id\"," +
+                      "   \"systemId\": \"system_id\"" +
                       "}";
         MessageDecoder decoder = new MessageDecoder();
         Message actual = decoder.decode(json);
@@ -100,7 +109,10 @@ public class MessageDecoderTest {
                       "   \"payload\": {" +
                       "       \"param1\": null," +
                       "       \"param2\": \"value2\"" +
-                      "   }" +
+                      "   }," +
+                      "   \"action\": \"dump_heap\"," +
+                      "   \"jvmId\": \"jvm_id\"," +
+                      "   \"systemId\": \"system_id\"" +
                       "}";
         MessageDecoder decoder = new MessageDecoder();
         Message actual = decoder.decode(json);

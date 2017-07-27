@@ -50,7 +50,7 @@ public class AgentRequestTest {
         long sequence = 3321l;
         SortedMap<String, String> params = new TreeMap<>();
         params.put("foo-bar", "bar-baz");
-        AgentRequest request = new AgentRequest(sequence, params);
+        AgentRequest request = new AgentRequest(sequence, "some-action", "system-id", "jvm-id", params);
         assertEquals("sanity", sequence, request.getSequenceId());
         assertEquals("bar-baz", request.getParam("foo-bar"));
     }

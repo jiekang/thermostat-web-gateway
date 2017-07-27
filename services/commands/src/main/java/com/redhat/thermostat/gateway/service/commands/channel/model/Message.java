@@ -45,6 +45,9 @@ public interface Message {
     public static final String PAYLOAD_KEY = "payload";
     public static final String TYPE_KEY = "type";
     public static final String SEQUENCE_KEY = "sequence";
+    public static final String ACTION_KEY = "action";
+    public static final String SYSTEM_ID_KEY = "systemId";
+    public static final String JVM_ID_KEY = "jvmId";
 
     public MessageType getMessageType();
 

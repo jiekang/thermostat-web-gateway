@@ -43,22 +43,37 @@ import java.util.TreeMap;
 
 import javax.websocket.EncodeException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.service.commands.channel.model.AgentRequest;
 
 public class AgentRequestEncoderTest {
 
+    private String action;
+    private String jvmId;
+    private String systemId;
+
+    @Before
+    public void setup() {
+        action = "dump_heap";
+        jvmId = "foo-id";
+        systemId = "system-id";
+    }
+
     @Test
     public void canEncodeAgentRequest() throws EncodeException {
         SortedMap<String, String> params = new TreeMap<>();
         params.put("foo", "bar");
         params.put("zoo", "loo");
-        AgentRequest request = new AgentRequest(2130,params);
+        AgentRequest request = new AgentRequest(2130, action, systemId, jvmId, params);
 
         String expected = "{" +
                           "\"type\":" + request.getMessageType().intValue() + "," +
                           "\"sequence\":" + request.getSequenceId() + "," +
+                          "\"action\":\"" + request.getAction() + "\"," +
+                          "\"jvmId\":\"" + request.getJvmId() + "\"," +
+                          "\"systemId\":\"" + request.getSystemId() + "\"," +
                           "\"payload\":{" +
                           "\"foo\":\"bar\"," +
                           "\"zoo\":\"loo\"" +
@@ -73,11 +88,14 @@ public class AgentRequestEncoderTest {
         SortedMap<String, String> params = new TreeMap<>();
         params.put("foo", null);
         params.put("zoo", "loo");
-        AgentRequest request = new AgentRequest(2130,params);
+        AgentRequest request = new AgentRequest(2130, action, systemId, jvmId, params);
 
         String expected = "{" +
                           "\"type\":" + request.getMessageType().intValue() + "," +
                           "\"sequence\":" + request.getSequenceId() + "," +
+                          "\"action\":\"" + request.getAction() + "\"," +
+                          "\"jvmId\":\"" + request.getJvmId() + "\"," +
+                          "\"systemId\":\"" + request.getSystemId() + "\"," +
                           "\"payload\":{" +
                           "\"foo\":null," +
                           "\"zoo\":\"loo\"" +
@@ -89,11 +107,14 @@ public class AgentRequestEncoderTest {
 
     @Test
     public void canEncodeAgentRequestEmptyPayloadVal() throws EncodeException {
-        AgentRequest request = new AgentRequest(2130, new TreeMap<String, String>());
+        AgentRequest request = new AgentRequest(2130, action, systemId, jvmId, new TreeMap<String, String>());
 
         String expected = "{" +
                           "\"type\":" + request.getMessageType().intValue() + "," +
                           "\"sequence\":" + request.getSequenceId() + "," +
+                          "\"action\":\"" + request.getAction() + "\"," +
+                          "\"jvmId\":\"" + request.getJvmId() + "\"," +
+                          "\"systemId\":\"" + request.getSystemId() + "\"," +
                           "\"payload\":{}" +
                           "}";
         String encoded = new AgentRequestEncoder().encode(request);

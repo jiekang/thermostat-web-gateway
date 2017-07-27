@@ -60,9 +60,12 @@ public class EncodeDecodeTest {
     @Test
     public void canEncodeDecodeAgentRequest() throws Exception {
         long sequence = 392;
+        String jvmId = "some-jvm-id";
+        String action = "dump_heap";
+        String systemId = "system-id";
         SortedMap<String, String> params = new TreeMap<>();
         params.put("foo", "bar");
-        AgentRequest request = new AgentRequest(sequence, params);
+        AgentRequest request = new AgentRequest(sequence, action, systemId, jvmId, params);
         String encoded = new AgentRequestEncoder().encode(request);
         Message result = new MessageDecoder().decode(encoded);
         assertNotNull(result);
@@ -70,6 +73,9 @@ public class EncodeDecodeTest {
         AgentRequest actual = (AgentRequest)result;
         assertEquals(sequence, actual.getSequenceId());
         assertEquals(params, actual.getParams());
+        assertEquals(action, actual.getAction());
+        assertEquals(jvmId, actual.getJvmId());
+        assertEquals(systemId, actual.getSystemId());
     }
 
     @Test

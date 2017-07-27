@@ -86,18 +86,14 @@ abstract class BasicMessageTypeAdapter<T extends Message> extends TypeAdapter<T>
         RawMessage raw = getRawMessageFromReader(in);
         switch (raw.getMessageType()) {
         case AGENT_REQUEST: {
-            requireSequenceNonNull(raw.getSequenceElement(),
-                                   "Agent request without a sequence!");
-            long sequence = raw.getSequenceElement().getAsLong();
-            SortedMap<String, String> params = decodePayloadAsParamMap(raw.getPayloadElement());
-            return new AgentRequest(sequence, params);
+            return decodeAgentRequest(raw);
         }
         case CLIENT_REQUEST: {
             SortedMap<String, String> params = decodePayloadAsParamMap(raw.getPayloadElement());
             return new ClientRequest(params);
         }
         case RESPONSE: {
-            requireSequenceNonNull(raw.getSequenceElement(),
+            requireElementNonNull(raw.getSequenceElement(),
                                    "Response message without a sequence!");
             long sequence = raw.getSequenceElement().getAsLong();
             ResponseType respType = decodePayloadAsResponseType(raw.getPayloadElement());
@@ -106,6 +102,23 @@ abstract class BasicMessageTypeAdapter<T extends Message> extends TypeAdapter<T>
         default:
             throw new IllegalStateException("Unknown message type: " + raw.getMessageType());
         }
+    }
+
+    private Message decodeAgentRequest(RawMessage raw) {
+        requireElementNonNull(raw.getSequenceElement(),
+                               "Agent request without a sequence!");
+        long sequence = raw.getSequenceElement().getAsLong();
+        requireElementNonNull(raw.getActionElement(),
+                              "Agent request without action!");
+        String action = raw.getActionElement().getAsString();
+        requireElementNonNull(raw.getJvmIdElement(),
+                              "Agent request without jvmId!");
+        String jvmId = raw.getJvmIdElement().getAsString();
+        requireElementNonNull(raw.getSystemIdElement(),
+                "Agent request without systemId!");
+        String systemId = raw.getSystemIdElement().getAsString();
+        SortedMap<String, String> params = decodePayloadAsParamMap(raw.getPayloadElement());
+        return new AgentRequest(sequence, action, systemId, jvmId, params);
     }
 
     private SortedMap<String, String> decodePayloadAsParamMap(JsonObject payloadElem) {
@@ -133,8 +146,8 @@ abstract class BasicMessageTypeAdapter<T extends Message> extends TypeAdapter<T>
         return ResponseType.valueOf(typeStr);
     }
 
-    private void requireSequenceNonNull(JsonElement sequenceElem, String msg) throws IllegalStateException {
-        if (sequenceElem == null) {
+    private void requireElementNonNull(JsonElement elem, String msg) throws IllegalStateException {
+        if (elem == null) {
             throw new IllegalStateException(msg);
         }
     }
@@ -151,6 +164,9 @@ abstract class BasicMessageTypeAdapter<T extends Message> extends TypeAdapter<T>
         private final JsonElement typeElem;
         private final JsonElement sequenceElem;
         private final JsonObject payloadElem;
+        private final JsonElement actionElem;
+        private final JsonElement jvmIdElem;
+        private final JsonElement systemIdElem;
 
         private RawMessage(JsonObject object) {
             Objects.requireNonNull(object);
@@ -158,6 +174,9 @@ abstract class BasicMessageTypeAdapter<T extends Message> extends TypeAdapter<T>
             typeElem = object.get(Message.TYPE_KEY);
             sequenceElem = object.get(Message.SEQUENCE_KEY);
             payloadElem = (JsonObject)object.get(Message.PAYLOAD_KEY);
+            actionElem = object.get(Message.ACTION_KEY);
+            jvmIdElem = object.get(Message.JVM_ID_KEY);
+            systemIdElem = object.get(Message.SYSTEM_ID_KEY);
         }
 
         MessageType getMessageType() {
@@ -168,6 +187,18 @@ abstract class BasicMessageTypeAdapter<T extends Message> extends TypeAdapter<T>
 
         JsonElement getSequenceElement() {
             return sequenceElem;
+        }
+
+        JsonElement getActionElement() {
+            return actionElem;
+        }
+
+        JsonElement getJvmIdElement() {
+            return jvmIdElem;
+        }
+
+        JsonElement getSystemIdElement() {
+            return systemIdElem;
         }
 
         JsonObject getPayloadElement() {
