@@ -267,7 +267,7 @@ public class RealmAuthorizerTest {
         String[] roles = new String[]{"w-write", "r-read", "u-update"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("  read  update     write    ");
+        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("  read  update\twrite    ");
 
         RealmAuthorizer realmAuthorizer = new RealmAuthorizer(request);
         assertEquals(1, realmAuthorizer.getReadableRealms().size());
