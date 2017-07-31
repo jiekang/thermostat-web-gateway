@@ -55,6 +55,7 @@ import com.mongodb.Function;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
+import com.redhat.thermostat.gateway.common.util.ArgumentRunnable;
 
 public class MongoResponseBuilderTest {
 
@@ -102,6 +103,35 @@ public class MongoResponseBuilderTest {
         String output = mongoResponseBuilder.addQueryDocuments(iterable).build();
         String expected = "{\"response\":[{\"hello\":\"blob\"},{\"a\":{\"blob\":[\"hi\"]}}]}";
         assertEquals(expected, output);
+    }
+
+    @Test
+    public void testBuildResponseWithRunnable() {
+        Document d1 = Document.parse("{\"hello\" : \"blob\"}");
+        Document d2 = Document.parse("{\"a\" : {\"blob\" : [\"hi\"]}}");
+        final List<Document> list = new ArrayList<>();
+        list.add(d1);
+        list.add(d2);
+
+        final boolean[] b = {false, false};
+        FindIterable<Document> iterable = new TestFindIterable<>(list);
+        ArgumentRunnable<Document> argumentRunnable = new ArgumentRunnable<Document>() {
+            @Override
+            public void run(Document arg) {
+                if (arg.containsKey("hello")) {
+                    b[0] = true;
+                }
+                if (arg.containsKey("a")) {
+                    b[1] = true;
+                }
+            }
+        };
+
+        String output = mongoResponseBuilder.addQueryDocuments(iterable, argumentRunnable).build();
+        String expected = "{\"response\":[{\"hello\":\"blob\"},{\"a\":{\"blob\":[\"hi\"]}}]}";
+        assertEquals(expected, output);
+        assertEquals(true, b[0]);
+        assertEquals(true, b[1]);
     }
 
     private class TestFindIterable<T> implements FindIterable<T> {

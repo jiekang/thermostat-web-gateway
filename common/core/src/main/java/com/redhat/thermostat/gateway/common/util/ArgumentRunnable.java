@@ -34,16 +34,9 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.jvms.mongo;
+package com.redhat.thermostat.gateway.common.util;
 
-import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
+public interface ArgumentRunnable<T> {
+    void run(T arg);
 
-public interface StorageFields extends ThermostatFields {
-
-    String LAST_UPDATED = "lastUpdated";
-    String STOP_TIME = "stopTime";
-    String IS_ALIVE = "isAlive";
-
-    String RESPONSE = "response";
-    String JVMS = "jvms";
 }

@@ -37,6 +37,7 @@
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 import org.bson.Document;
@@ -46,6 +47,7 @@ import com.google.gson.GsonBuilder;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
+import com.redhat.thermostat.gateway.common.util.ArgumentRunnable;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -79,6 +81,22 @@ public class MongoResponseBuilder {
             });
             return this;
         }
+
+        public Builder addQueryDocuments(FindIterable<Document> documents, final ArgumentRunnable<Document> runnable) {
+            queryDocuments = new ArrayList<>();
+            documents.forEach(new Block<Document>() {
+                @Override
+                public void apply(Document document) {
+                    if (document.containsKey(KeycloakFields.REALMS_KEY)) {
+                        document.remove(KeycloakFields.REALMS_KEY);
+                    }
+                    runnable.run(document);
+                    queryDocuments.add(document);
+                }
+            });
+            return this;
+        }
+
 
         public Builder addMetaData(MongoMetaDataResponseBuilder metaData) {
             this.metaData = metaData;

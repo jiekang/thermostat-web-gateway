@@ -56,13 +56,19 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 
 import com.mongodb.Block;
+import com.mongodb.CursorType;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
+import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
+import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
+import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
+import com.redhat.thermostat.gateway.common.util.ArgumentRunnable;
 
 public class JvmInfoMongoStorageHandler  {
 
     private static final String SET_KEY = "$set";
+    private final MongoResponseBuilder.Builder mongoResponseBuilder = new MongoResponseBuilder.Builder();
 
     public void updateTimestamps(MongoCollection<Document> collection, String body, String systemId, Long timeStamp) {
         final Bson filter;
@@ -80,6 +86,75 @@ public class JvmInfoMongoStorageHandler  {
         final Bson lastUpdated = new Document(StorageFields.LAST_UPDATED, timeStamp);
         final Bson update = new Document(SET_KEY, lastUpdated);
         collection.updateMany(filter, update);
+    }
+
+    private void setIsAlive(Document document) {
+        if(document.getLong(StorageFields.STOP_TIME) != null && document.getLong(StorageFields.STOP_TIME) > 0) {
+            document.append(StorageFields.IS_ALIVE, false);
+        } else {
+            document.append(StorageFields.IS_ALIVE, true);
+        }
+    }
+
+    public String getJvmInfo(MongoCollection<Document> collection, String systemId, String jvmId, String includes, String excludes) {
+        Bson baseQuery = and(eq(StorageFields.SYSTEM_ID, systemId), eq(StorageFields.JVM_ID, jvmId));
+
+        FindIterable<Document> documents = collection.find(baseQuery).limit(1).skip(0);
+
+        if (excludes != null) {
+            List<String> excludesList = Arrays.asList(excludes.split(","));
+            documents = documents.projection(fields(exclude(excludesList), excludeId()));
+        } else if (includes != null) {
+            List<String> includesList = Arrays.asList(includes.split(","));
+            documents = documents.projection(fields(include(includesList), excludeId()));
+        } else {
+            documents = documents.projection(excludeId());
+        }
+
+        ArgumentRunnable<Document> runnable = new ArgumentRunnable<Document>() {
+            @Override
+            public void run(Document arg) {
+                setIsAlive(arg);
+            }
+        };
+
+        return mongoResponseBuilder.addQueryDocuments(documents, runnable).build();
+    }
+
+    public String getJvmInfos(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String queries, String includes, String excludes) {
+        final Bson baseQuery;
+        baseQuery = eq(StorageFields.SYSTEM_ID, systemId);
+        FindIterable<Document> documents;
+
+        if (queries != null) {
+            List<String> queriesList = Arrays.asList(queries.split(","));
+            final Bson query = MongoRequestFilters.buildQueriesFilter(queriesList);
+            documents = collection.find(and(baseQuery, query));
+        } else {
+            documents = collection.find(baseQuery);
+        }
+
+        ArgumentRunnable<Document> runnable = new ArgumentRunnable<Document>() {
+            @Override
+            public void run(Document arg) {
+                setIsAlive(arg);
+            }
+        };
+
+        if (excludes != null) {
+            List<String> excludesList = Arrays.asList(excludes.split(","));
+            documents = documents.projection(fields(exclude(excludesList), excludeId()));
+        } else if (includes != null) {
+            List<String> includesList = Arrays.asList(includes.split(","));
+            documents = documents.projection(fields(include(includesList), excludeId()));
+        } else {
+            documents = documents.projection(excludeId());
+        }
+
+        final Bson sortObject = MongoSortFilters.createSortObject(sort);
+        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
+
+        return mongoResponseBuilder.addQueryDocuments(documents, runnable).build();
     }
 
     public String getJvmsTree(MongoCollection<Document> collection, boolean aliveOnly, String excludes, String includes, int limit, int offset) {
@@ -122,6 +197,8 @@ public class JvmInfoMongoStorageHandler  {
         documents.forEach(new Block<Document>() {
             @Override
             public void apply(Document document) {
+                setIsAlive(document);
+
                 String systemId = document.getString(StorageFields.SYSTEM_ID);
                 if (!finalIncludeSystemId) {
                     document.remove(StorageFields.SYSTEM_ID);
