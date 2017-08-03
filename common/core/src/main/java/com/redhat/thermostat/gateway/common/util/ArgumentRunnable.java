@@ -34,11 +34,9 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.socket;
+package com.redhat.thermostat.gateway.common.util;
 
-class Debug {
+public interface ArgumentRunnable<T> {
+    void run(T arg);
 
-    static boolean isOn() {
-        return false;
-    }
 }

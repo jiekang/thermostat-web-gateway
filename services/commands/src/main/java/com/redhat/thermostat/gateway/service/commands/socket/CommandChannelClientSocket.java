@@ -43,10 +43,10 @@ import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
-import com.redhat.thermostat.gateway.service.commands.channel.model.ClientRequest;
 import com.redhat.thermostat.gateway.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.gateway.service.commands.channel.CommunicationsRegistry;
 import com.redhat.thermostat.gateway.service.commands.channel.WebSocketCommunicationBuilder;
+import com.redhat.thermostat.gateway.service.commands.channel.model.ClientRequest;
 import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
 import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse;
 import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse.ResponseType;
@@ -54,9 +54,9 @@ import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketRes
 class CommandChannelClientSocket extends CommandChannelSocket {
 
     private static final String CLIENT_GRANT_ACTION_PREFIX = "thermostat-commands-grant-";
-    private static final String CLIENT_GRANT_JVM_PREFIX = "thermostat-commands-grant-jvm-";
     private static final String PATH_PARAM_ACTION = "action";
-    private static final String PATH_PARAM_JVM = "jvmId";
+    private static final String PATH_PARAM_SYSTEM_ID = "systemId";
+    private static final String PATH_PARAM_JVM_ID = "jvmId";
     private static final String PATH_PARAM_SEQ_ID = "seqId";
     private final long socketTimeout;
 
@@ -76,6 +76,7 @@ class CommandChannelClientSocket extends CommandChannelSocket {
         } catch (NumberFormatException e) {
             sendErrorResponse(sequence /* will be unknown */);
         }
+        AgentRequestParamsHolder agentParams = getParamsFromSession(session);
         // Note: agent/client session will have the same default timeout.
         //       Thus, it's fine to use the client's set timeout value for
         //       retrieving the agent registry.
@@ -95,22 +96,13 @@ class CommandChannelClientSocket extends CommandChannelSocket {
                             .setRequest(req)
                             .setAgentSession(agentSession)
                             .setClientSession(this.session)
+                            .setAction(agentParams.action)
+                            .setJvmId(agentParams.jvmId)
+                            .setSystemId(agentParams.systemId)
                             .build();
         String commId = agentId + req.getSequenceId();
         CommunicationsRegistry.add(commId, clientAgentComm);
         clientAgentComm.perform();
-    }
-
-    private void sendErrorResponse(long sequence) {
-        WebSocketResponse resp = new WebSocketResponse(sequence, ResponseType.ERROR);
-        try {
-            synchronized(session) {
-                Basic remote = session.getBasicRemote();
-                remote.sendObject(resp);
-            }
-        } catch (IOException|EncodeException e) {
-            e.printStackTrace(); // cannot really do more. We've lost client connectivity
-        }
     }
 
     @Override
@@ -127,11 +119,42 @@ class CommandChannelClientSocket extends CommandChannelSocket {
         if (!user.isUserInRole(actionAllowedRole)) {
             return false;
         }
-        String jvm = session.getPathParameters().get(PATH_PARAM_JVM);
-        String jvmAllowedRole = CLIENT_GRANT_JVM_PREFIX + jvm;
-        if (!user.isUserInRole(jvmAllowedRole)) {
-            return false;
-        }
+        // TODO: Add roles checks for systemId/jvmId, both part of the
+        //       path parameters of the session.
         return true;
+    }
+
+
+
+    private void sendErrorResponse(long sequence) {
+        WebSocketResponse resp = new WebSocketResponse(sequence, ResponseType.ERROR);
+        try {
+            synchronized(session) {
+                Basic remote = session.getBasicRemote();
+                remote.sendObject(resp);
+            }
+        } catch (IOException|EncodeException e) {
+            e.printStackTrace(); // cannot really do more. We've lost client connectivity
+        }
+    }
+
+    private AgentRequestParamsHolder getParamsFromSession(Session session) {
+        String action = session.getPathParameters().get(PATH_PARAM_ACTION);
+        String jvmId = session.getPathParameters().get(PATH_PARAM_JVM_ID);
+        String systemId = session.getPathParameters().get(PATH_PARAM_SYSTEM_ID);
+        return new AgentRequestParamsHolder(action, jvmId, systemId);
+    }
+
+    private static class AgentRequestParamsHolder {
+
+        private final String action;
+        private final String jvmId;
+        private final String systemId;
+
+        AgentRequestParamsHolder(String action, String jvmId, String systemId) {
+            this.action = action;
+            this.jvmId = jvmId;
+            this.systemId = systemId;
+        }
     }
 }

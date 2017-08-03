@@ -48,6 +48,9 @@ public class WebSocketCommunicationBuilder {
     private Session clientSession;
     private Session agentSession;
     private ClientRequest clientRequest;
+    private String action;
+    private String jvmId;
+    private String systemId;
 
     public WebSocketCommunicationBuilder setRequest(ClientRequest request) {
         this.clientRequest = request;
@@ -64,11 +67,29 @@ public class WebSocketCommunicationBuilder {
         return this;
     }
 
+    public WebSocketCommunicationBuilder setAction(String action) {
+        this.action = action;
+        return this;
+    }
+
+    public WebSocketCommunicationBuilder setJvmId(String jvmId) {
+        this.jvmId = jvmId;
+        return this;
+    }
+
+    public WebSocketCommunicationBuilder setSystemId(String systemId) {
+        this.systemId = systemId;
+        return this;
+    }
+
     public ClientAgentCommunication build() {
         Objects.requireNonNull(clientSession);
         Objects.requireNonNull(agentSession);
         Objects.requireNonNull(clientRequest);
-        AgentRequest agentRequest = new AgentRequest(clientRequest.getSequenceId(), clientRequest.getParams());
+        Objects.requireNonNull(action);
+        Objects.requireNonNull(jvmId);
+        Objects.requireNonNull(systemId);
+        AgentRequest agentRequest = new AgentRequest(clientRequest.getSequenceId(), action, systemId, jvmId, clientRequest.getParams());
         AgentGatewayCommunication agent = new AgentGatewayCommunication(clientSession, agentSession, agentRequest);
        return new ClientAgentCommunication(agent, clientRequest);
     }

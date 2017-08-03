@@ -34,7 +34,7 @@
         CmdChan.socket = null;
         CmdChan.sequence = 1;
 
-        CmdChan.connect = (function(host) {
+        CmdChan.connect = (function(host, message) {
             if ('WebSocket' in window) {
                 CmdChan.socket = new WebSocket(host);
             } else if ('MozWebSocket' in window) {
@@ -46,15 +46,10 @@
 
             CmdChan.socket.onopen = function () {
                 Console.log('Info: WebSocket connection opened.');
-                document.getElementById('cmd-chan').onkeydown = function(event) {
-                    if (event.keyCode == 13) {
-                        CmdChan.sendMessage();
-                    }
-                };
+                CmdChan.socket.send(JSON.stringify(message));
             };
 
             CmdChan.socket.onclose = function () {
-                document.getElementById('cmd-chan').onkeydown = null;
                 Console.log('Info: WebSocket closed.');
             };
 
@@ -62,36 +57,41 @@
                 Console.log(message.data);
                 CmdChan.socket.close();
                 CmdChan.socket = null;
-                CmdChan.connect( CmdChan.getConnectUrl() );
             };
         });
 
-        CmdChan.getConnectUrl = (function() {
-            return CmdChan.url + CmdChan.sequence++;
-        });
-
         CmdChan.initialize = (function() {
-            if (window.location.protocol == 'http:') {
-                CmdChan.url = 'ws://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc/sequence/';
-            } else {
-                CmdChan.url = 'wss://' + window.location.host + '/commands/v1/actions/dump-heap/systems/foo/agents/testAgent/jvms/abc/sequence/';
-            }
-            CmdChan.connect( CmdChan.getConnectUrl() );
+            document.getElementById('cmd-chan').onkeydown = function(event) {
+                if (event.keyCode == 13) {
+                    CmdChan.sendMessage();
+                }
+            };
+            document.getElementById('agent').onkeydown = function(event) {
+                if (event.keyCode == 13) {
+                    CmdChan.sendMessage();
+                }
+            };
         });
 
         CmdChan.sendMessage = (function() {
-            var message = document.getElementById('cmd-chan').value;
-            if (message != '') {
+            var action = document.getElementById('cmd-chan').value;
+            var agent = document.getElementById('agent').value;
+            if (action != '' && agent != '') {
                 var clientRequest = {};
+                var url = null;
                 clientRequest.type = 2;
                 clientRequest.payload = {};
-                clientRequest.payload.receiver = message;
-                CmdChan.socket.send(JSON.stringify(clientRequest));
+                if (window.location.protocol == 'http:') {
+                  url = 'ws://' + window.location.host;
+                } else {
+                  url = 'wss://' + window.location.host;
+                } 
+                url = url + '/commands/v1/actions/' + action + '/systems/ignored_system/agents/' + agent + '/jvms/ignored_jvm/sequence/' + CmdChan.sequence++;
+                CmdChan.connect( url, clientRequest );
                 document.getElementById('cmd-chan').value = '';
             }
         });
 
-        CmdChan.initialize();
 
         var Console = {};
 
@@ -126,11 +126,15 @@
     Thermostat Commands: HTML Client
     </p>
     <p>
-        <input type="text" placeholder="type the receiver name and press enter in order to send a message to the agent and trigger the receiver." id="cmd-chan" />
+        <input type="text" placeholder="type the action and press enter in order to send a message to the agent below." id="cmd-chan" />
+        <input type="text" placeholder="The agent to send messages to. Eg. 'testAgent' or 'otherAgent'" id="agent" />
     </p>
     <div id="console-container">
         <div id="console"/>
     </div>
+    <script>
+        CmdChan.initialize();
+    </script>
 </div>
 </body>
 </html>

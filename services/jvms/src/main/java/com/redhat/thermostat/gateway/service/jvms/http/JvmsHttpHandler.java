@@ -63,8 +63,6 @@ public class JvmsHttpHandler {
     private final JvmInfoMongoStorageHandler mongoStorageHandler = new JvmInfoMongoStorageHandler();
     private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
 
-    private static final int LIMIT_1 = 1;
-    private static final int OFFSET_ZERO = 0;
 
     @GET
     @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
@@ -81,7 +79,13 @@ public class JvmsHttpHandler {
                                 @Context ServletContext context,
                                 @Context HttpServletRequest httpServletRequest
     ) {
-        return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, limit, offset, sort, queries, includes, excludes, metadata);
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+            String message = mongoStorageHandler.getJvmInfos(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, queries, includes, excludes);
+            return Response.status(Response.Status.OK).entity(message).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @POST
@@ -120,7 +124,13 @@ public class JvmsHttpHandler {
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest
     ) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, LIMIT_1, OFFSET_ZERO, null, null, includes, excludes, metadata);
+        try {
+            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+            String message = mongoStorageHandler.getJvmInfo(storage.getDatabase().getCollection(collectionName), systemId, jvmId, includes, excludes);
+            return Response.status(Response.Status.OK).entity(message).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 
     @PUT
@@ -162,7 +172,6 @@ public class JvmsHttpHandler {
             mongoStorageHandler.updateTimestamps(storage.getDatabase().getCollection(collectionName), body, systemId, timeStamp);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }
@@ -183,7 +192,6 @@ public class JvmsHttpHandler {
             String message = mongoStorageHandler.getJvmsTree(storage.getDatabase().getCollection(collectionName), aliveOnly, excludes, includes, limit, offset);
             return Response.status(Response.Status.OK).entity(message).build();
         } catch (Exception e) {
-            e.printStackTrace();
             return Response.status(Response.Status.BAD_REQUEST).build();
         }
     }

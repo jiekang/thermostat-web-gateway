@@ -36,19 +36,49 @@
 
 package com.redhat.thermostat.gateway.service.commands.channel.model;
 
+import java.util.Objects;
 import java.util.SortedMap;
 
 /**
- * A Command Channel Request relayed to an agent (a.k.a receiver).
+ * A Command Channel Request relayed to an agent (a.k.a receiver). An agent
+ * message contains additional information which might be security relevant.
+ *
+ * In particular, {@code action}, {@code jvmId} and {@code systemId} are
+ * strings which have been looked at by the authorization layer and can, thus,
+ * be trusted. If there was an authorization problem, no agent request would
+ * have been created.
  */
 public class AgentRequest extends WebSocketRequest implements Message {
 
-    public AgentRequest(long sequence, SortedMap<String, String> params) {
+    private final String action;
+    private final String jvmId;
+    private final String systemId;
+
+    public AgentRequest(long sequence,
+                        String action,
+                        String systemId,
+                        String jvmId,
+                        SortedMap<String, String> params) {
         super(sequence, params);
+        this.action = Objects.requireNonNull(action);
+        this.jvmId = Objects.requireNonNull(jvmId);
+        this.systemId = Objects.requireNonNull(systemId);
     }
 
     @Override
     public MessageType getMessageType() {
         return MessageType.AGENT_REQUEST;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public String getJvmId() {
+        return jvmId;
+    }
+
+    public String getSystemId() {
+        return systemId;
     }
 }

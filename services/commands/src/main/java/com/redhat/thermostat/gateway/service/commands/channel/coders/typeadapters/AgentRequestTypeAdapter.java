@@ -55,6 +55,12 @@ class AgentRequestTypeAdapter extends BasicMessageTypeAdapter<AgentRequest> {
     @Override
     public void write(JsonWriter out, AgentRequest request) throws IOException {
         JsonObject object = getEnvelopeWithTypeAndSequence(request, request.getSequenceId());
+        JsonElement actionElem = gson.toJsonTree(request.getAction());
+        object.add(Message.ACTION_KEY, actionElem);
+        JsonElement jvmIdElem = gson.toJsonTree(request.getJvmId());
+        object.add(Message.JVM_ID_KEY, jvmIdElem);
+        JsonElement systemIdElem = gson.toJsonTree(request.getSystemId());
+        object.add(Message.SYSTEM_ID_KEY, systemIdElem);
         JsonElement parms = gson.toJsonTree(request.getParams());
         object.add(Message.PAYLOAD_KEY, parms);
         gson.toJson(object, out);

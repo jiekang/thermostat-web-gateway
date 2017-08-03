@@ -40,11 +40,14 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.websocket.PongMessage;
 import javax.websocket.Session;
 
 import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
+import com.redhat.thermostat.gateway.common.util.LoggingUtil;
 import com.redhat.thermostat.gateway.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.gateway.service.commands.channel.CommunicationsRegistry;
 import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
@@ -52,9 +55,10 @@ import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketRes
 
 class CommandChannelAgentSocket extends CommandChannelSocket {
 
+    private static final Logger logger = LoggingUtil.getLogger(CommandChannelAgentSocket.class);
     private static final long SOCKET_SESSION_IDLE_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
     private static final String UNKNOWN_PAYLOAD = "UNKNOWN";
-    private static final String AGENT_PROVIDER_PREFIX = "thermostat-commands-provider-";
+    private static final String RECEIVER_PROVIDER_ROLE = "thermostat-commands-receiver-provider";
 
     CommandChannelAgentSocket(String id, Session session) {
         super(id, session);
@@ -91,9 +95,9 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
 
     @Override
     public void onPongMessage(PongMessage message) {
-        if (Debug.isOn()) {
+        if (logger.isLoggable(Level.FINE)) {
             String payload = extractPayload(message);
-            System.err.println("Server: Got pong message <<" + payload + ">>");
+            logger.fine("Server: Got pong message <<" + payload + ">>");
         }
     }
 
@@ -134,8 +138,7 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
     protected boolean checkRoles() {
         // FIXME: relies on RoleAwareUser - i.e. specific auth scheme.
         RoleAwareUser user = (RoleAwareUser) session.getUserPrincipal();
-        String roleToCheck = AGENT_PROVIDER_PREFIX + agentId;
-        if (!user.isUserInRole(roleToCheck)) {
+        if (!user.isUserInRole(RECEIVER_PROVIDER_ROLE)) {
             return false;
         }
         return true;

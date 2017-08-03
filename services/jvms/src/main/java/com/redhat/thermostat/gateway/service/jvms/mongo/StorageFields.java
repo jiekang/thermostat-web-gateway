@@ -42,6 +42,7 @@ public interface StorageFields extends ThermostatFields {
 
     String LAST_UPDATED = "lastUpdated";
     String STOP_TIME = "stopTime";
+    String IS_ALIVE = "isAlive";
 
     String RESPONSE = "response";
     String JVMS = "jvms";

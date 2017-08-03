@@ -49,7 +49,7 @@ import org.keycloak.KeycloakSecurityContext;
 public class RealmAuthorizer {
 
     public static final String REALMS_HEADER = "X-Thermostat-Realms";
-    private static final String REALMS_HEADER_DELIMITER_REGEX = " +";
+    private static final String REALMS_HEADER_DELIMITER_REGEX = "\\s+";
 
     private final Set<Role> clientRoles;
     private final RoleFactory roleFactory = new RoleFactory();

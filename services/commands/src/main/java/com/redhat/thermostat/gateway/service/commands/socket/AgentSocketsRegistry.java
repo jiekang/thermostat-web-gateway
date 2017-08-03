@@ -43,11 +43,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import javax.websocket.Session;
 
+import com.redhat.thermostat.gateway.common.util.LoggingUtil;
+
 class AgentSocketsRegistry {
 
+    private static final Logger logger = LoggingUtil.getLogger(AgentSocketsRegistry.class);
     private static final double PERCENT_85 = 0.85;
     private static final Map<String, AgentSessionHolder> agentSockets = new ConcurrentHashMap<>();
     private static final String TIMER_NAME = "com.redhat.thermostat.gateway.service.commands.ReceiverPingTimer";
@@ -104,9 +108,7 @@ class AgentSocketsRegistry {
             synchronized (session) {
                 if (session.isOpen()) {
                     ByteBuffer payload = ByteBuffer.wrap(pingPayload.getBytes("UTF-8"));
-                    if (Debug.isOn()) {
-                        System.err.println("Server: sending ping msg <<" + pingPayload + ">>");
-                    }
+                    logger.fine("Server: sending ping msg <<" + pingPayload + ">>");
                     session.getBasicRemote().sendPing(payload);
                 }
             }
