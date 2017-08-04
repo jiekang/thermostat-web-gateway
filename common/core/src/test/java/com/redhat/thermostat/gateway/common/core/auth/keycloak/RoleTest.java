@@ -40,22 +40,29 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Test;
 
 public class RoleTest {
 
     @Test
     public void testSimpleRole() {
-        Role r = new Role("a", "realm");
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
+        Role r = new Role(actions, "realm");
 
-        verifyRole(r, "a", "realm");
+        verifyRole(r, actions, "realm");
     }
 
     @Test
     public void testMultipleActionsRole() {
-        Role r = new Role("rw", "realm-1.2-3");
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
+        Role r = new Role(actions, "realm-1.2-3");
 
-        verifyRole(r, "rw", "realm-1.2-3");
+        verifyRole(r, actions, "realm-1.2-3");
     }
 
     /*
@@ -64,24 +71,53 @@ public class RoleTest {
      */
     @Test
     public void testEquals() {
-        Role one = new Role("a", "b");
-        Role two = new Role("a", "b");
+        Set<String> actionsOne = new HashSet<>();
+        actionsOne.add("a");
+
+        Role one = new Role(actionsOne, "b");
+        Role two = new Role(actionsOne, "b");
 
         assertEquals(one, two);
+
+        Set<String> actionsTwo = new HashSet<>();
+        actionsTwo.add("a");
+
+        Role three = new Role(actionsTwo, "b");
+
+        assertEquals(one, three);
     }
 
     @Test
     public void testNotEquals() {
-        Role one = new Role("a", "b");
-        Role two = new Role("a", "c");
-        Role three = new Role("c", "b");
+        Set<String> actionsOne = new HashSet<>();
+        actionsOne.add("a");
+
+        Set<String> actionsTwo = new HashSet<>();
+        actionsTwo.add("b");
+
+        Role one = new Role(actionsOne, "b");
+        Role two = new Role(actionsOne, "c");
+        Role three = new Role(actionsTwo, "b");
 
         assertNotEquals(one, two);
         assertNotEquals(one, three);
     }
 
-    private void verifyRole(Role role, String expectedActions, String expectedRole) {
-        assertEquals(expectedActions, role.getActions());
+    @Test(expected = UnsupportedOperationException.class)
+    public void testActionsCannotBeModified() {
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
+        Role r = new Role(actions, "realm-1.2-3");
+
+        verifyRole(r, actions, "realm-1.2-3");
+
+        r.getActions().add("not-allowed");
+    }
+
+    private void verifyRole(Role role, Set<String> expectedActions, String expectedRole) {
+        for (String item : expectedActions) {
+            assertTrue(role.containsAction(item));
+        }
         assertEquals(expectedRole, role.getRealm());
     }
 }

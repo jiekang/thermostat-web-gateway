@@ -36,23 +36,30 @@
 
 package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Set;
 
 public class Role {
+    public static final String ACTION_DELIMITER = ",";
     public static final String ROLE_DELIMITER = "-";
-    public static final String[] RESTRICTED_CHARACTERS = new String[]{" "};
+    /**
+     * Array of regex that valid roles cannot match
+     * Role cannot contain any whitespaces
+     */
+    public static final String[] RESTRICTED_CHARACTERS_REGEX = new String[]{".*\\s+.*"};
 
-    private final String actions;
+    private final Set<String> actions;
     private final String realm;
 
-    public Role(String actions, String realm) {
+    public Role(Set<String> actions, String realm) {
         Objects.requireNonNull(actions);
         Objects.requireNonNull(realm);
-        this.actions = actions;
+        this.actions = Collections.unmodifiableSet(actions);
         this.realm = realm;
     }
 
-    public String getActions() {
+    public Set<String> getActions() {
         return this.actions;
     }
 
@@ -76,6 +83,10 @@ public class Role {
         }
 
         return realm.equals(role.realm);
+    }
+
+    public boolean containsAction(String action) {
+        return this.actions.contains(action);
     }
 
     @Override

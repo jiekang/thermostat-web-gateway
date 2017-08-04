@@ -77,7 +77,7 @@ public class RealmAuthorizer {
 
     public boolean checkActionExists(String action) {
         for (Role role : clientRoles) {
-            if (role.getActions().contains(action)) {
+            if (role.containsAction(action)) {
                 return  true;
             }
         }
@@ -101,7 +101,7 @@ public class RealmAuthorizer {
     public Set<String> getRealmsWithAction(String action) {
         Set<String> realms = new HashSet<>();
         for (Role role : clientRoles) {
-            if (role.getActions().contains(action)) {
+            if (role.containsAction(action)) {
                 realms.add(role.getRealm());
             }
         }
