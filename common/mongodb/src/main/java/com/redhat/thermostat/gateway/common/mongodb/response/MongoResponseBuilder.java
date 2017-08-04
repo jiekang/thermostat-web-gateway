@@ -45,7 +45,6 @@ import com.google.gson.GsonBuilder;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
-import com.redhat.thermostat.gateway.common.util.ArgumentRunnable;
 
 /*
  *  Builds the appropriate response after executing the request's MongoDB Query.
