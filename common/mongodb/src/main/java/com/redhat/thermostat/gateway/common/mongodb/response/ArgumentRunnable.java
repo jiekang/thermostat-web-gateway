@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.util;
+package com.redhat.thermostat.gateway.common.mongodb.response;
 
 public interface ArgumentRunnable<T> {
     void run(T arg);

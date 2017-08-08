@@ -55,7 +55,6 @@ import com.mongodb.Function;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoIterable;
-import com.redhat.thermostat.gateway.common.util.ArgumentRunnable;
 
 public class MongoResponseBuilderTest {
 

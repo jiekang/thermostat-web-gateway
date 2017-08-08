@@ -36,14 +36,19 @@
 
 package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 public class RoleFactory {
 
     public boolean isValidRole(String role) {
         if (!role.contains(Role.ROLE_DELIMITER)) {
             return false;
         }
-        for (String restrictedCharacter : Role.RESTRICTED_CHARACTERS) {
-            if (role.contains(restrictedCharacter)) {
+        for (String restrictedCharacter : Role.RESTRICTED_CHARACTERS_REGEX) {
+            if (role.matches(restrictedCharacter)) {
                 return false;
             }
         }
@@ -55,11 +60,12 @@ public class RoleFactory {
     }
 
     public Role buildRole(String role) {
-
         int index = role.indexOf(Role.ROLE_DELIMITER);
         String actions = role.substring(0, index);
+
         String realm = role.substring(index + 1);
 
-        return new Role(actions, realm);
+        Set<String> actionSet = new HashSet<>(Arrays.asList(actions.split(Role.ACTION_DELIMITER)));
+        return new Role(actionSet, realm);
     }
 }

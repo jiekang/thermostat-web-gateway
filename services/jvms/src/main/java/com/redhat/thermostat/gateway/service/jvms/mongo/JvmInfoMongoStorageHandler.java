@@ -47,7 +47,6 @@ import static com.mongodb.client.model.Projections.include;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,8 +61,8 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
+import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import com.redhat.thermostat.gateway.common.util.ArgumentRunnable;
 
 public class JvmInfoMongoStorageHandler  {
 
@@ -73,6 +72,7 @@ public class JvmInfoMongoStorageHandler  {
     public void updateTimestamps(MongoCollection<Document> collection, String body, String systemId, Long timeStamp) {
         final Bson filter;
         if (body != null && body.length() > 0) {
+            @SuppressWarnings("unchecked")
             List<String> jvms = (List<String>) JSON.parse(body);
             List<Bson> jvmFilters = new ArrayList<>();
             for (String id : jvms) {

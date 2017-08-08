@@ -40,6 +40,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,18 +60,24 @@ public class RoleFactoryTest {
         String role = "a-valid,role";
         assertTrue(roleFactory.isValidRole(role));
 
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
         Role r = roleFactory.buildRole(role);
-        verifyRole(r, "a", "valid,role");
+        verifyRole(r, actions, "valid,role");
     }
 
     @Test
     public void testValidRoleWithActions() {
-        String role = "rwd-role";
+        String role = "r,w,d-role";
 
         assertTrue(roleFactory.isValidRole(role));
 
         Role r = roleFactory.buildRole(role);
-        verifyRole(r, "rwd", "role");
+        Set<String> actions = new HashSet<>();
+        actions.add("r");
+        actions.add("w");
+        actions.add("d");
+        verifyRole(r, actions, "role");
     }
 
     @Test
@@ -89,17 +98,24 @@ public class RoleFactoryTest {
         assertTrue(roleFactory.isValidRole(role));
 
         Role r = roleFactory.buildRole(role);
-        verifyRole(r, "a", "realm-with-hyphens");
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
+        verifyRole(r, actions, "realm-with-hyphens");
     }
 
     @Test
-    public void testRealmWithSpaceIsInvalid() {
+    public void testRealmWithWhitespaceIsInvalid() {
         String role = "a-invalid realm";
+        assertFalse(roleFactory.isValidRole(role));
+
+        role = "a-nother\tinvalidrealm ";
         assertFalse(roleFactory.isValidRole(role));
     }
 
-    private void verifyRole(Role role, String expectedActions, String expectedRole) {
-        assertEquals(expectedActions, role.getActions());
+    private void verifyRole(Role role, Set<String> expectedActions, String expectedRole) {
+        for (String item : expectedActions) {
+            assertTrue(role.containsAction(item));
+        }
         assertEquals(expectedRole, role.getRealm());
     }
 }
