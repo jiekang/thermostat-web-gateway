@@ -133,8 +133,10 @@ public class RealmAuthorizer {
                 .getAttribute(KeycloakSecurityContext.class.getName());
 
         for (String role : keycloakSecurityContext.getToken().getRealmAccess().getRoles()) {
-            if (roleFactory.isValidRole(role)) {
+            try {
                 keycloakRoles.add(roleFactory.buildRole(role));
+            } catch (InvalidRoleException e) {
+                //Do nothing
             }
         }
 

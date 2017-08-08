@@ -36,41 +36,8 @@
 
 package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-public class RoleFactory {
-
-    private boolean isValidRole(String role) {
-        if (!role.contains(Role.ROLE_DELIMITER)) {
-            return false;
-        }
-        for (String restrictedCharacter : Role.RESTRICTED_CHARACTERS_REGEX) {
-            if (role.matches(restrictedCharacter)) {
-                return false;
-            }
-        }
-
-        int index = role.indexOf(Role.ROLE_DELIMITER);
-
-        // Make sure there are characters before and after the role delimiter
-        return index > 0 && index < role.length() - 1;
-    }
-
-    public Role buildRole(String role) throws InvalidRoleException {
-        role = role.trim();
-
-        if (!isValidRole(role)) {
-            throw new InvalidRoleException("Invalid role: " + role);
-        }
-
-        int index = role.indexOf(Role.ROLE_DELIMITER);
-        String actions = role.substring(0, index);
-
-        String realm = role.substring(index + 1);
-
-        Set<String> actionSet = new HashSet<>(Arrays.asList(actions.split(Role.ACTION_DELIMITER)));
-        return new Role(actionSet, realm);
+public class InvalidRoleException extends Exception {
+    public InvalidRoleException(String s) {
+        super(s);
     }
 }

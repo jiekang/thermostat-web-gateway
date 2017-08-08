@@ -56,9 +56,9 @@ public class RoleFactoryTest {
     }
 
     @Test
-    public void testValidRole() {
+    public void testValidRole() throws InvalidRoleException {
         String role = "a-valid,role";
-        assertTrue(roleFactory.isValidRole(role));
+        roleFactory.buildRole(role);
 
         Set<String> actions = new HashSet<>();
         actions.add("a");
@@ -67,10 +67,8 @@ public class RoleFactoryTest {
     }
 
     @Test
-    public void testValidRoleWithActions() {
+    public void testValidRoleWithActions() throws InvalidRoleException {
         String role = "r,w,d-role";
-
-        assertTrue(roleFactory.isValidRole(role));
 
         Role r = roleFactory.buildRole(role);
         Set<String> actions = new HashSet<>();
@@ -80,22 +78,21 @@ public class RoleFactoryTest {
         verifyRole(r, actions, "role");
     }
 
-    @Test
-    public void testNoActionRole() {
+    @Test(expected = InvalidRoleException.class)
+    public void testNoActionRole() throws InvalidRoleException {
         String role = "-role";
-        assertFalse(roleFactory.isValidRole(role));
+        roleFactory.buildRole(role);
     }
 
-    @Test
-    public void testNoRealmRole() {
+    @Test(expected = InvalidRoleException.class)
+    public void testNoRealmRole() throws InvalidRoleException {
         String role = "a-";
-        assertFalse(roleFactory.isValidRole(role));
+        roleFactory.buildRole(role);
     }
 
     @Test
-    public void testHyphenRealm() {
+    public void testHyphenRealm() throws InvalidRoleException {
         String role = "a-realm-with-hyphens";
-        assertTrue(roleFactory.isValidRole(role));
 
         Role r = roleFactory.buildRole(role);
         Set<String> actions = new HashSet<>();
@@ -103,13 +100,30 @@ public class RoleFactoryTest {
         verifyRole(r, actions, "realm-with-hyphens");
     }
 
-    @Test
-    public void testRealmWithWhitespaceIsInvalid() {
-        String role = "a-invalid realm";
-        assertFalse(roleFactory.isValidRole(role));
+    @Test(expected = InvalidRoleException.class)
+    public void testRealmWithWhitespaceIsInvalid() throws InvalidRoleException {
+        String role = "a-invalid \trealm";
+        roleFactory.buildRole(role);
+    }
 
-        role = "a-nother\tinvalidrealm ";
-        assertFalse(roleFactory.isValidRole(role));
+    @Test
+    public void testRealmWithLeadingWhitespace() throws InvalidRoleException {
+        String role = " a-role";
+
+        Role r = roleFactory.buildRole(role);
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
+        verifyRole(r, actions, "role");
+    }
+
+    @Test
+    public void testRealmWithTrailingWhitespace() throws InvalidRoleException {
+        String role = "a-role\t";
+
+        Role r = roleFactory.buildRole(role);
+        Set<String> actions = new HashSet<>();
+        actions.add("a");
+        verifyRole(r, actions, "role");
     }
 
     private void verifyRole(Role role, Set<String> expectedActions, String expectedRole) {
