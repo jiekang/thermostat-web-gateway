@@ -36,6 +36,13 @@
 
 package com.redhat.thermostat.gateway.service.jvms.http;
 
+import static com.redhat.thermostat.gateway.common.util.ServiceException.CANNOT_QUERY_REALMS_PROPERTY;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.DATABASE_UNAVAILABLE;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.EXPECTED_JSON_ARRAY;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.MALFORMED_CLIENT_REQUEST;
+
+import java.io.IOException;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -51,18 +58,31 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.mongodb.MongoTimeoutException;
+import com.mongodb.MongoWriteException;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
+import com.redhat.thermostat.gateway.common.util.HttpResponseExceptionHandler;
 import com.redhat.thermostat.gateway.service.jvms.mongo.JvmInfoMongoStorageHandler;
+import org.bson.json.JsonParseException;
 
 @Path("/")
 public class JvmsHttpHandler {
     private static final String collectionName = "jvm-info";
     private final JvmInfoMongoStorageHandler mongoStorageHandler = new JvmInfoMongoStorageHandler();
     private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
+    private final HttpResponseExceptionHandler exceptionHandler = new HttpResponseExceptionHandler();
 
+    public JvmsHttpHandler() {
+        exceptionHandler.add(MongoWriteException.class, MALFORMED_CLIENT_REQUEST)
+                        .add(JsonParseException.class, MALFORMED_CLIENT_REQUEST)
+                        .add(UnsupportedOperationException.class, MALFORMED_CLIENT_REQUEST)
+                        .add(ClassCastException.class, EXPECTED_JSON_ARRAY)
+                        .add(MongoTimeoutException.class, DATABASE_UNAVAILABLE)
+                        .add(IOException.class, CANNOT_QUERY_REALMS_PROPERTY);
+    }
 
     @GET
     @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}")
@@ -84,7 +104,7 @@ public class JvmsHttpHandler {
             String message = mongoStorageHandler.getJvmInfos(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, queries, includes, excludes);
             return Response.status(Response.Status.OK).entity(message).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 
@@ -129,7 +149,7 @@ public class JvmsHttpHandler {
             String message = mongoStorageHandler.getJvmInfo(storage.getDatabase().getCollection(collectionName), systemId, jvmId, includes, excludes);
             return Response.status(Response.Status.OK).entity(message).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 
@@ -172,7 +192,7 @@ public class JvmsHttpHandler {
             mongoStorageHandler.updateTimestamps(storage.getDatabase().getCollection(collectionName), body, systemId, timeStamp);
             return Response.status(Response.Status.OK).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 
@@ -192,7 +212,7 @@ public class JvmsHttpHandler {
             String message = mongoStorageHandler.getJvmsTree(storage.getDatabase().getCollection(collectionName), aliveOnly, excludes, includes, limit, offset);
             return Response.status(Response.Status.OK).entity(message).build();
         } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST).build();
+            return exceptionHandler.generateResponseForException(e);
         }
     }
 }
