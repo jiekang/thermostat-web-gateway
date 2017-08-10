@@ -47,6 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -106,9 +108,9 @@ public class MongoExecutor {
 
         final Bson bsonQueries = MongoRequestFilters.buildQuery(queries, realms);
 
-        collection.updateMany(bsonQueries, fields);
+        UpdateResult res = collection.updateMany(bsonQueries, fields);
 
-        metaDataContainer.setPutReqMatches(collection.count(bsonQueries));
+        metaDataContainer.setPutReqMatches(res.getModifiedCount());
 
         return metaDataContainer;
     }
@@ -124,8 +126,8 @@ public class MongoExecutor {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
         if (queries != null && !queries.isEmpty() || realms != null && !realms.isEmpty()) {
             Bson bsonQueries = MongoRequestFilters.buildQuery(queries, realms);
-            metaDataContainer.setDeleteReqMatches(collection.count(bsonQueries));
-            collection.deleteMany(bsonQueries);
+            DeleteResult res = collection.deleteMany(bsonQueries);
+            metaDataContainer.setDeleteReqMatches(res.getDeletedCount());
         } else {
             metaDataContainer.setDeleteReqMatches(collection.count());
             collection.drop();
@@ -155,6 +157,7 @@ public class MongoExecutor {
             }
 
             collection.insertMany(inputList);
+            metaDataContainer.setPostReqInsertions(inputList.size());
         }
 
         return metaDataContainer;
