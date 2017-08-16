@@ -52,6 +52,18 @@
             </param-value>
         </init-param>
     </servlet>
+    <filter>
+        <filter-name>ServiceVersionFilter</filter-name>
+        <filter-class>com.redhat.thermostat.gateway.common.core.servlet.ServiceVersionFilter</filter-class>
+        <init-param>
+            <param-name>version</param-name>
+            <param-value>0.0.1</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ServiceVersionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
     <servlet-mapping>
         <servlet-name>SystemCPUServlet</servlet-name>
         <url-pattern>/0.0.1/*</url-pattern>

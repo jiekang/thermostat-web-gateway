@@ -87,16 +87,21 @@ public class IntegrationTest {
 
     @BeforeClass
     public static void beforeClassIntegrationTest() throws Exception {
+        client = createAndStartHttpClient();
+        startServer();
+    }
+
+    public static HttpClient createAndStartHttpClient() throws Exception {
+        final HttpClient theclient;
         if (isTLSEnabled()) {
             SslContextFactory sslFactory = new SslContextFactory();
             sslFactory.setTrustAll(true);
-            client = new HttpClient(sslFactory);
+            theclient = new HttpClient(sslFactory);
         } else {
-            client = new HttpClient();
+            theclient = new HttpClient();
         }
-        client.start();
-
-        startServer();
+        theclient.start();
+        return theclient;
     }
 
     private static boolean isTLSEnabled() {

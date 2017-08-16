@@ -42,12 +42,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -62,7 +62,8 @@ import static org.junit.Assert.assertTrue;
 public class SystemCPUIntegrationTest extends MongoIntegrationTest {
 
     private static final String collectionName = "cpu-info";
-    private static final String serviceURL = baseUrl + "/system-cpu/0.0.1";
+    private static final String versionString = "0.0.1";
+    private static final String serviceURL = baseUrl + "/system-cpu/" + versionString;
     private static final int HTTP_200_OK = 200;
     private static final int HTTP_404_NOTFOUND = 404;
     private static final String TIMESTAMP_TOKEN = "$TIMESTAMP$";
@@ -186,6 +187,13 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
 
         // check that it's not there
         getUnknown(systemid);
+    }
+
+    @Test
+    public void testVersions() throws Exception {
+        final String systemid = getRandomSystemId();
+        post(systemid);
+        VersionTestUtil.testAllVersions(baseUrl + "/system-cpu", versionString, "/systems/" + systemid);
     }
 
     private ContentResponse post(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {

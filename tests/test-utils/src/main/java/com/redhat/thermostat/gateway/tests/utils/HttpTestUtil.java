@@ -76,7 +76,9 @@ public class HttpTestUtil {
             throws InterruptedException, TimeoutException, ExecutionException {
         ContentResponse response = client.newRequest(url).method(httpMethod).send();
         assertEquals(expectedResponseStatus, response.getStatus());
-        assertEquals(expectedResponseContent, response.getContentAsString());
+        if (expectedResponseContent != null) {
+            assertEquals(expectedResponseContent, response.getContentAsString());
+        }
     }
 
     public static void testContentResponse(HttpClient client,

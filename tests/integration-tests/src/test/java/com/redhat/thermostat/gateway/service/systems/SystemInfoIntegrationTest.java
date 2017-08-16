@@ -41,11 +41,11 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -60,7 +60,7 @@ import static org.junit.Assert.assertTrue;
 public class SystemInfoIntegrationTest extends MongoIntegrationTest {
 
     private static final String serviceName = "system-info";
-    private static final String versionNumber = "0.0.1";
+    private static final String versionString = "0.0.1";
     private static final int HTTP_200_OK = 200;
     private static final String CPU_STRING1 = "Intel";
     private static final String CPU_STRING2 = "AMD";
@@ -93,7 +93,7 @@ public class SystemInfoIntegrationTest extends MongoIntegrationTest {
     }
 
     public SystemInfoIntegrationTest() {
-        super("systems/" + versionNumber, serviceName);
+        super("systems/" + versionString, serviceName);
     }
 
     @Test
@@ -189,6 +189,13 @@ public class SystemInfoIntegrationTest extends MongoIntegrationTest {
 
         // check that it's not there
         getUnknownSystemInfo(systemid);
+    }
+
+    @Test
+    public void testVersions() throws Exception {
+        final String systemid = getRandomSystemId();
+        postSystemInfo(systemid);
+        VersionTestUtil.testAllVersions(baseUrl + "/systems", versionString, "/systems/" + systemid);
     }
 
     private ContentResponse postSystemInfo(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {

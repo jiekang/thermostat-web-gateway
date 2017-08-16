@@ -205,6 +205,29 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
+    public void testGetNoPatchNumber() throws InterruptedException, TimeoutException, ExecutionException {
+        String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
+                "{\"e\":\"test4\",\"b\":\"test1\"}]";
+
+        // {"response":["{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}"],
+        //"metaData":{"payloadCount":1,"count":3,
+        //"next":"http://127.0.0.1:30000/jvm-gc/0.0.2?o=1&l=1&q===test1&m=true"}}
+        String expectedResponse ="{\"response\":[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}],"+
+                "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
+                "\"next\":\"" + gcUrl + "?" + OFFSET_PREFIX + "\\u003d1\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX  +"\\u003dtrue\"}}";
+
+        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+
+        final String url1 =  baseUrl + "/" + serviceName + "/" + "0.0";;
+        makeHttpGetRequest(url1 + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", expectedResponse, 200);
+        final String url2 =  baseUrl + "/" + serviceName + "/" + "0.0.1";;
+        makeHttpGetRequest(url2 + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", expectedResponse, 200);
+        final String url3 =  baseUrl + "/" + serviceName + "/" + "0.0.3";;
+        makeHttpGetRequest(url3 + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", "", 404);
+
+    }
+
+    @Test
     public void testGetWithMetaDataAndOffset() throws InterruptedException, TimeoutException, ExecutionException {
         String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
                 "{\"e\":\"test4\",\"b\":\"test1\"}]";

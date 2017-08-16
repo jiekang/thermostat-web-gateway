@@ -266,6 +266,24 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
+    public void testGetWithVersions() throws InterruptedException, TimeoutException, ExecutionException {
+        String data = "[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"}," +
+                "{\"e\":\"test4\",\"b\":\"test1\"}]";
+
+        String expectedResponse = "{\"response\":[{\"a\":\"test\",\"b\":\"test1\"," +
+                "\"c\":\"test2\"}],\"metaData\":{\"payloadCount\":1,\"count\":3," +
+                "\"next\":\"" + returnedUrl + "?" + OFFSET_PREFIX + "\\u003d1\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
+
+        HttpTestUtil.addRecords(client, resourceUrl, data);
+        final String url1 = baseUrl + "/jvm-memory/0.0";
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, url1 + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", 200, expectedResponse);
+        final String url2 = baseUrl + "/jvm-memory/0.0.1";
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, url2 + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", 200, expectedResponse);
+        final String url3 = baseUrl + "/jvm-memory/0.0.3";
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, url3 + "?" + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", 404, null);
+    }
+
+    @Test
     public void testGetWithMetaDataAndOffset() throws InterruptedException, TimeoutException, ExecutionException {
         String data = "[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"}," +
                 "{\"e\":\"test4\",\"b\":\"test1\"}]";

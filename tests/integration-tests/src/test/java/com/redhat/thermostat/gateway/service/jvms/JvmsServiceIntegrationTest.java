@@ -704,7 +704,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
-    public void testTreeAllOffset() throws InterruptedException, TimeoutException, ExecutionException {
+    public void testTreeVersions() throws InterruptedException, TimeoutException, ExecutionException {
         String postUrl = jvmsUrl + "/systems/1";
         String treeUrl = jvmsUrl + "/tree";
 
@@ -713,8 +713,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         assertEquals(200, postResponse.getStatus());
 
         String query = "?aliveOnly=false&offset=1";
-        ContentResponse response = client.newRequest(treeUrl + query).method(HttpMethod.GET).send();
-        assertEquals(200, response.getStatus());
+
         String expected = "{ \"response\" : [{\"systemId\":\"1\", " +
                 "\"jvms\":[{ \"agentId\" : \"aid\", \"jvmId\" : \"jid2\", \"jvmPid\" : 2, " +
                 "\"startTime\" : { \"$numberLong\" : \"1495727607481\" }, " +
@@ -735,6 +734,20 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 "{ \"key\" : \"CYGWIN_MODE\", \"value\" : \"0\" }, { \"key\" : \"COLORTERM\", \"value\" : \"truecolor\" }, " +
                 "{ \"key\" : \"_\", \"value\" : \"/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java\" }], " +
                 "\"uid\" : 1000, \"username\" : \"user\", \"systemId\" : \"1\", \"isAlive\" : false }]}]}";
+
+
+        final String url1 = baseUrl + "/jvms/0.0/tree";
+        ContentResponse response = client.newRequest(url1 + query).method(HttpMethod.GET).send();
+        assertEquals(200, response.getStatus());
         assertEquals(expected, response.getContentAsString());
+
+        final String url2 = baseUrl + "/jvms/0.0.0/tree";
+        response = client.newRequest(url2 + query).method(HttpMethod.GET).send();
+        assertEquals(200, response.getStatus());
+        assertEquals(expected, response.getContentAsString());
+
+        final String url3 = baseUrl + "/jvms/0.0.5/tree";
+        response = client.newRequest(url3 + query).method(HttpMethod.GET).send();
+        assertEquals(404, response.getStatus());
     }
 }
