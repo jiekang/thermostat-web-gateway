@@ -46,69 +46,26 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.keycloak.KeycloakSecurityContext;
 
-public class RealmAuthorizer {
+import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.Role;
+import com.redhat.thermostat.gateway.common.core.auth.RoleFactory;
+
+public class KeycloakRealmAuthorizer extends RealmAuthorizer {
 
     public static final String REALMS_HEADER = "X-Thermostat-Realms";
     private static final String REALMS_HEADER_DELIMITER_REGEX = "\\s+";
 
-    private final Set<Role> clientRoles;
     private final RoleFactory roleFactory = new RoleFactory();
 
-    public RealmAuthorizer(HttpServletRequest httpServletRequest) throws ServletException {
-        Set<Role> roles = buildClientRoles(httpServletRequest);
-        this.clientRoles = Collections.unmodifiableSet(roles);
+    public KeycloakRealmAuthorizer(HttpServletRequest httpServletRequest) throws ServletException {
+        this.clientRoles = buildClientRoles(httpServletRequest);
     }
 
-    public boolean readable() {
-        return checkActionExists(Action.READ);
-    }
-
-    public boolean writable() {
-        return checkActionExists(Action.WRITE);
-    }
-
-    public boolean updatable() {
-        return checkActionExists(Action.UPDATE);
-    }
-
-    public boolean deletable() {
-        return checkActionExists(Action.DELETE);
-    }
-
-    public boolean checkActionExists(String action) {
-        for (Role role : clientRoles) {
-            if (role.containsAction(action)) {
-                return  true;
-            }
-        }
-        return false;
-    }
-
-    public Set<String> getReadableRealms() {
-        return getRealmsWithAction(Action.READ);
-    }
-
-    public Set<String> getWritableRealms() {
-        return getRealmsWithAction(Action.WRITE);
-    }
-    public Set<String> getUpdatableRealms() {
-        return getRealmsWithAction(Action.UPDATE);
-    }
-    public Set<String> getDeletableRealms() {
-        return getRealmsWithAction(Action.DELETE);
-    }
-
-    public Set<String> getRealmsWithAction(String action) {
-        Set<String> realms = new HashSet<>();
-        for (Role role : clientRoles) {
-            if (role.containsAction(action)) {
-                realms.add(role.getRealm());
-            }
-        }
-        return Collections.unmodifiableSet(realms);
-    }
-
-    protected Set<Role> getAllRoles() {
+    /**
+     * Package private for testing
+     */
+    Set<Role> getAllRoles() {
         return clientRoles;
     }
 
@@ -120,7 +77,7 @@ public class RealmAuthorizer {
             return buildClientPreferredRoles(keycloakRoles, realmsHeader);
         }
 
-        return keycloakRoles;
+        return Collections.unmodifiableSet(keycloakRoles);
     }
 
     /**

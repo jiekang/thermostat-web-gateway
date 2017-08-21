@@ -34,45 +34,21 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+public class DefaultRealmAuthorizer extends RealmAuthorizer {
+    public static final String DEFAULT_REALM = "thermostat";
 
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer;
+    public DefaultRealmAuthorizer() throws InvalidRoleException {
+        RoleFactory roleFactory = new RoleFactory();
+        Role r = roleFactory.buildRole("r,w,u,d-" + DEFAULT_REALM);
+        Set<Role> roles = new HashSet<>();
+        roles.add(r);
 
-public class KeycloakRequestFilter implements Filter {
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Do nothing
-    }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            RealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(httpServletRequest);
-
-            httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
-
-            chain.doFilter(request, response);
-        } catch (ServletException e) {
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid realms header");
-        }
-    }
-
-    @Override
-    public void destroy() {
-        // Do nothing
+        clientRoles = Collections.unmodifiableSet(roles);
     }
 }

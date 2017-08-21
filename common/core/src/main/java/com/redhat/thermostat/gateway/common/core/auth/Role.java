@@ -34,43 +34,63 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 
-public class RoleFactory {
+public class Role {
+    public static final String ACTION_DELIMITER = ",";
+    public static final String ROLE_DELIMITER = "-";
+    /**
+     * Array of regex that valid roles cannot match
+     * Role cannot contain any whitespaces
+     */
+    public static final String[] RESTRICTED_CHARACTERS_REGEX = new String[]{".*\\s+.*"};
 
-    private boolean isValidRole(String role) {
-        if (!role.contains(Role.ROLE_DELIMITER)) {
-            return false;
-        }
-        for (String restrictedCharacter : Role.RESTRICTED_CHARACTERS_REGEX) {
-            if (role.matches(restrictedCharacter)) {
-                return false;
-            }
-        }
+    private final Set<String> actions;
+    private final String realm;
 
-        int index = role.indexOf(Role.ROLE_DELIMITER);
-
-        // Make sure there are characters before and after the role delimiter
-        return index > 0 && index < role.length() - 1;
+    public Role(Set<String> actions, String realm) {
+        Objects.requireNonNull(actions);
+        Objects.requireNonNull(realm);
+        this.actions = Collections.unmodifiableSet(actions);
+        this.realm = realm;
     }
 
-    public Role buildRole(String role) throws InvalidRoleException {
-        role = role.trim();
+    public Set<String> getActions() {
+        return this.actions;
+    }
 
-        if (!isValidRole(role)) {
-            throw new InvalidRoleException("Invalid role: " + role);
+    public String getRealm() {
+        return this.realm;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
 
-        int index = role.indexOf(Role.ROLE_DELIMITER);
-        String actions = role.substring(0, index);
+        Role role = (Role) o;
 
-        String realm = role.substring(index + 1);
+        if (!actions.equals(role.actions)) {
+            return false;
+        }
 
-        Set<String> actionSet = new HashSet<>(Arrays.asList(actions.split(Role.ACTION_DELIMITER)));
-        return new Role(actionSet, realm);
+        return realm.equals(role.realm);
+    }
+
+    public boolean containsAction(String action) {
+        return this.actions.contains(action);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(actions, realm);
     }
 }

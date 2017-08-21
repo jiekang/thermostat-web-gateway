@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
 public class InvalidRoleException extends Exception {
     public InvalidRoleException(String s) {

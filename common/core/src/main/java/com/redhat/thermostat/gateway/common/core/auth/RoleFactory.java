@@ -34,45 +34,43 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
-import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+public class RoleFactory {
 
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer;
-
-public class KeycloakRequestFilter implements Filter {
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Do nothing
-    }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            RealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(httpServletRequest);
-
-            httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
-
-            chain.doFilter(request, response);
-        } catch (ServletException e) {
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid realms header");
+    private boolean isValidRole(String role) {
+        if (!role.contains(Role.ROLE_DELIMITER)) {
+            return false;
         }
+        for (String restrictedCharacter : Role.RESTRICTED_CHARACTERS_REGEX) {
+            if (role.matches(restrictedCharacter)) {
+                return false;
+            }
+        }
+
+        int index = role.indexOf(Role.ROLE_DELIMITER);
+
+        // Make sure there are characters before and after the role delimiter
+        return index > 0 && index < role.length() - 1;
     }
 
-    @Override
-    public void destroy() {
-        // Do nothing
+    public Role buildRole(String role) throws InvalidRoleException {
+        role = role.trim();
+
+        if (!isValidRole(role)) {
+            throw new InvalidRoleException("Invalid role: " + role);
+        }
+
+        int index = role.indexOf(Role.ROLE_DELIMITER);
+        String actions = role.substring(0, index);
+
+        String realm = role.substring(index + 1);
+
+        Set<String> actionSet = new HashSet<>(Arrays.asList(actions.split(Role.ACTION_DELIMITER)));
+        return new Role(actionSet, realm);
     }
 }

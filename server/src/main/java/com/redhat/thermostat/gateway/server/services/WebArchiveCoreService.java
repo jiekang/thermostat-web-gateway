@@ -59,6 +59,7 @@ import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.server.auth.DefaultAuthFilter;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfiguration;
@@ -86,6 +87,8 @@ class WebArchiveCoreService implements CoreService {
 
         webAppContext.setAttribute(GlobalConstants.SERVICE_CONFIG_KEY, serviceConfig);
         webAppContext.addSystemClass(Configuration.class.getName());
+        webAppContext.addSystemClass("com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer");
+
 
         initializeWebSockets(server, webAppContext);
 
@@ -100,7 +103,13 @@ class WebArchiveCoreService implements CoreService {
             setupBasicAuthForContext(webAppContext);
         } else if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_KEYCLOAK)) {
             setupKeycloakAuthForContext(webAppContext);
+        } else {
+            setupDefaultAuthForContext(webAppContext);
         }
+    }
+
+    private void setupDefaultAuthForContext(WebAppContext webAppContext) {
+        webAppContext.addFilter(DefaultAuthFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     }
 
     private void setupKeycloakAuthForContext(WebAppContext webAppContext) {
@@ -128,7 +137,6 @@ class WebArchiveCoreService implements CoreService {
         webAppContext.setInitParameter("org.keycloak.json.adapterConfig", keycloakConfig);
         webAppContext.setSecurityHandler(securityHandler);
         webAppContext.addSystemClass("org.keycloak.");
-        webAppContext.addSystemClass("com.redhat.thermostat.gateway.common.core.auth.keycloak.");
 
         webAppContext.addFilter(KeycloakRequestFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
     }

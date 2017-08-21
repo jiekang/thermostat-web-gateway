@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth.keycloak;
+package com.redhat.thermostat.gateway.server.auth;
 
 import java.io.IOException;
 
@@ -45,12 +45,22 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import com.redhat.thermostat.gateway.common.core.auth.DefaultRealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer;
 
-public class KeycloakRequestFilter implements Filter {
+public class DefaultAuthFilter implements Filter {
+    private RealmAuthorizer realmAuthorizer;
+
+    public DefaultAuthFilter() {
+        try {
+            realmAuthorizer = new DefaultRealmAuthorizer();
+        } catch (InvalidRoleException e) {
+            throw new IllegalStateException("Unable to create DefaultRealmAuthorizer", e);
+        }
+    }
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         // Do nothing
@@ -58,17 +68,10 @@ public class KeycloakRequestFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            RealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(httpServletRequest);
+        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+        httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
 
-            httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
-
-            chain.doFilter(request, response);
-        } catch (ServletException e) {
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid realms header");
-        }
+        chain.doFilter(request, response);
     }
 
     @Override

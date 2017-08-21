@@ -61,6 +61,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
+import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
 
@@ -197,6 +198,7 @@ public class JvmInfoMongoStorageHandler  {
         documents.forEach(new Block<Document>() {
             @Override
             public void apply(Document document) {
+                document.remove(KeycloakFields.REALMS_KEY);
                 setIsAlive(document);
 
                 String systemId = document.getString(StorageFields.SYSTEM_ID);

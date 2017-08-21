@@ -34,63 +34,27 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class Role {
-    public static final String ACTION_DELIMITER = ",";
-    public static final String ROLE_DELIMITER = "-";
-    /**
-     * Array of regex that valid roles cannot match
-     * Role cannot contain any whitespaces
-     */
-    public static final String[] RESTRICTED_CHARACTERS_REGEX = new String[]{".*\\s+.*"};
+import org.junit.Test;
 
-    private final Set<String> actions;
-    private final String realm;
+public class DefaultRealmAuthorizerTest {
 
-    public Role(Set<String> actions, String realm) {
-        Objects.requireNonNull(actions);
-        Objects.requireNonNull(realm);
-        this.actions = Collections.unmodifiableSet(actions);
-        this.realm = realm;
-    }
+    @Test
+    public void testDefaultRoleExists() throws InvalidRoleException {
+        DefaultRealmAuthorizer realmAuthorizer = new DefaultRealmAuthorizer();
 
-    public Set<String> getActions() {
-        return this.actions;
-    }
+        assertEquals(1, realmAuthorizer.clientRoles.size());
 
-    public String getRealm() {
-        return this.realm;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
+        for (Role r : realmAuthorizer.clientRoles) {
+            assertEquals("thermostat", r.getRealm());
+            assertTrue(r.containsAction("r"));
+            assertTrue(r.containsAction("w"));
+            assertTrue(r.containsAction("u"));
+            assertTrue(r.containsAction("d"));
         }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        Role role = (Role) o;
-
-        if (!actions.equals(role.actions)) {
-            return false;
-        }
-
-        return realm.equals(role.realm);
-    }
-
-    public boolean containsAction(String action) {
-        return this.actions.contains(action);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(actions, realm);
     }
 }

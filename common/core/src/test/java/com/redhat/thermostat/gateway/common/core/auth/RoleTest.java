@@ -34,96 +34,86 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Before;
 import org.junit.Test;
 
-public class RoleFactoryTest {
+import com.redhat.thermostat.gateway.common.core.auth.Role;
 
-    private RoleFactory roleFactory;
-
-    @Before
-    public void setup() {
-        roleFactory = new RoleFactory();
-    }
+public class RoleTest {
 
     @Test
-    public void testValidRole() throws InvalidRoleException {
-        String role = "a-valid,role";
-        roleFactory.buildRole(role);
-
+    public void testSimpleRole() {
         Set<String> actions = new HashSet<>();
         actions.add("a");
-        Role r = roleFactory.buildRole(role);
-        verifyRole(r, actions, "valid,role");
+        Role r = new Role(actions, "realm");
+
+        verifyRole(r, actions, "realm");
     }
 
     @Test
-    public void testValidRoleWithActions() throws InvalidRoleException {
-        String role = "r,w,d-role";
-
-        Role r = roleFactory.buildRole(role);
-        Set<String> actions = new HashSet<>();
-        actions.add("r");
-        actions.add("w");
-        actions.add("d");
-        verifyRole(r, actions, "role");
-    }
-
-    @Test(expected = InvalidRoleException.class)
-    public void testNoActionRole() throws InvalidRoleException {
-        String role = "-role";
-        roleFactory.buildRole(role);
-    }
-
-    @Test(expected = InvalidRoleException.class)
-    public void testNoRealmRole() throws InvalidRoleException {
-        String role = "a-";
-        roleFactory.buildRole(role);
-    }
-
-    @Test
-    public void testHyphenRealm() throws InvalidRoleException {
-        String role = "a-realm-with-hyphens";
-
-        Role r = roleFactory.buildRole(role);
+    public void testMultipleActionsRole() {
         Set<String> actions = new HashSet<>();
         actions.add("a");
-        verifyRole(r, actions, "realm-with-hyphens");
+        Role r = new Role(actions, "realm-1.2-3");
+
+        verifyRole(r, actions, "realm-1.2-3");
     }
 
-    @Test(expected = InvalidRoleException.class)
-    public void testRealmWithWhitespaceIsInvalid() throws InvalidRoleException {
-        String role = "a-invalid \trealm";
-        roleFactory.buildRole(role);
+    /*
+    Roles are added to set data structures which rely on the equals()
+    implementation to prevent duplicates
+     */
+    @Test
+    public void testEquals() {
+        Set<String> actionsOne = new HashSet<>();
+        actionsOne.add("a");
+
+        Role one = new Role(actionsOne, "b");
+        Role two = new Role(actionsOne, "b");
+
+        assertEquals(one, two);
+
+        Set<String> actionsTwo = new HashSet<>();
+        actionsTwo.add("a");
+
+        Role three = new Role(actionsTwo, "b");
+
+        assertEquals(one, three);
     }
 
     @Test
-    public void testRealmWithLeadingWhitespace() throws InvalidRoleException {
-        String role = " a-role";
+    public void testNotEquals() {
+        Set<String> actionsOne = new HashSet<>();
+        actionsOne.add("a");
 
-        Role r = roleFactory.buildRole(role);
-        Set<String> actions = new HashSet<>();
-        actions.add("a");
-        verifyRole(r, actions, "role");
+        Set<String> actionsTwo = new HashSet<>();
+        actionsTwo.add("b");
+
+        Role one = new Role(actionsOne, "b");
+        Role two = new Role(actionsOne, "c");
+        Role three = new Role(actionsTwo, "b");
+
+        assertNotEquals(one, two);
+        assertNotEquals(one, three);
     }
 
-    @Test
-    public void testRealmWithTrailingWhitespace() throws InvalidRoleException {
-        String role = "a-role\t";
-
-        Role r = roleFactory.buildRole(role);
+    @Test(expected = UnsupportedOperationException.class)
+    public void testActionsCannotBeModified() {
         Set<String> actions = new HashSet<>();
         actions.add("a");
-        verifyRole(r, actions, "role");
+        Role r = new Role(actions, "realm-1.2-3");
+
+        verifyRole(r, actions, "realm-1.2-3");
+
+        r.getActions().add("not-allowed");
     }
 
     private void verifyRole(Role role, Set<String> expectedActions, String expectedRole) {

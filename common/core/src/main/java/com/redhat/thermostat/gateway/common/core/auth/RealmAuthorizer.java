@@ -34,45 +34,67 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth;
 
-import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.Action;
 
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer;
+public abstract class RealmAuthorizer {
 
-public class KeycloakRequestFilter implements Filter {
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Do nothing
+    protected Set<Role> clientRoles = Collections.emptySet();
+
+    public boolean readable() {
+        return checkActionExists(Action.READ);
     }
 
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            RealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(httpServletRequest);
+    public boolean writable() {
+        return checkActionExists(Action.WRITE);
+    }
 
-            httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
+    public boolean updatable() {
+        return checkActionExists(Action.UPDATE);
+    }
 
-            chain.doFilter(request, response);
-        } catch (ServletException e) {
-            HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid realms header");
+    public boolean deletable() {
+        return checkActionExists(Action.DELETE);
+    }
+
+    public boolean checkActionExists(String action) {
+        for (Role role : clientRoles) {
+            if (role.containsAction(action)) {
+                return  true;
+            }
         }
+        return false;
     }
 
-    @Override
-    public void destroy() {
-        // Do nothing
+    public Set<String> getReadableRealms() {
+        return getRealmsWithAction(Action.READ);
     }
+
+    public Set<String> getWritableRealms() {
+        return getRealmsWithAction(Action.WRITE);
+    }
+
+    public Set<String> getUpdatableRealms() {
+        return getRealmsWithAction(Action.UPDATE);
+    }
+
+    public Set<String> getDeletableRealms() {
+        return getRealmsWithAction(Action.DELETE);
+    }
+
+    public Set<String> getRealmsWithAction(String action) {
+        Set<String> realms = new HashSet<>();
+        for (Role role : clientRoles) {
+            if (role.containsAction(action)) {
+                realms.add(role.getRealm());
+            }
+        }
+        return Collections.unmodifiableSet(realms);
+    }
+
 }
