@@ -34,38 +34,10 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth.basic;
+package com.redhat.thermostat.gateway.common.core.config;
 
-import java.util.Set;
-
-import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
-
-public class BasicWebUser implements RoleAwareUser {
-    private final String username;
-    private final Set<String> roles;
-    private final char[] password;
-
-    public BasicWebUser(String username, char[] password, Set<String> roles) {
-        this.username = username;
-        this.roles = roles;
-        this.password = password;
-    }
-
-    @Override
-    public String getName() {
-        return this.username;
-    }
-
-    @Override
-    public boolean isUserInRole(String role) {
-        return this.roles.contains(role);
-    }
-
-    public String getPassword() {
-        return new String(password);
-    }
-
-    public Set<String> getRoles() {
-        return roles;
+public class IllegalConfigurationException extends RuntimeException {
+    public IllegalConfigurationException(String s) {
+        super(s);
     }
 }

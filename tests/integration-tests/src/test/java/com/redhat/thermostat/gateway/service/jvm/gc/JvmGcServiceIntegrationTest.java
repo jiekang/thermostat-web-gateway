@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.thermostat.gateway.common.core.auth.DefaultRealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.bson.Document;
@@ -413,7 +413,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         documents.forEach(new Block<Document>() {
             @Override
             public void apply(Document document) {
-                assertEquals(getRealmArray(DefaultRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
+                assertEquals(getRealmArray(BasicRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
             }
         });
     }
@@ -466,7 +466,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         documents.forEach(new Block<Document>() {
             @Override
             public void apply(Document document) {
-                assertEquals(getRealmArray(DefaultRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
+                assertEquals(getRealmArray(BasicRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
             }
         });
     }
@@ -502,7 +502,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
 
         ContentResponse response = client.newRequest(gcUrl)
-                .param(RequestParameters.QUERY, "realms==" + getRealmArray(DefaultRealmAuthorizer.DEFAULT_REALM))
+                .param(RequestParameters.QUERY, "realms==" + getRealmArray(BasicRealmAuthorizer.DEFAULT_REALM))
                 .method(HttpMethod.GET).send();
 
         assertEquals(400, response.getStatus());
@@ -524,7 +524,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         documents.forEach(new Block<Document>() {
             @Override
             public void apply(Document document) {
-                assertEquals(getRealmArray(DefaultRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
+                assertEquals(getRealmArray(BasicRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
             }
         });
     }

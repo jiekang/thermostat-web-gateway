@@ -34,27 +34,37 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth;
+package com.redhat.thermostat.gateway.common.core.auth.basic;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-import org.junit.Test;
+import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.Role;
+import com.redhat.thermostat.gateway.common.core.auth.RoleFactory;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
 
-public class DefaultRealmAuthorizerTest {
+public class BasicRealmAuthorizer extends RealmAuthorizer {
+    public static final String DEFAULT_REALM = "thermostat";
 
-    @Test
-    public void testDefaultRoleExists() throws InvalidRoleException {
-        DefaultRealmAuthorizer realmAuthorizer = new DefaultRealmAuthorizer();
+    public BasicRealmAuthorizer(BasicWebUser user) throws InvalidRoleException {
+        RoleFactory roleFactory = new RoleFactory();
 
-        assertEquals(1, realmAuthorizer.clientRoles.size());
-
-        for (Role r : realmAuthorizer.clientRoles) {
-            assertEquals("thermostat", r.getRealm());
-            assertTrue(r.containsAction("r"));
-            assertTrue(r.containsAction("w"));
-            assertTrue(r.containsAction("u"));
-            assertTrue(r.containsAction("d"));
+        Set<Role> roles = new HashSet<>();
+        for (String role : user.getRoles()) {
+            Role r = roleFactory.buildRole(role);
+            roles.add(r);
         }
+
+        clientRoles = Collections.unmodifiableSet(roles);
+    }
+
+    /**
+     * Package private for testing
+     */
+    Set<Role> getAllRoles() {
+        return clientRoles;
     }
 }

@@ -58,6 +58,8 @@ import org.junit.Test;
 import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.IllegalConfigurationException;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
@@ -75,9 +77,22 @@ public class WebArchiveCoreServiceTest {
             "  \"resource\": \"thermostat-bearer\"\n" +
             "}";
 
+    @Test(expected = IllegalConfigurationException.class)
+    public void testNoAuthException() {
+        Map<String, Object> configurationMap = new HashMap<>();
+
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.asMap()).thenReturn(configurationMap);
+
+        WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath, configuration);
+
+        service.createServletContextHandler(mock(Server.class));
+    }
+
     @Test
     public void testBasicService() {
         Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
 
         Configuration configuration = mock(Configuration.class);
         when(configuration.asMap()).thenReturn(configurationMap);
@@ -96,6 +111,7 @@ public class WebArchiveCoreServiceTest {
     @Test
     public void testServiceConfigIsAdded() {
         Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
 
         Configuration configuration = mock(Configuration.class);
         when(configuration.asMap()).thenReturn(configurationMap);
@@ -172,6 +188,7 @@ public class WebArchiveCoreServiceTest {
     @Test
     public void testServiceWithWebSockets() {
         Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
         configurationMap.put(ServiceConfiguration.ConfigurationKey.WEBSOCKETS.name(), "true");
         Configuration configuration = mock(Configuration.class);
         when(configuration.asMap()).thenReturn(configurationMap);

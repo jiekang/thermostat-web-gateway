@@ -34,48 +34,40 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth;
+package com.redhat.thermostat.gateway.common.core.auth.basic;
 
-import java.io.IOException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
+import java.util.HashSet;
+import java.util.Set;
 
-import com.redhat.thermostat.gateway.common.core.auth.DefaultRealmAuthorizer;
+import org.junit.Test;
+
 import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.Role;
 
-public class DefaultAuthFilter implements Filter {
-    private RealmAuthorizer realmAuthorizer;
+public class BasicRealmAuthorizerTest {
 
-    public DefaultAuthFilter() {
-        try {
-            realmAuthorizer = new DefaultRealmAuthorizer();
-        } catch (InvalidRoleException e) {
-            throw new IllegalStateException("Unable to create DefaultRealmAuthorizer", e);
+    @Test
+    public void testDefaultRoleExists() throws InvalidRoleException {
+        BasicWebUser basicWebUser = mock(BasicWebUser.class);
+        Set<String> mockRoles = new HashSet<>();
+        mockRoles.add("r,w,u,d-thermostat");
+        when(basicWebUser.getRoles()).thenReturn(mockRoles);
+
+        BasicRealmAuthorizer realmAuthorizer = new BasicRealmAuthorizer(basicWebUser);
+
+        assertEquals(1, realmAuthorizer.getAllRoles().size());
+
+        for (Role r : realmAuthorizer.getAllRoles()) {
+            assertEquals("thermostat", r.getRealm());
+            assertTrue(r.containsAction("r"));
+            assertTrue(r.containsAction("w"));
+            assertTrue(r.containsAction("u"));
+            assertTrue(r.containsAction("d"));
         }
-    }
-
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-        // Do nothing
-    }
-
-    @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-        httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
-
-        chain.doFilter(request, response);
-    }
-
-    @Override
-    public void destroy() {
-        // Do nothing
     }
 }

@@ -34,21 +34,36 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth;
+package com.redhat.thermostat.gateway.common.core.auth.basic;
 
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
-public class DefaultRealmAuthorizer extends RealmAuthorizer {
-    public static final String DEFAULT_REALM = "thermostat";
+public class BasicWebUser implements RoleAwareUser {
+    private final String username;
+    private final Set<String> roles;
+    private final char[] password;
 
-    public DefaultRealmAuthorizer() throws InvalidRoleException {
-        RoleFactory roleFactory = new RoleFactory();
-        Role r = roleFactory.buildRole("r,w,u,d-" + DEFAULT_REALM);
-        Set<Role> roles = new HashSet<>();
-        roles.add(r);
+    public BasicWebUser(String username, char[] password, Set<String> roles) {
+        this.username = username;
+        this.roles = roles;
+        this.password = password;
+    }
 
-        clientRoles = Collections.unmodifiableSet(roles);
+    @Override
+    public String getName() {
+        return this.username;
+    }
+
+    @Override
+    public boolean isUserInRole(String role) {
+        return this.roles.contains(role);
+    }
+
+    public String getPassword() {
+        return new String(password);
+    }
+
+    public Set<String> getRoles() {
+        return roles;
     }
 }

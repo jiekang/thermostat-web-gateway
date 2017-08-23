@@ -46,6 +46,8 @@ import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.server.UserIdentity;
 
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
+
 public class BasicLoginService implements LoginService {
 
     private final BasicUserStore store;
@@ -64,7 +66,7 @@ public class BasicLoginService implements LoginService {
 
     @Override
     public UserIdentity login(final String username, Object credentials) {
-        BasicWebUser user = (BasicWebUser)store.getUser(username);
+        BasicWebUser user = store.getUser(username);
         if (user == null) {
             return null;
         }

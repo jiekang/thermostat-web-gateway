@@ -37,11 +37,14 @@
 package com.redhat.thermostat.gateway.tests.integration;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.AuthenticationStore;
+import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -100,6 +103,9 @@ public class IntegrationTest {
         } else {
             theclient = new HttpClient();
         }
+        AuthenticationStore authenticationStore = theclient.getAuthenticationStore();
+        URI uri = URI.create(baseUrl);
+        authenticationStore.addAuthentication(new BasicAuthentication(uri, "thermostat", "agent", "agent-pwd"));
         theclient.start();
         return theclient;
     }
