@@ -146,8 +146,8 @@ public class AuthBasicCoreServerTest {
 
     protected static Map<String, String> getUserConfig() {
         Map<String, String> userConfig = new HashMap<>();
-        userConfig.put("foo-agent-user", "agent-pwd,thermostat-commands-receiver-provider");
-        userConfig.put("bar-client-user", "client-pwd,thermostat-commands-grant-dump-heap");
+        userConfig.put("foo-agent-user", "agent-pwd,receiver_provider-commands");
+        userConfig.put("bar-client-user", "client-pwd,dump_heap-commands");
         userConfig.put("insufficient-roles-agent", "agent-pwd");
         userConfig.put("insufficient-roles-client", "client-pwd");
         return userConfig;

@@ -105,7 +105,8 @@ public class IntegrationTest {
         }
         AuthenticationStore authenticationStore = theclient.getAuthenticationStore();
         URI uri = URI.create(baseUrl);
-        authenticationStore.addAuthentication(new BasicAuthentication(uri, "thermostat", "agent", "agent-pwd"));
+        String realmName = "Thermostat Realm"; // must match Basic login service's realm name.
+        authenticationStore.addAuthentication(new BasicAuthentication(uri, realmName, "agent", "agent-pwd"));
         theclient.start();
         return theclient;
     }

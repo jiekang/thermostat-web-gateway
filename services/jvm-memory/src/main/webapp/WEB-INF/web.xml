@@ -77,4 +77,12 @@
     <listener>
         <listener-class>com.redhat.thermostat.gateway.common.mongodb.servlet.StorageConnectionSettingListener</listener-class>
     </listener>
+    <!-- Allow viewing of API spec without authentication -->
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>Swagger API Spec File</web-resource-name>
+        <url-pattern>/0.0.2/doc/@com.redhat.thermostat.gateway.SERVICE_NAME@-swagger.yaml</url-pattern>
+      </web-resource-collection>
+      <!-- Explicitly no auth constraint for this file -->
+    </security-constraint>
 </web-app>

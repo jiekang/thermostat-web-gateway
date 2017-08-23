@@ -39,6 +39,7 @@ package com.redhat.thermostat.gateway.service.commands.socket;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,7 +47,7 @@ import java.util.logging.Logger;
 import javax.websocket.PongMessage;
 import javax.websocket.Session;
 
-import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.util.LoggingUtil;
 import com.redhat.thermostat.gateway.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.gateway.service.commands.channel.CommunicationsRegistry;
@@ -58,7 +59,7 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
     private static final Logger logger = LoggingUtil.getLogger(CommandChannelAgentSocket.class);
     private static final long SOCKET_SESSION_IDLE_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
     private static final String UNKNOWN_PAYLOAD = "UNKNOWN";
-    private static final String RECEIVER_PROVIDER_ROLE = "thermostat-commands-receiver-provider";
+    private static final String RECEIVER_PROVIDER_ACTION = "receiver_provider";
 
     CommandChannelAgentSocket(String id, Session session) {
         super(id, session);
@@ -136,9 +137,9 @@ class CommandChannelAgentSocket extends CommandChannelSocket {
 
     @Override
     protected boolean checkRoles() {
-        // FIXME: relies on RoleAwareUser - i.e. specific auth scheme.
-        RoleAwareUser user = (RoleAwareUser) session.getUserPrincipal();
-        if (!user.isUserInRole(RECEIVER_PROVIDER_ROLE)) {
+        RealmAuthorizer realmAuthorizer = (RealmAuthorizer)session.getUserProperties().get(RealmAuthorizer.class.getName());
+        Set<String> receiverProviderActions = realmAuthorizer.getRealmsWithAction(RECEIVER_PROVIDER_ACTION);
+        if (!receiverProviderActions.contains(COMMANDS_REALM)) {
             return false;
         }
         return true;

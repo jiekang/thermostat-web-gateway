@@ -34,25 +34,29 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.socket;
+package com.redhat.thermostat.gateway.service.commands.http.handlers;
 
-import java.io.IOException;
+import javax.websocket.HandshakeResponse;
+import javax.websocket.server.HandshakeRequest;
+import javax.websocket.server.ServerEndpointConfig;
+import javax.websocket.server.ServerEndpointConfig.Configurator;
 
-import javax.websocket.PongMessage;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
 
-import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
+public class RealmAuthorizerConfigurator extends Configurator {
 
-public interface CommandChannelWebSocket {
-
-    String COMMANDS_REALM = "commands";
-
-    void onClose(int code, String message);
-
-    void onConnect() throws IOException;
-
-    void onSocketMessage(Message msg);
-
-    void onError(Throwable cause);
-
-    void onPongMessage(PongMessage pongMessage);
+    @Override
+    public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
+        // FIXME: Set up proper realm authorizer based on config
+        BasicWebUser user = (BasicWebUser)request.getUserPrincipal();
+        RealmAuthorizer realmAuthorizer;
+        if (user == null) {
+            realmAuthorizer = new RealmAuthorizer() {}; // deny-all authorizer
+        } else {
+            realmAuthorizer = new BasicRealmAuthorizer(user);
+        }
+        config.getUserProperties().put(RealmAuthorizer.class.getName(), realmAuthorizer);
+    }
 }

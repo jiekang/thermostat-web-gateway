@@ -34,10 +34,9 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth;
+package com.redhat.thermostat.gateway.server.auth.basic;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -46,23 +45,12 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.xml.bind.DatatypeConverter;
 
-import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
 
 public class BasicAuthFilter implements Filter {
-    private BasicUserStore userStore;
-
-    public BasicAuthFilter(BasicUserStore userStore) {
-        this.userStore = userStore;
-    }
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -73,53 +61,17 @@ public class BasicAuthFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) request;
 
-        String authentication = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
-        if (authentication == null) {
-            sendHttpUnauth(response);
-            return;
-        }
-
-        if (!authentication.startsWith("Basic ")) {
-            sendHttpUnauth(response);
-            return;
-        }
-
-        authentication = authentication.substring("Basic ".length());
-        String[] values = new String(DatatypeConverter.parseBase64Binary(authentication),
-                Charset.forName("ASCII")).split(":");
-        if (values.length < 2) {
-            sendHttpUnauth(response);
-            return;
-        }
-
-        String username = values[0];
-        String password = values[1];
-
-        BasicWebUser user = userStore.getUser(username);
+        BasicWebUser user = (BasicWebUser)httpServletRequest.getUserPrincipal();
+        RealmAuthorizer realmAuthorizer;
         if (user == null) {
-            sendHttpUnauth(response);
-            return;
+            realmAuthorizer = new RealmAuthorizer() {}; // Deny-all realm authorizer
+        } else {
+            realmAuthorizer = new BasicRealmAuthorizer(user);
         }
 
-        if (!user.getPassword().equals(password)) {
-            sendHttpUnauth(response);
-            return;
-        }
+        httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
 
-        try {
-            RealmAuthorizer realmAuthorizer = new BasicRealmAuthorizer(user);
-            httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
-
-            chain.doFilter(request, response);
-        } catch (InvalidRoleException e) {
-            throw new IllegalStateException("Unable to create DefaultRealmAuthorizer", e);
-        }
-    }
-
-    private void sendHttpUnauth(ServletResponse response) throws IOException {
-        HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-        httpServletResponse.setHeader("WWW-Authenticate", "Basic realm=\"thermostat\"");
-        httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        chain.doFilter(request, response);
     }
 
     @Override

@@ -44,18 +44,21 @@ import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.auth.Role;
 import com.redhat.thermostat.gateway.common.core.auth.RoleFactory;
-import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
 
 public class BasicRealmAuthorizer extends RealmAuthorizer {
     public static final String DEFAULT_REALM = "thermostat";
 
-    public BasicRealmAuthorizer(BasicWebUser user) throws InvalidRoleException {
+    public BasicRealmAuthorizer(BasicWebUser user) {
         RoleFactory roleFactory = new RoleFactory();
 
         Set<Role> roles = new HashSet<>();
         for (String role : user.getRoles()) {
-            Role r = roleFactory.buildRole(role);
-            roles.add(r);
+            try {
+                Role r = roleFactory.buildRole(role);
+                roles.add(r);
+            } catch (InvalidRoleException e) {
+                // ignore role
+            }
         }
 
         clientRoles = Collections.unmodifiableSet(roles);

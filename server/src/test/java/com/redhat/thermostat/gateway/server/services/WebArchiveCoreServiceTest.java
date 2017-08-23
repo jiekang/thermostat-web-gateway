@@ -58,7 +58,6 @@ import org.junit.Test;
 import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
-import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.common.core.config.IllegalConfigurationException;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;

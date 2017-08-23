@@ -60,30 +60,12 @@
     <listener>
       <listener-class>com.redhat.thermostat.gateway.service.commands.servlet.SocketRegistrationListener</listener-class>
     </listener>
-    <security-constraint>
-      <web-resource-collection>
-        <web-resource-name>All of commands API</web-resource-name>
-        <url-pattern>/*</url-pattern>
-      </web-resource-collection>
-      <auth-constraint>
-        <role-name>thermostat-commands-realm</role-name>
-      </auth-constraint>
-    </security-constraint>
-    <!-- Allow viewing of API json spec without authentication -->
+    <!-- Allow viewing of API spec without authentication -->
     <security-constraint>
       <web-resource-collection>
         <web-resource-name>Swagger API SPEC YAML File</web-resource-name>
-        <url-pattern>/v1/static/doc/commands-swagger.yaml</url-pattern>
+        <url-pattern>/v1/static/doc/@com.redhat.thermostat.gateway.SERVICE_NAME@-swagger.yaml</url-pattern>
       </web-resource-collection>
       <!-- Explicitly no auth constraint for this file -->
     </security-constraint>
-
-    <login-config>
-      <auth-method>BASIC</auth-method>
-      <realm-name>Commands Realm</realm-name>
-    </login-config>
-
-    <security-role>
-      <role-name>thermostat-commands-realm</role-name>
-    </security-role>
 </web-app>

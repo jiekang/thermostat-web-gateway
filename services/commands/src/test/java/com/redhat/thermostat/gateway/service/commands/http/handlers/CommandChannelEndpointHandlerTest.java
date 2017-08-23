@@ -46,13 +46,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.redhat.thermostat.gateway.service.commands.channel.coders.typeadapters.MessageTypeAdapterFactory;
-import com.redhat.thermostat.gateway.service.commands.channel.model.AgentRequest;
-import com.redhat.thermostat.gateway.service.commands.channel.model.ClientRequest;
-import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
-import com.redhat.thermostat.gateway.service.commands.channel.model.Message.MessageType;
-import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse;
-import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse.ResponseType;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
@@ -61,6 +54,13 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.redhat.thermostat.gateway.service.commands.channel.coders.typeadapters.MessageTypeAdapterFactory;
+import com.redhat.thermostat.gateway.service.commands.channel.model.AgentRequest;
+import com.redhat.thermostat.gateway.service.commands.channel.model.ClientRequest;
+import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
+import com.redhat.thermostat.gateway.service.commands.channel.model.Message.MessageType;
+import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse;
+import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse.ResponseType;
 
 public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
 
@@ -84,7 +84,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         clientRequest.setSequenceId(clientSequence);
         String agentId = "testAgent";
         URI clientUri = new URI(
-                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                baseUrl + "actions/dump_heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + clientSequence);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         final CountDownLatch clientHasSentMessages = new CountDownLatch(1);
@@ -148,7 +148,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         String clientUser = "bar-client-user";
         String agentId = "testAgent";
         URI clientUri = new URI(
-                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                baseUrl + "actions/dump_heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + sequenceId);
         final CountDownLatch clientHasSentMessages = new CountDownLatch(1);
         CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(clientRequest, clientHasSentMessages);
@@ -388,7 +388,7 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         ClientRequest noMatter = new ClientRequest(clientSequence);
         String agentId = "testAgent";
         URI clientUri = new URI(
-                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                baseUrl + "actions/dump_heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + clientSequence);
         CmdChannelClientSocket clientSocket = new CmdChannelClientSocket(
                  noMatter /* doesn't matter */);

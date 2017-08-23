@@ -37,12 +37,13 @@
 package com.redhat.thermostat.gateway.service.commands.socket;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.websocket.EncodeException;
 import javax.websocket.RemoteEndpoint.Basic;
 import javax.websocket.Session;
 
-import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.service.commands.channel.ClientAgentCommunication;
 import com.redhat.thermostat.gateway.service.commands.channel.CommunicationsRegistry;
 import com.redhat.thermostat.gateway.service.commands.channel.WebSocketCommunicationBuilder;
@@ -53,7 +54,6 @@ import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketRes
 
 class CommandChannelClientSocket extends CommandChannelSocket {
 
-    private static final String CLIENT_GRANT_ACTION_PREFIX = "thermostat-commands-grant-";
     private static final String PATH_PARAM_ACTION = "action";
     private static final String PATH_PARAM_SYSTEM_ID = "systemId";
     private static final String PATH_PARAM_JVM_ID = "jvmId";
@@ -112,11 +112,10 @@ class CommandChannelClientSocket extends CommandChannelSocket {
 
     @Override
     protected boolean checkRoles() {
-        // FIXME: relies on RoleAwareUser - i.e. specific auth scheme.
-        RoleAwareUser user = (RoleAwareUser) session.getUserPrincipal();
+        RealmAuthorizer realmAuthorizer = (RealmAuthorizer)session.getUserProperties().get(RealmAuthorizer.class.getName());
         String action = session.getPathParameters().get(PATH_PARAM_ACTION);
-        String actionAllowedRole = CLIENT_GRANT_ACTION_PREFIX + action;
-        if (!user.isUserInRole(actionAllowedRole)) {
+        Set<String> actionRealms = realmAuthorizer.getRealmsWithAction(action);
+        if (!actionRealms.contains(COMMANDS_REALM)) {
             return false;
         }
         // TODO: Add roles checks for systemId/jvmId, both part of the

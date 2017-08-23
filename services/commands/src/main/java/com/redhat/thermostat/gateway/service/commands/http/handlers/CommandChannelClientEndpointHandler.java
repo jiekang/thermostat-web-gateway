@@ -61,7 +61,8 @@ import com.redhat.thermostat.gateway.service.commands.socket.WebSocketType;
 @ServerEndpoint(
         value = "/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}",
         encoders = { AgentRequestEncoder.class, WebSocketResponseEncoder.class },
-        decoders = { MessageDecoder.class }
+        decoders = { MessageDecoder.class },
+        configurator = RealmAuthorizerConfigurator.class
 )
 public class CommandChannelClientEndpointHandler extends CommandChannelEndpointHandler {
 
