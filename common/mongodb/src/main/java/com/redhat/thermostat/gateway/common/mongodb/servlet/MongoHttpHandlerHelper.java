@@ -166,6 +166,10 @@ public class MongoHttpHandlerHelper {
         return handlePost(httpServletRequest, context, systemId, null, returnMetadata, body);
     }
 
+    public Response handlePostWithJvmID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, String returnMetadata, String body) {
+        return handlePost(httpServletRequest, context, systemId, jvmId, returnMetadata, body);
+    }
+
     public Response handlePost(HttpServletRequest httpServletRequest, ServletContext context, String returnMetadata, String body) {
         return handlePost(httpServletRequest, context, null, null, returnMetadata, body);
     }
