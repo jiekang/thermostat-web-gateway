@@ -36,38 +36,29 @@
 
 package com.redhat.thermostat.gateway.service.system.cpu;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.junit.Test;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.redhat.thermostat.gateway.service.system.SystemIntegrationTestSuites;
 
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
-import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class SystemCPUIntegrationTest extends MongoIntegrationTest {
+public class SystemCPUIntegrationTest extends SystemIntegrationTestSuites<SystemCPUIntegrationTest.TinyCPUInfo> {
 
     private static final String collectionName = "cpu-info";
     private static final String versionString = "0.0.1";
     private static final String serviceURL = baseUrl + "/system-cpu/" + versionString;
-    private static final int HTTP_200_OK = 200;
-    private static final int HTTP_404_NOTFOUND = 404;
-    private static final String TIMESTAMP_TOKEN = "$TIMESTAMP$";
-    private static final String AGENT_ID = getRandomSystemId();
+
     private static final String cpuInfoJSON =
             "{\n" +
             "    \"perProcessorUsage\" : [ \n" +
@@ -81,133 +72,36 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
             "}";
 
 
-    private static class TinyCPUInfo {
+    static class TinyCPUInfo {
+        private String agentId;
+        private String systemId;
+        private int[] perProcessorUsage;
+
         TinyCPUInfo(String systemId, String agentId, int[] ppusage) {
             this.systemId = systemId;
             this.agentId = agentId;
             this.perProcessorUsage = ppusage;
         }
-        String agentId;
-        String systemId;
-        int[] perProcessorUsage;
+
+        public String getAgentId() {
+            return agentId;
+        }
+
+        public String getSystemId() {
+            return systemId;
+        }
     }
 
     public SystemCPUIntegrationTest() {
         super(serviceURL, collectionName);
     }
 
-    @Test
-    public void testGetAll() throws InterruptedException, TimeoutException, ExecutionException {
-        final String systemid = getRandomSystemId();
-
-        post(systemid);
-        Thread.sleep(5);
-        post(systemid);
-        Thread.sleep(5);
-        post(systemid);
-
-        ContentResponse response = get(systemid);
-        final List<TinyCPUInfo> list = parse(response, systemid);
-        assertEquals(1, list.size());
-
-        ContentResponse response2 = get(systemid, "?limit=2");
-        final List<TinyCPUInfo> list2 = parse(response2, systemid);
-        assertEquals(2, list2.size());
-
-        ContentResponse response3 = get(systemid, "?limit=0");
-        final List<TinyCPUInfo> list3 = parse(response3, systemid);
-        assertEquals(3, list3.size());
+    @Override
+    protected String createJSONTimeStamp(long ts) {
+        return cpuInfoJSON.replace(TIMESTAMP_TOKEN, Long.toString(ts));
     }
 
-    @Test
-    public void testGetAllFails() throws InterruptedException, TimeoutException, ExecutionException {
-        ContentResponse response = client.newRequest(serviceURL).method(HttpMethod.GET).send();
-        assertEquals(HTTP_404_NOTFOUND, response.getStatus());
-    }
-
-    @Test
-    public void testGetUnknown() throws InterruptedException, TimeoutException, ExecutionException {
-        final String systemid = getRandomSystemId();
-        getUnknown(systemid);
-    }
-
-    @Test
-    public void testCreateOne() throws InterruptedException, TimeoutException, ExecutionException {
-
-        final String systemid = getRandomSystemId();
-        post(systemid);
-        getKnown(systemid);
-    }
-
-    @Test
-    public void testPut() throws InterruptedException, TimeoutException, ExecutionException {
-
-        final String systemid = getRandomSystemId();
-        final long timestamp = getTimestamp();
-
-        // create it
-        post(systemid);
-
-        // retrieve it
-        final ContentResponse response1 = getKnown(systemid);
-        final List<TinyCPUInfo> list1 = parse(response1, systemid);
-        assertEquals(1, list1.size());
-        //assertEquals(CPU_STRING1, list1.get(0).cpuModel);
-
-        // modify it
-        put(systemid, timestamp+1);
-
-        // ensure it was changed
-        final ContentResponse response2 = getKnown(systemid);
-        final List<TinyCPUInfo> list2 = parse(response2, systemid);
-        assertEquals(1, list2.size());
-        //assertEquals(timestamp+1, list2.get(0).????);
-    }
-
-    @Test
-    public void testDeleteUnknown() throws InterruptedException, TimeoutException, ExecutionException {
-        final String systemid = getRandomSystemId();
-
-        // delete it
-        delete(systemid);
-    }
-
-    @Test
-    public void testDeleteOne() throws InterruptedException, ExecutionException, TimeoutException {
-        final String systemid = getRandomSystemId();
-
-        // create the new record
-        post(systemid);
-
-        // check that it's there
-        getKnown(systemid);
-
-        // delete it
-        delete(systemid);
-
-        // check that it's not there
-        getUnknown(systemid);
-    }
-
-    @Test
-    public void testVersions() throws Exception {
-        final String systemid = getRandomSystemId();
-        post(systemid);
-        VersionTestUtil.testAllVersions(baseUrl + "/system-cpu", versionString, "/systems/" + systemid);
-    }
-
-    private ContentResponse post(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        final Request request = client.newRequest(serviceURL + "/systems/" + systemid);
-        request.header(HttpHeader.CONTENT_TYPE, "application/json");
-        request.content(new StringContentProvider("[" + createJSON() + "]"));
-        ContentResponse response = request.method(HttpMethod.POST).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
-        final String expected = "";
-        assertEquals(expected, response.getContentAsString());
-        return response;
-    }
-
-    private List<TinyCPUInfo> parse(ContentResponse contentResponse, final String expectedSystemId) {
+    protected List<TinyCPUInfo> parse(ContentResponse contentResponse, final String expectedSystemId) {
 
         JsonParser parser = new JsonParser();
         JsonObject json = (JsonObject) parser.parse(contentResponse.getContentAsString());
@@ -253,65 +147,39 @@ public class SystemCPUIntegrationTest extends MongoIntegrationTest {
         return result;
     }
 
-    private ContentResponse put(final String systemid, final long ts) throws InterruptedException, ExecutionException, TimeoutException {
-        final Request request = client.newRequest(serviceURL + "/systems/" + systemid);
-        request.header(HttpHeader.CONTENT_TYPE, "application/json");
-        final String contentStr = createJSON(ts);
-        request.content(new StringContentProvider("{ \"set\" : " +contentStr + "}"));
-        ContentResponse response = request.method(HttpMethod.PUT).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
-        final String expected = "";
-        assertEquals(expected, response.getContentAsString());
-        return response;
+    @Test
+    public void testSystemCPUGetAll() throws InterruptedException, TimeoutException, ExecutionException {
+        super.testGetAll();
     }
 
-    private ContentResponse getUnknown(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        ContentResponse response = get(systemid);
-        assertTrue(parse(response, systemid).isEmpty());
-        return response;
+    @Test
+    public void testSystemCPUGetAllFails() throws InterruptedException, TimeoutException, ExecutionException {
+        super.testGetAllFails();
     }
 
-    private ContentResponse getKnown(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        ContentResponse response = get(systemid);
-        assertEquals(1, parse(response, systemid).size());
-        return response;
+    @Test
+    public void testSystemCPUGetUnknown() throws InterruptedException, TimeoutException, ExecutionException {
+        super.testGetUnknown();
     }
 
-    private ContentResponse get(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        ContentResponse response = client.newRequest(serviceURL + "/systems/" + systemid).method(HttpMethod.GET).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
-        return response;
+    @Test
+    public void testSystemCPUCreateOne() throws InterruptedException, TimeoutException, ExecutionException {
+        super.testCreateOne();
     }
 
-    private ContentResponse get(final String systemid, final String query) throws InterruptedException, ExecutionException, TimeoutException {
-        final Request rq = client.newRequest(serviceURL + "/systems/" + systemid + query);
-        rq.method(HttpMethod.GET);
-        ContentResponse response = rq.send();
-        assertEquals(HTTP_200_OK, response.getStatus());
-        return response;
+    @Test
+    public void testSystemCPUPutModifiesData() throws InterruptedException, TimeoutException, ExecutionException {
+        super.testPutModifiesData();
     }
 
-    private ContentResponse delete(final String systemid) throws InterruptedException, ExecutionException, TimeoutException {
-        ContentResponse response = client.newRequest(serviceURL + "/systems/" + systemid).method(HttpMethod.DELETE).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
-        final String expected = "";
-        assertEquals(expected, response.getContentAsString());
-        return response;
+    @Test
+    public void testSystemCPUDeleteUnknown() throws InterruptedException, TimeoutException, ExecutionException {
+        super.testDeleteUnknown();
     }
 
-    private static String getRandomSystemId() {
-        return UUID.randomUUID().toString();
+    @Test
+    public void testSystemCPUDeleteOne() throws InterruptedException, ExecutionException, TimeoutException {
+        super.testDeleteOne();
     }
 
-    private static long getTimestamp() {
-        return java.lang.System.nanoTime();
-    }
-
-    private String createJSON() {
-        return createJSON(getTimestamp());
-    }
-
-    private String createJSON(final long ts) {
-        return cpuInfoJSON.replace(TIMESTAMP_TOKEN, Long.toString(ts));
-    }
 }
