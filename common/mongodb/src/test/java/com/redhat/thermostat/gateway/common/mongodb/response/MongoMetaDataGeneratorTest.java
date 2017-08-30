@@ -37,8 +37,11 @@
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import java.util.LinkedHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -52,18 +55,21 @@ public class MongoMetaDataGeneratorTest {
 
     private MongoMetaDataGenerator fullGenerator;
     private MongoMetaDataResponseBuilder.MetaBuilder response;
+    private final String baseUrl = "127.0.0.1:8080/base/";
 
     @Before
     public void setup() {
         HttpServletRequest requestInfo = mock(HttpServletRequest.class);
-        when(requestInfo.getRequestURL()).thenReturn(new StringBuffer("127.0.0.1:8080/base/"));
+        when(requestInfo.getRequestURL()).thenReturn(new StringBuffer(baseUrl));
         when(requestInfo.getQueryString()).thenReturn(RequestParameters.LIMIT + "=2&" + RequestParameters.OFFSET + "=2&" + RequestParameters.METADATA + "=true");
 
         MongoDataResultContainer container = new MongoDataResultContainer();
         container.setRemainingNumQueryDocuments(1);
         container.setGetReqCount(4);
+        LinkedHashMap<String, String> paramArgs = new LinkedHashMap<>();
+        paramArgs.put(RequestParameters.METADATA, "true");
 
-        fullGenerator = new MongoMetaDataGenerator(2, 2, "", "test1==b", "", "", requestInfo, container);
+        fullGenerator = new MongoMetaDataGenerator(2, 2, "", "test1==b", "", "", paramArgs, container, baseUrl);
         response = new MongoMetaDataResponseBuilder.MetaBuilder();
     }
 
@@ -92,10 +98,26 @@ public class MongoMetaDataGeneratorTest {
         fullGenerator.setNext(response);
         String output = response.build().toString();
 
-        // {"payloadCount":1,"next":"127.0.0.1:8080/base/?o=4&l=1&m=true"}//{"payloadCount":1,"next":"127.0.0.1:8080/base/?o=4&l=1&m=true"}
+        // {"payloadCount":1,"next":"127.0.0.1:8080/base/?o=4&l=1&m=true"}
         String expected = "{\"payloadCount\":1,\"next\":\"127.0.0.1:8080/base/?offset\\u003d4\\u0026limit\\u003d1\\u0026" + RequestParameters.METADATA + "\\u003dtrue\"}";
 
         assertEquals(expected, output);
     }
 
+    @Test
+    public void testGetQueryArgumentsNoOffsetLimitWithEmptyValue() {
+        LinkedHashMap<String, String> paramArgs = new LinkedHashMap<>();
+
+        paramArgs.put(RequestParameters.METADATA, "true");
+        paramArgs.put("foo", "bar");
+        paramArgs.put("baz", null);
+
+        String output = response.getQueryArgumentsNoOffsetLimit(paramArgs);
+
+        // We expect "baz" to be dropped entirely after the call; this cannot be avoided unless the response
+        // handler helpers are refactored
+        String expected = "metadata=true&foo=bar";
+
+        assertEquals(expected, output);
+    }
 }

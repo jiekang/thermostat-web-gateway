@@ -36,7 +36,7 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
 
 import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
@@ -50,11 +50,11 @@ public class MongoMetaDataGenerator {
     private final String includes;
     private final String excludes;
     private final MongoDataResultContainer execResult;
-    private final HttpServletRequest requestInfo;
+    private final LinkedHashMap<String, String> requestParamArguments;
     private final String baseURL;
 
     public MongoMetaDataGenerator(Integer limit, Integer offset, String sort, String queries, String includes, String excludes,
-                                  HttpServletRequest requestInfo, MongoDataResultContainer execResult) {
+                                  LinkedHashMap<String, String> requestParamArguments, MongoDataResultContainer execResult, String baseUrl) {
         this.limit = limit;
         this.offset = offset;
         this.sort = sort;
@@ -62,8 +62,8 @@ public class MongoMetaDataGenerator {
         this.includes = includes;
         this.excludes = excludes;
         this.execResult = execResult;
-        this.requestInfo = requestInfo;
-        this.baseURL = requestInfo.getRequestURL().toString();
+        this.requestParamArguments = requestParamArguments;
+        this.baseURL = baseUrl;
     }
 
     public void setDocAndPayloadCount(MongoMetaDataResponseBuilder.MetaBuilder response) {
@@ -77,8 +77,7 @@ public class MongoMetaDataGenerator {
     public void setPrev(MongoMetaDataResponseBuilder.MetaBuilder response) {
         if (!Integer.valueOf(0).equals(offset)) {
             StringBuilder prev = new StringBuilder();
-            String[] arguments = requestInfo.getQueryString().split("&");
-            prev.append(baseURL).append("?").append(response.getQueryArgumentsNoOffsetLimit(arguments));
+            prev.append(baseURL).append("?").append(response.getQueryArgumentsNoOffsetLimit(requestParamArguments));
 
             if (limit > 1) {
                 int newLim = (offset >= limit) ? limit : offset;
@@ -100,8 +99,7 @@ public class MongoMetaDataGenerator {
                 int nextLimit = (remaining > limit) ? limit : remaining;
                 next.append(baseURL).append('?' + RequestParameters.OFFSET + '=').append(offset + limit).append('&' + RequestParameters.LIMIT + '=').append(nextLimit).append("&");
 
-                String[] arguments = requestInfo.getQueryString().split("&");
-                next.append(response.getQueryArgumentsNoOffsetLimit(arguments));
+                next.append(response.getQueryArgumentsNoOffsetLimit(requestParamArguments));
 
                 response.payloadCount(nextLimit).next(next.toString());
             }

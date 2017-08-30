@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
+import java.util.LinkedHashMap;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
@@ -120,12 +122,13 @@ public class MongoMetaDataResponseBuilder {
             return new MongoMetaDataResponseBuilder(this);
         }
 
-        public String getQueryArgumentsNoOffsetLimit(String[] URLQueryPath) {
+        public String getQueryArgumentsNoOffsetLimit(LinkedHashMap<String, String> requestParamArguments) {
             StringBuilder queryString = new StringBuilder();
             String sep = "";
-            for (String arg : URLQueryPath) {
-                if (!(arg.contains(RequestParameters.LIMIT) || arg.contains(RequestParameters.OFFSET))) {
-                    queryString.append(sep).append(arg);
+            for (String param : requestParamArguments.keySet()) {
+                String val = requestParamArguments.get(param);
+                if (!(RequestParameters.LIMIT.equals(param) || RequestParameters.OFFSET.equals(param) || (val == null))) {
+                    queryString.append(sep).append(param).append("=").append(val);
                     sep = "&";
                 }
             }

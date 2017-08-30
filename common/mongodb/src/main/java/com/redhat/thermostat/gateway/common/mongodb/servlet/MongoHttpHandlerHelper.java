@@ -55,6 +55,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 
 import static com.redhat.thermostat.gateway.common.util.ServiceException.CANNOT_QUERY_REALMS_PROPERTY;
 import static com.redhat.thermostat.gateway.common.util.ServiceException.DATABASE_UNAVAILABLE;
@@ -84,14 +85,22 @@ public class MongoHttpHandlerHelper {
      */
 
     public Response handleGetWithSystemID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
-        return handleGet(httpServletRequest, context, limit, offset, sort, andSystemIdQuery(queries, systemId), includes, excludes, returnMetadata);
+        return handleGet(httpServletRequest, context, limit, offset, sort, andSystemIdQuery(queries, systemId), includes, excludes, returnMetadata, queries);
     }
 
     public Response handleGetWithJvmID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
-        return handleGet(httpServletRequest, context, limit, offset, sort, andSystemIdJvmIdQuery(queries, systemId, jvmId), includes, excludes, returnMetadata);
+        return handleGet(httpServletRequest, context, limit, offset, sort, andSystemIdJvmIdQuery(queries, systemId, jvmId), includes, excludes, returnMetadata, queries);
     }
 
     public Response handleGet(HttpServletRequest httpServletRequest, ServletContext context, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata) {
+        return handleGet(httpServletRequest, context, limit, offset, sort, queries, includes, excludes, returnMetadata, "");
+    }
+
+    /*
+     * originalQueries contains only query info from the client's original request argument. queries contains this info,
+     * as well as added JVM/SYS ids built by andSystemIdJvmIdQuery(...). 
+     */
+    public Response handleGet(HttpServletRequest httpServletRequest, ServletContext context, int limit, int offset, String sort, String queries, String includes, String excludes, String returnMetadata, String originalQueries) {
         try {
             boolean metadata = Boolean.valueOf(returnMetadata);
             RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
@@ -104,10 +113,23 @@ public class MongoHttpHandlerHelper {
 
                 MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
                 response.addQueryDocuments(execResult.getQueryDataResult());
+
                 if (metadata) {
+
+                    // Test suites expect a consistent order of next and prev links, hence LinkedHashMap
+                    LinkedHashMap<String, String> paramArgs = new LinkedHashMap<>();
+                    paramArgs.put(RequestParameters.SORT, sort);
+                    paramArgs.put(RequestParameters.QUERY, originalQueries);
+                    paramArgs.put(RequestParameters.INCLUDE, includes);
+                    paramArgs.put(RequestParameters.EXCLUDE, excludes);
+                    paramArgs.put(RequestParameters.METADATA, returnMetadata);
+                    paramArgs.put(RequestParameters.LIMIT, String.valueOf(limit));
+                    paramArgs.put(RequestParameters.OFFSET, String.valueOf(offset));
+
+                    String baseUrl = httpServletRequest.getRequestURL().toString();
                     MongoMetaDataResponseBuilder.MetaBuilder metaDataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
                     MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(limit, offset, sort, queries,
-                            includes, excludes, httpServletRequest, execResult);
+                            includes, excludes, paramArgs, execResult, baseUrl);
 
                     metaDataGenerator.setDocAndPayloadCount(metaDataResponse);
                     metaDataGenerator.setPrev(metaDataResponse);
