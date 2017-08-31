@@ -86,8 +86,6 @@ definitions:
   jvm-gc-stats-response:
     type: object
     properties:
-      fred:
-          type: string
       response:
           $ref: '#/definitions/jvm-gc-stats'
       metadata:
