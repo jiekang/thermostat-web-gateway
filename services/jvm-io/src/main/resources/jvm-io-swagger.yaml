@@ -1,0 +1,226 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: Thermostat Web Gateway JVM IO API
+  license:
+    name: GPL v2 with Classpath Exception
+    url: 'http://www.gnu.org/licenses'
+consumes:
+  - application/json
+produces:
+  - application/json
+  - text/html; charset=utf-8
+basePath: /jvm-memory/0.0.1
+paths:
+  /jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get jvm IO information.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-io-stats-response'
+  /systems/{systemId}/jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get jvm io information.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-io-stats-response'
+    put:
+      description: Update jvm io information.
+      parameters:
+        - $ref: '#/parameters/put-body'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/metadata'
+    post:
+      description: Add jvm io information
+      parameters:
+        - $ref: '#/parameters/jvm-io-stats'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/metadata'
+    delete:
+      description: Delete jvm io information.
+      parameters:
+        - $ref: '#/parameters/query'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/metadata'
+definitions:
+  jvm-io-stats-response:
+    type: object
+    properties:
+      response:
+          $ref: '#/definitions/jvm-io-stats'
+      metadata:
+        $ref: '#/definitions/metadata'
+  jvm-io-stats:
+    type: array
+    items:
+      $ref: '#/definitions/jvm-io-stat'
+  jvm-io-stat:
+    type: object
+    properties:
+      agentId:
+        type: string
+      jvmId:
+        type: string
+      timeStamp:
+        $ref: '#/definitions/timestamp'
+      charactersRead:
+        ref: '#/definitions/metric'
+      charactersWritten:
+        ref: '#/definitions/metric'
+      readSyscalls:
+        ref: '#/definitions/metric'
+      writeSyscalls:
+       ref: '#/definitions/metric'
+  metadata:
+      type: object
+      properties:
+        payloadCount:
+          type: integer
+        count:
+          type: integer
+        prev:
+          type: string
+        next:
+          type: string
+        first:
+          type: string
+        last:
+          type: string
+        insertCount:
+          type: integer
+        matchCount:
+          type: integer
+        elapsed:
+          type: integer
+          format: int64
+  metric:
+    type: object
+    properties:
+      $numberLong:
+        type: string
+  timestamp:
+    description: UNIX timestamp in milliseconds
+    type: object
+    properties:
+      $numberLong:
+        type: string
+  put-body:
+    type: object
+    properties:
+      "set":
+        type: object
+parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
+  jvm-io-stats:
+    name: jvm-io-stats
+    in: body
+    description: The jvm io statistics
+    required: true
+    schema:
+      $ref: '#/definitions/jvm-io-stats'
+  put-body:
+    name: putBody
+    in: body
+    description: "The JSON object containing a 'set' object. This contains single item JSON objects that specify the field to replace and the JSON value to replace with. Example { \"set\" : { \"field\" : \"value\", \"field2\":{\"object\":\"item\"} }"
+    required: true
+    schema:
+      $ref: '#/definitions/put-body'
+  limit:
+    name: limit
+    in: query
+    description: Limit of items to return. Example '1'
+    type: integer
+  offset:
+    name: offset
+    in: query
+    description: Offset of items to return. Example '0'
+    type: integer
+  sort:
+    name: sort
+    in: query
+    description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?s=+a,-b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    type: string
+  query:
+    name: query
+    in: query
+    description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?q=a==b,c!=d'. Keys are fields in documents and use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    type: string
+  include:
+    name: include
+    in: query
+    description: >-
+      Inclusion string. Comma separated list of fields to include in the
+      response. Example '?include=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'exclude' parameter. Overriden by
+      'exclude' parameter
+    type: string
+    required: false
+  exclude:
+    name: exclude
+    in: query
+    description: >-
+      Exclusion string. Comma separated list of fields to exclude in the
+      response. Example '?exclude=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'include' parameter; takes
+      precedence over 'include' parameter
+    type: string
+    required: false
+  metadata:
+    name: metadata
+    type: boolean
+    in: query
+    description: "Metadata flag. If set to 'true', the subsequent request response will return metadata information. If set to 'false', such metadata information will be omitted."
+  thermostat-realms:
+      name: X-Thermostat-Realms
+      type: string
+      in: header
+      description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valid realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"
