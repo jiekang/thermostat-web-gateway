@@ -56,7 +56,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.common.core.config.IllegalConfigurationException;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
@@ -91,7 +93,7 @@ class WebArchiveCoreService implements CoreService {
 
         webAppContext.setAttribute(GlobalConstants.SERVICE_CONFIG_KEY, serviceConfig);
         webAppContext.addSystemClass(Configuration.class.getName());
-        webAppContext.addSystemClass("com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer");
+        webAppContext.addSystemClass(RealmAuthorizer.class.getName());
 
 
         initializeWebSockets(server, webAppContext);
@@ -121,7 +123,10 @@ class WebArchiveCoreService implements CoreService {
         cons.setName(realmName);
         cons.setRoles(new String[] { AUTH_ACCESS_ROLE });
         cons.setAuthenticate(true);
-        cons.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        boolean isTLS = Boolean.parseBoolean((String)serviceConfig.asMap().get(GlobalConfiguration.ConfigurationKey.WITH_TLS.name()));
+        if (isTLS) {
+            cons.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        }
         ConstraintMapping mapping = new ConstraintMapping();
         mapping.setConstraint(cons);
         mapping.setMethodOmissions(new String[] {});
