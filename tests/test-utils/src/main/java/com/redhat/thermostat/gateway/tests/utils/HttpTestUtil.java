@@ -38,13 +38,13 @@ package com.redhat.thermostat.gateway.tests.utils;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 
 public class HttpTestUtil {
 
