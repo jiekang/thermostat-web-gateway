@@ -190,10 +190,10 @@ public class CommandChannelEndpointHandlerTest extends AuthBasicCoreServerTest {
         String clientPassword = "client-pwd";
         String agentId = "testAgent";
         URI firstClientUri = new URI(
-                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                baseUrl + "actions/dump_heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + clientSequenceFirst);
         URI secondClientUri = new URI(
-                baseUrl + "actions/dump-heap/systems/foo/agents/" + agentId
+                baseUrl + "actions/dump_heap/systems/foo/agents/" + agentId
                         + "/jvms/abc/sequence/" + clientSequenceSecond);
         URI agentUri = new URI(baseUrl + "systems/foo/agents/" + agentId);
         CountDownLatch clientsHaveSentMessages = new CountDownLatch(2);
