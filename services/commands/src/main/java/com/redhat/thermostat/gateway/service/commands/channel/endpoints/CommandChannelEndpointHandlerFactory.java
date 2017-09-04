@@ -34,59 +34,42 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import javax.websocket.CloseReason;
-import javax.websocket.OnClose;
-import javax.websocket.OnError;
-import javax.websocket.OnMessage;
-import javax.websocket.OnOpen;
-import javax.websocket.PongMessage;
-import javax.websocket.Session;
-import javax.websocket.server.PathParam;
-import javax.websocket.server.ServerEndpoint;
+import javax.websocket.Decoder;
+import javax.websocket.Encoder;
+import javax.websocket.server.ServerEndpointConfig;
 
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.service.commands.channel.coders.AgentRequestEncoder;
 import com.redhat.thermostat.gateway.service.commands.channel.coders.MessageDecoder;
 import com.redhat.thermostat.gateway.service.commands.channel.coders.WebSocketResponseEncoder;
-import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
-import com.redhat.thermostat.gateway.service.commands.socket.WebSocketType;
 
-// Agent endpoints; Receivers
-@ServerEndpoint(
-        value = "/v1/systems/{systemId}/agents/{agentId}",
-        encoders = { AgentRequestEncoder.class, WebSocketResponseEncoder.class },
-        decoders = { MessageDecoder.class },
-        configurator = RealmAuthorizerConfigurator.class
-)
-public class CommandChannelAgentEndpointHandler extends CommandChannelEndpointHandler {
+public class CommandChannelEndpointHandlerFactory {
 
-    @OnOpen
-    public void onConnect(Session session,
-                          @PathParam("agentId") final String agentId) throws IOException {
-        super.onConnect(WebSocketType.AGENT, agentId, session);
+    private final List<Class<? extends Decoder>> decoders;
+    private final List<Class<? extends Encoder>> encoders;
+
+    public CommandChannelEndpointHandlerFactory() {
+        this.decoders = new ArrayList<Class<? extends Decoder>>();
+        decoders.add(MessageDecoder.class);
+        this.encoders = new ArrayList<Class<? extends Encoder>>();
+        encoders.add(AgentRequestEncoder.class);
+        encoders.add(WebSocketResponseEncoder.class);
     }
 
-    @OnMessage
-    public void onMessage(Message message) {
-        super.onMessage(message);
+    public <T extends CommandChannelEndpointHandler> ServerEndpointConfig createEndpointConfig(Class<T> endpointClass, String path, Configuration serviceConfig) {
+        ServerEndpointConfig.Builder configBuilder = ServerEndpointConfig.Builder.create(endpointClass, path);
+        configBuilder.configurator(new RealmAuthorizerConfigurator());
+        configBuilder.decoders(decoders);
+        configBuilder.encoders(encoders);
+        ServerEndpointConfig config = configBuilder.build();
+        config.getUserProperties().put(GlobalConstants.SERVICE_CONFIG_KEY, serviceConfig);
+        return config;
     }
 
-    @OnMessage
-    public void onPongMessage(PongMessage pong) {
-        super.onPongMessage(pong);
-    }
-
-    @OnClose
-    public void onClose(CloseReason reason) {
-        super.onClose(reason.getCloseCode().getCode(),
-                      reason.getReasonPhrase());
-    }
-
-    @OnError
-    public void onErrorThrown(Throwable cause) {
-        super.onError(cause);
-    }
 }

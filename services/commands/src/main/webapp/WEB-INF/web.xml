@@ -60,6 +60,11 @@
     <listener>
       <listener-class>com.redhat.thermostat.gateway.service.commands.servlet.SocketRegistrationListener</listener-class>
     </listener>
+    <!-- Context configuration -->
+    <context-param>
+        <param-name>com.redhat.thermostat.gateway.SERVICE_VERSION</param-name>
+        <param-value>v1</param-value>
+    </context-param>
     <!-- Allow viewing of API spec without authentication -->
     <security-constraint>
       <web-resource-collection>

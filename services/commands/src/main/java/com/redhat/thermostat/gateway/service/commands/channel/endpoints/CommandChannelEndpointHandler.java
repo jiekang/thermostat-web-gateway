@@ -34,29 +34,46 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
-import javax.websocket.HandshakeResponse;
-import javax.websocket.server.HandshakeRequest;
-import javax.websocket.server.ServerEndpointConfig;
-import javax.websocket.server.ServerEndpointConfig.Configurator;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
+import javax.websocket.PongMessage;
+import javax.websocket.Session;
 
-public class RealmAuthorizerConfigurator extends Configurator {
+import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
+import com.redhat.thermostat.gateway.service.commands.socket.CommandChannelSocketFactory;
+import com.redhat.thermostat.gateway.service.commands.socket.CommandChannelWebSocket;
+import com.redhat.thermostat.gateway.service.commands.socket.WebSocketType;
 
-    @Override
-    public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
-        // FIXME: Set up proper realm authorizer based on config
-        BasicWebUser user = (BasicWebUser)request.getUserPrincipal();
-        RealmAuthorizer realmAuthorizer;
-        if (user == null) {
-            realmAuthorizer = new RealmAuthorizer() {}; // deny-all authorizer
-        } else {
-            realmAuthorizer = new BasicRealmAuthorizer(user);
-        }
-        config.getUserProperties().put(RealmAuthorizer.class.getName(), realmAuthorizer);
+class CommandChannelEndpointHandler {
+
+    // Default socket timeout will be 10 minutes. For agent sockets they should never
+    // time out since we are sending regular pings to those sockets periodically. The
+    // ping interval is strictly less than the timout set here.
+    private static final long DEFAULT_SOCKET_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
+    private CommandChannelWebSocket socket;
+
+    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
+        session.setMaxIdleTimeout(DEFAULT_SOCKET_TIMEOUT);
+        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
+        socket.onConnect();
+    }
+
+    protected void onMessage(Message msg) {
+        socket.onSocketMessage(msg);
+    }
+
+    protected void onError(Throwable cause) {
+        socket.onError(cause);
+    }
+
+    protected void onClose(int code, String reason) {
+        socket.onClose(code, reason);
+    }
+
+    protected void onPongMessage(PongMessage msg) {
+        socket.onPongMessage(msg);
     }
 }

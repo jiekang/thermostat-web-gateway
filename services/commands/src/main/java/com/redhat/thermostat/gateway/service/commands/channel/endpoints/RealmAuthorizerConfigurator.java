@@ -34,18 +34,33 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
-import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
-import org.eclipse.jetty.websocket.api.Session;
+import javax.websocket.HandshakeResponse;
+import javax.websocket.server.HandshakeRequest;
+import javax.websocket.server.ServerEndpointConfig;
+import javax.websocket.server.ServerEndpointConfig.Configurator;
 
-import com.redhat.thermostat.gateway.service.commands.http.handlers.CmdChannelAgentSocket.OnMessageCallBack;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
-class NoOpMsgCallback implements OnMessageCallBack {
+public class RealmAuthorizerConfigurator extends Configurator {
 
     @Override
-    public void run(Session session, Message msg) {
-        // nothing
-    }
+    public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
+        Configuration serviceConfig = (Configuration)config.getUserProperties().get(GlobalConstants.SERVICE_CONFIG_KEY);
 
+        // FIXME: Set up proper realm authorizer based on config
+        BasicWebUser user = (BasicWebUser)request.getUserPrincipal();
+        RealmAuthorizer realmAuthorizer;
+        if (user == null) {
+            realmAuthorizer = new RealmAuthorizer() {}; // deny-all authorizer
+        } else {
+            realmAuthorizer = new BasicRealmAuthorizer(user);
+        }
+        config.getUserProperties().put(RealmAuthorizer.class.getName(), realmAuthorizer);
+    }
 }

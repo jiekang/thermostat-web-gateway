@@ -36,27 +36,48 @@
 
 package com.redhat.thermostat.gateway.service.commands.servlet;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
-import com.redhat.thermostat.gateway.service.commands.http.handlers.CommandChannelAgentEndpointHandler;
-import com.redhat.thermostat.gateway.service.commands.http.handlers.CommandChannelClientEndpointHandler;
+import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.common.util.LoggingUtil;
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.CommandChannelAgentEndpointHandler;
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.CommandChannelClientEndpointHandler;
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.CommandChannelEndpointHandlerFactory;
 
 public class SocketRegistrationListener implements ServletContextListener {
 
-    // javax.websocket.server.ServerContainer
+    private static final Logger logger = LoggingUtil.getLogger(SocketRegistrationListener.class);
     private static final String SERVER_CONTAINER_ATTR = "javax.websocket.server.ServerContainer";
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
         ServletContext ctxt = sce.getServletContext();
+        Configuration serviceConfig = (Configuration)ctxt.getAttribute(GlobalConstants.SERVICE_CONFIG_KEY);
+        String version = ctxt.getInitParameter(GlobalConstants.SERVICE_VERSION_KEY);
         ServerContainer container = (ServerContainer)ctxt.getAttribute(SERVER_CONTAINER_ATTR);
+        String agentPath = buildPathWithVersion(version, CommandChannelAgentEndpointHandler.PATH);
+        String clientPath = buildPathWithVersion(version, CommandChannelClientEndpointHandler.PATH);
+        logger.log(Level.CONFIG, "Setting up agent (receiver) web-socket endpoint at: " + agentPath);
+        logger.log(Level.CONFIG, "Setting up client (initiator) web-socket endpoint at: " + clientPath);
+        CommandChannelEndpointHandlerFactory configFactory = new CommandChannelEndpointHandlerFactory();
+        ServerEndpointConfig agentConf = configFactory.createEndpointConfig(CommandChannelAgentEndpointHandler.class,
+                                                                            agentPath,
+                                                                            serviceConfig);
+        ServerEndpointConfig clientConf = configFactory.createEndpointConfig(CommandChannelClientEndpointHandler.class,
+                                                                             clientPath,
+                                                                             serviceConfig);
         try {
-            container.addEndpoint(CommandChannelAgentEndpointHandler.class);
-            container.addEndpoint(CommandChannelClientEndpointHandler.class);
+            container.addEndpoint(agentConf);
+            container.addEndpoint(clientConf);
         } catch (DeploymentException e) {
             throw new RuntimeException(e);
         }
@@ -65,6 +86,10 @@ public class SocketRegistrationListener implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         // no-op
+    }
+
+    private String buildPathWithVersion(final String version, final String path) {
+        return "/" + version  + path;
     }
 
 }

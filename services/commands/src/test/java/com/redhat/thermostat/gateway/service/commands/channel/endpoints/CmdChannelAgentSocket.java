@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;

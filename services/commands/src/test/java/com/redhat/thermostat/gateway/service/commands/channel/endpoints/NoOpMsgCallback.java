@@ -34,46 +34,17 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
-import java.io.IOException;
-import java.util.concurrent.TimeUnit;
-
-import javax.websocket.PongMessage;
-import javax.websocket.Session;
-
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.CmdChannelAgentSocket.OnMessageCallBack;
 import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
-import com.redhat.thermostat.gateway.service.commands.socket.CommandChannelSocketFactory;
-import com.redhat.thermostat.gateway.service.commands.socket.CommandChannelWebSocket;
-import com.redhat.thermostat.gateway.service.commands.socket.WebSocketType;
+import org.eclipse.jetty.websocket.api.Session;
 
-class CommandChannelEndpointHandler {
+class NoOpMsgCallback implements OnMessageCallBack {
 
-    // Default socket timeout will be 10 minutes. For agent sockets they should never
-    // time out since we are sending regular pings to those sockets periodically. The
-    // ping interval is strictly less than the timout set here.
-    private static final long DEFAULT_SOCKET_TIMEOUT = TimeUnit.MINUTES.toMillis(10);
-    private CommandChannelWebSocket socket;
-
-    protected void onConnect(WebSocketType type, String agentId, Session session) throws IOException {
-        session.setMaxIdleTimeout(DEFAULT_SOCKET_TIMEOUT);
-        socket = CommandChannelSocketFactory.createWebSocketChannel(type, session, agentId);
-        socket.onConnect();
+    @Override
+    public void run(Session session, Message msg) {
+        // nothing
     }
 
-    protected void onMessage(Message msg) {
-        socket.onSocketMessage(msg);
-    }
-
-    protected void onError(Throwable cause) {
-        socket.onError(cause);
-    }
-
-    protected void onClose(int code, String reason) {
-        socket.onClose(code, reason);
-    }
-
-    protected void onPongMessage(PongMessage msg) {
-        socket.onPongMessage(msg);
-    }
 }

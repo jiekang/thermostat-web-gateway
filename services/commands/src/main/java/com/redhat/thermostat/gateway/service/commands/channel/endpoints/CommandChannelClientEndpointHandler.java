@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
 import java.io.IOException;
 
@@ -55,16 +55,24 @@ import com.redhat.thermostat.gateway.service.commands.channel.coders.WebSocketRe
 import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
 import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse;
 import com.redhat.thermostat.gateway.service.commands.channel.model.WebSocketResponse.ResponseType;
+import com.redhat.thermostat.gateway.service.commands.servlet.SocketRegistrationListener;
 import com.redhat.thermostat.gateway.service.commands.socket.WebSocketType;
 
-// Client endpoints; Initiators
-@ServerEndpoint(
-        value = "/v1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}",
-        encoders = { AgentRequestEncoder.class, WebSocketResponseEncoder.class },
-        decoders = { MessageDecoder.class },
-        configurator = RealmAuthorizerConfigurator.class
-)
+/**
+ * Client endpoints: a.k.a Initiators.
+ *
+ * @see SocketRegistrationListener where endpoints are set up.
+ *
+ */
+@ServerEndpoint( decoders = MessageDecoder.class,
+                 encoders = { AgentRequestEncoder.class, WebSocketResponseEncoder.class },
+                 value = "ignored") // Actual path is set up in SocketRegistrationListener
 public class CommandChannelClientEndpointHandler extends CommandChannelEndpointHandler {
+
+    /**
+     * The path this handler is registered for
+     */
+    public static final String PATH = "/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}";
 
     @OnOpen
     public void onConnect(Session session,

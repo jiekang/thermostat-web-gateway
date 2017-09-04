@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
 import static org.mockito.Mockito.mock;
 
@@ -48,6 +48,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.servlet.Servlet;
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
@@ -199,8 +200,16 @@ public class AuthBasicCoreServerTest {
             try {
                 contextHandler.setServer(server);
                 ServerContainer container = WebSocketServerContainerInitializer.configureContext(contextHandler);
-                container.addEndpoint(CommandChannelClientEndpointHandler.class);
-                container.addEndpoint(CommandChannelAgentEndpointHandler.class);
+                CommandChannelEndpointHandlerFactory configFactory = new CommandChannelEndpointHandlerFactory();
+                Configuration serviceConfig = mock(Configuration.class);
+                ServerEndpointConfig agentConf = configFactory.createEndpointConfig(CommandChannelAgentEndpointHandler.class,
+                                                                                    "/v1" + CommandChannelAgentEndpointHandler.PATH,
+                                                                                    serviceConfig);
+                ServerEndpointConfig clientConf = configFactory.createEndpointConfig(CommandChannelClientEndpointHandler.class,
+                                                                                     "/v1" + CommandChannelClientEndpointHandler.PATH,
+                                                                                     serviceConfig);
+                container.addEndpoint(agentConf);
+                container.addEndpoint(clientConf);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
