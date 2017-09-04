@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
+import java.util.Map;
+
 import javax.websocket.HandshakeResponse;
 import javax.websocket.server.HandshakeRequest;
 import javax.websocket.server.ServerEndpointConfig;
@@ -45,22 +47,37 @@ import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
 public class RealmAuthorizerConfigurator extends Configurator {
+
+    private static final RealmAuthorizer DENY_ALL_AUTHORIZER = new RealmAuthorizer() {};
 
     @Override
     public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
         Configuration serviceConfig = (Configuration)config.getUserProperties().get(GlobalConstants.SERVICE_CONFIG_KEY);
 
-        // FIXME: Set up proper realm authorizer based on config
-        BasicWebUser user = (BasicWebUser)request.getUserPrincipal();
         RealmAuthorizer realmAuthorizer;
-        if (user == null) {
-            realmAuthorizer = new RealmAuthorizer() {}; // deny-all authorizer
+        if (isBasicAuthEnabled(serviceConfig)) {
+            BasicWebUser user = (BasicWebUser)request.getUserPrincipal();
+            if (user == null) {
+                realmAuthorizer = DENY_ALL_AUTHORIZER;
+            } else {
+                realmAuthorizer = new BasicRealmAuthorizer(user);
+            }
         } else {
-            realmAuthorizer = new BasicRealmAuthorizer(user);
+            realmAuthorizer = DENY_ALL_AUTHORIZER;
         }
         config.getUserProperties().put(RealmAuthorizer.class.getName(), realmAuthorizer);
+    }
+
+    private boolean isBasicAuthEnabled(Configuration serviceConfig) {
+        return isSet(serviceConfig, ServiceConfiguration.ConfigurationKey.SECURITY_BASIC);
+    }
+
+    private boolean isSet(Configuration serviceConfig, ServiceConfiguration.ConfigurationKey configKey) {
+        Map<String, Object> map = serviceConfig.asMap();
+        return Boolean.parseBoolean((String)map.get(configKey.name()));
     }
 }

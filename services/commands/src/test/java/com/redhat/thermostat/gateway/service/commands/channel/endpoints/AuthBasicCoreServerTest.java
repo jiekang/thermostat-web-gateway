@@ -37,6 +37,7 @@
 package com.redhat.thermostat.gateway.service.commands.channel.endpoints;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,6 +66,7 @@ import org.junit.BeforeClass;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.server.CoreServerBuilder;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
@@ -196,12 +198,15 @@ public class AuthBasicCoreServerTest {
         }
 
         private void addWebSocketsHandlers(Server server, ServletContextHandler contextHandler) {
+            Map<String, Object> serviceConfigMap = new HashMap<>();
+            serviceConfigMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), Boolean.TRUE.toString());
             // Initialize javax.websocket layer
             try {
                 contextHandler.setServer(server);
                 ServerContainer container = WebSocketServerContainerInitializer.configureContext(contextHandler);
                 CommandChannelEndpointHandlerFactory configFactory = new CommandChannelEndpointHandlerFactory();
                 Configuration serviceConfig = mock(Configuration.class);
+                when(serviceConfig.asMap()).thenReturn(serviceConfigMap);
                 ServerEndpointConfig agentConf = configFactory.createEndpointConfig(CommandChannelAgentEndpointHandler.class,
                                                                                     "/v1" + CommandChannelAgentEndpointHandler.PATH,
                                                                                     serviceConfig);
