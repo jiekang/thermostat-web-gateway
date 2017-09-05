@@ -143,6 +143,9 @@ class WebArchiveCoreService implements CoreService {
 
     private void setupKeycloakAuthForContext(WebAppContext webAppContext) {
         String keycloakConfig = (String) serviceConfig.asMap().get(ServiceConfiguration.ConfigurationKey.KEYCLOAK_CONFIG.name());
+        if (keycloakConfig == null) {
+            throw new IllegalStateException("KEYCLOAK_CONFIG file not specified in configuration!");
+        }
         KeycloakConfiguration keycloakConfiguration = new KeycloakConfigurationFactory().createKeycloakConfiguration(keycloakConfig);
         String realm = keycloakConfiguration.getRealm();
 
