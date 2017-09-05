@@ -51,6 +51,18 @@
 
         CmdChan.socket = null;
 
+        CmdChan.getTokenParam = (function(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0;i<vars.length;i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return null;
+        });
+
         CmdChan.connect = (function(host) {
             if ('WebSocket' in window) {
                 CmdChan.socket = new WebSocket(host);
@@ -95,10 +107,15 @@
         });
 
         CmdChan.initialize = function() {
+            var query_string = "";
+            var token = CmdChan.getTokenParam("access_token");
+            if (token != null) {
+                query_string = "?access_token=" + token;
+            }
             if (window.location.protocol == 'http:') {
-                CmdChan.connect('ws://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent');
+                CmdChan.connect('ws://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent' + query_string);
             } else {
-                CmdChan.connect('wss://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent');
+                CmdChan.connect('wss://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent' + query_string);
             }
         };
 
