@@ -37,12 +37,8 @@
 package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
 
 import org.keycloak.KeycloakSecurityContext;
 
@@ -53,13 +49,14 @@ import com.redhat.thermostat.gateway.common.core.auth.RoleFactory;
 
 public class KeycloakRealmAuthorizer extends RealmAuthorizer {
 
-    public static final String REALMS_HEADER = "X-Thermostat-Realms";
-    private static final String REALMS_HEADER_DELIMITER_REGEX = "\\s+";
+    private static final String REALMS_LIMITS_DELIMITER_REGEX = "\\s+";
 
-    private final RoleFactory roleFactory = new RoleFactory();
+    public KeycloakRealmAuthorizer(KeycloakSecurityContext keycloakSecurityContext, String roleLimits) throws CannotReduceRealmsException {
+        super(buildClientRoles(keycloakSecurityContext, roleLimits));
+    }
 
-    public KeycloakRealmAuthorizer(HttpServletRequest httpServletRequest) throws ServletException {
-        this.clientRoles = buildClientRoles(httpServletRequest);
+    public KeycloakRealmAuthorizer(KeycloakSecurityContext keycloakSecurityContext) throws CannotReduceRealmsException {
+        this(keycloakSecurityContext, null);
     }
 
     /**
@@ -69,26 +66,12 @@ public class KeycloakRealmAuthorizer extends RealmAuthorizer {
         return clientRoles;
     }
 
-    private Set<Role> buildClientRoles(HttpServletRequest httpServletRequest) throws ServletException {
-        Set<Role> keycloakRoles = buildKeycloakRoles(httpServletRequest);
-
-        String realmsHeader = httpServletRequest.getHeader(REALMS_HEADER);
-        if (realmsHeader != null) {
-            return buildClientPreferredRoles(keycloakRoles, realmsHeader);
-        }
-
-        return Collections.unmodifiableSet(keycloakRoles);
-    }
-
     /**
      * @return the set of roles from the Keycloak security token
      */
-    private Set<Role> buildKeycloakRoles(HttpServletRequest httpServletRequest) {
+    private static Set<Role> buildClientRoles(KeycloakSecurityContext keycloakSecurityContext, String roleLimits) throws CannotReduceRealmsException {
+        final RoleFactory roleFactory = new RoleFactory();
         Set<Role> keycloakRoles = new HashSet<>();
-
-        KeycloakSecurityContext keycloakSecurityContext = (KeycloakSecurityContext) httpServletRequest
-                .getAttribute(KeycloakSecurityContext.class.getName());
-
         for (String role : keycloakSecurityContext.getToken().getRealmAccess().getRoles()) {
             try {
                 keycloakRoles.add(roleFactory.buildRole(role));
@@ -96,20 +79,23 @@ public class KeycloakRealmAuthorizer extends RealmAuthorizer {
                 //Do nothing
             }
         }
-
-        return keycloakRoles;
+        if (roleLimits != null) {
+            return buildClientPreferredRoles(keycloakRoles, roleLimits);
+        } else {
+            return keycloakRoles;
+        }
     }
 
     /**
      * Builds a set of roles based on a clients preferred set, provided in a comma separated realms header string
      * @param trustedRoles : The trusted set of roles that the client has
-     * @param realmsHeader : The REALMS_HEADER value as a string
+     * @param realmsLimits : The string of space separated realms to reduce the roles to.
      * @return The set of roles that the client has selected
-     * @throws ServletException If realms header contains realms the client does not have or no valid realms
+     * @throws CannotReduceRealmsException If realm limit contains realms the client does not have or no valid realms
      */
-    private Set<Role> buildClientPreferredRoles(Set<Role> trustedRoles, String realmsHeader) throws ServletException {
-        realmsHeader = realmsHeader.trim();
-        Set<String> preferredRealms = new HashSet<>(Arrays.asList(realmsHeader.split(REALMS_HEADER_DELIMITER_REGEX)));
+    private static Set<Role> buildClientPreferredRoles(Set<Role> trustedRoles, String realmsLimits) throws CannotReduceRealmsException {
+        realmsLimits = realmsLimits.trim();
+        Set<String> preferredRealms = new HashSet<>(Arrays.asList(realmsLimits.split(REALMS_LIMITS_DELIMITER_REGEX)));
         Set<Role> selectedRoles = new HashSet<>();
 
         for (String preferredRealm : preferredRealms) {
@@ -121,16 +107,22 @@ public class KeycloakRealmAuthorizer extends RealmAuthorizer {
                 }
             }
             if (!found) {
-                throw new ServletException("Not authorized to access preferred realms.");
+                throw new CannotReduceRealmsException("Not authorized to access preferred realms.");
             }
         }
 
         if (selectedRoles.size() > 0) {
             return selectedRoles;
         } else {
-            throw new ServletException("No realms selected");
+            throw new CannotReduceRealmsException("No realms selected");
         }
     }
 
+    @SuppressWarnings("serial")
+    public static class CannotReduceRealmsException extends Exception {
 
+        public CannotReduceRealmsException(String msg) {
+            super(msg);
+        }
+    }
 }

@@ -34,44 +34,29 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.auth.basic;
+package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 
-import com.redhat.thermostat.gateway.common.core.auth.InvalidRoleException;
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.Role;
-import com.redhat.thermostat.gateway.common.core.auth.RoleFactory;
+import org.keycloak.KeycloakSecurityContext;
 
-public class BasicRealmAuthorizer extends RealmAuthorizer {
-    public static final String DEFAULT_REALM = "thermostat";
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer.CannotReduceRealmsException;
 
-    public BasicRealmAuthorizer(BasicWebUser user) {
-        super(buildRoles(user));
+public class KeycloakRealmAuthorizerServletAdapter {
+
+    public static final String REALMS_HEADER = "X-Thermostat-Realms";
+
+    public KeycloakRealmAuthorizer createAuthorizer(HttpServletRequest httpServletRequest) throws CannotReduceRealmsException {
+        String realmsLimits = getRealmsLimits(httpServletRequest);
+        KeycloakSecurityContext securityContext = getSecurityContext(httpServletRequest);
+        return new KeycloakRealmAuthorizer(securityContext, realmsLimits);
     }
 
-    /**
-     * Package private for testing
-     */
-    Set<Role> getAllRoles() {
-        return clientRoles;
+    private KeycloakSecurityContext getSecurityContext(HttpServletRequest httpServletRequest) {
+        return (KeycloakSecurityContext)httpServletRequest.getAttribute(KeycloakSecurityContext.class.getName());
     }
 
-    private static Set<Role> buildRoles(BasicWebUser user) {
-        RoleFactory roleFactory = new RoleFactory();
-
-        Set<Role> roles = new HashSet<>();
-        for (String role : user.getRoles()) {
-            try {
-                Role r = roleFactory.buildRole(role);
-                roles.add(r);
-            } catch (InvalidRoleException e) {
-                // ignore role
-            }
-        }
-
-        return Collections.unmodifiableSet(roles);
+    private String getRealmsLimits(HttpServletRequest httpServletRequest) {
+        return httpServletRequest.getHeader(REALMS_HEADER);
     }
 }

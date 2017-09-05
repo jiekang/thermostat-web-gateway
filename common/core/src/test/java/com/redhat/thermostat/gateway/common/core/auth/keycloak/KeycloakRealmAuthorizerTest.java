@@ -39,7 +39,6 @@ package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -47,26 +46,22 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
 
 import com.redhat.thermostat.gateway.common.core.auth.Role;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer.CannotReduceRealmsException;
 
 public class KeycloakRealmAuthorizerTest {
 
-    HttpServletRequest request;
-    AccessToken.Access access;
+    private AccessToken.Access access;
+    private KeycloakSecurityContext keycloakSecurityContext;
 
     @Before
     public void setup() {
-        request = mock(HttpServletRequest.class);
-        KeycloakSecurityContext keycloakSecurityContext = mock(KeycloakSecurityContext.class);
-        when(request.getAttribute(eq(KeycloakSecurityContext.class.getName()))).thenReturn(keycloakSecurityContext);
+        keycloakSecurityContext = mock(KeycloakSecurityContext.class);
 
         AccessToken accessToken = mock(AccessToken.class);
         when(keycloakSecurityContext.getToken()).thenReturn(accessToken);
@@ -76,22 +71,22 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testBuildSingleRealm() throws ServletException {
+    public void testBuildSingleRealm() throws CannotReduceRealmsException {
         String[] roles = new String[]{"a-realm"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
 
         Set<String> realms = realmAuthorizer.getRealmsWithAction("a");
         assertTrue(realms.contains("realm"));
     }
 
     @Test
-    public void testBuildMultipleRealms() throws ServletException {
+    public void testBuildMultipleRealms() throws CannotReduceRealmsException {
         String[] roles = new String[]{"a-realm", "b-another"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
 
         Set<String> realms = realmAuthorizer.getRealmsWithAction("a");
         assertTrue(realms.contains("realm"));
@@ -103,11 +98,11 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testBuildMultipleRealmsSameAction() throws ServletException {
+    public void testBuildMultipleRealmsSameAction() throws CannotReduceRealmsException {
         String[] roles = new String[]{"r-realm", "w-realm"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
 
 
         Set<String> realms = realmAuthorizer.getRealmsWithAction("r");
@@ -118,21 +113,21 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testBuildRoleWithoutRealm() throws ServletException {
+    public void testBuildRoleWithoutRealm() throws CannotReduceRealmsException {
         String[] roles = new String[]{"a-"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         Set<Role> realms = realmAuthorizer.getAllRoles();
         assertTrue(realms.isEmpty());
     }
 
     @Test
-    public void testBuildInvalidRoleWithoutAction() throws ServletException {
+    public void testBuildInvalidRoleWithoutAction() throws CannotReduceRealmsException {
         String[] roles = new String[]{"-realm"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         Set<Role> realms = realmAuthorizer.getAllRoles();
         assertTrue(realms.isEmpty());
     }
@@ -144,10 +139,10 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testReadable() throws ServletException {
+    public void testReadable() throws CannotReduceRealmsException {
         setupRealms();
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertTrue(realmAuthorizer.readable());
 
         Set<String> realms = realmAuthorizer.getReadableRealms();
@@ -156,10 +151,10 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testWritable() throws ServletException {
+    public void testWritable() throws CannotReduceRealmsException {
         setupRealms();
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertTrue(realmAuthorizer.writable());
 
         Set<String> realms = realmAuthorizer.getWritableRealms();
@@ -168,10 +163,10 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testUpdatable() throws ServletException {
+    public void testUpdatable() throws CannotReduceRealmsException {
         setupRealms();
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertTrue(realmAuthorizer.updatable());
 
         Set<String> realms = realmAuthorizer.getUpdatableRealms();
@@ -180,10 +175,10 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testDeletable() throws ServletException {
+    public void testDeletable() throws CannotReduceRealmsException {
         setupRealms();
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertTrue(realmAuthorizer.deletable());
 
         Set<String> realms = realmAuthorizer.getDeletableRealms();
@@ -192,11 +187,11 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testNotReadable() throws ServletException {
+    public void testNotReadable() throws CannotReduceRealmsException {
         String[] roles = new String[]{"w-write", "d-delete", "u-update"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertFalse(realmAuthorizer.readable());
 
         Set<String> realms = realmAuthorizer.getReadableRealms();
@@ -204,11 +199,11 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testNotWritable() throws ServletException {
+    public void testNotWritable() throws CannotReduceRealmsException {
         String[] roles = new String[]{"r-read", "d-delete", "u-update"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertFalse(realmAuthorizer.writable());
 
         Set<String> realms = realmAuthorizer.getWritableRealms();
@@ -216,11 +211,11 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testNotUpdatable() throws ServletException {
+    public void testNotUpdatable() throws CannotReduceRealmsException {
         String[] roles = new String[]{"w-write", "d-delete", "r-read"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertFalse(realmAuthorizer.updatable());
 
         Set<String> realms = realmAuthorizer.getUpdatableRealms();
@@ -228,55 +223,15 @@ public class KeycloakRealmAuthorizerTest {
     }
 
     @Test
-    public void testNotDeletable() throws ServletException {
+    public void testNotDeletable() throws CannotReduceRealmsException {
         String[] roles = new String[]{"w-write", "r-read", "u-update"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
+        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(keycloakSecurityContext);
         assertFalse(realmAuthorizer.deletable());
 
         Set<String> realms = realmAuthorizer.getDeletableRealms();
         assertEquals(0, realms.size());
-    }
-
-    @Test
-    public void testRealmsHeaderSubset() throws ServletException {
-        String[] roles = new String[]{"w-write", "r-read", "u-update"};
-        when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
-
-        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("read update");
-
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
-        assertEquals(1, realmAuthorizer.getReadableRealms().size());
-        assertEquals(1, realmAuthorizer.getUpdatableRealms().size());
-
-        assertEquals(0, realmAuthorizer.getWritableRealms().size());
-        assertEquals(0, realmAuthorizer.getDeletableRealms().size());
-    }
-
-    @Test (expected = ServletException.class)
-    public void testRealmsHeaderSuperset() throws ServletException {
-        String[] roles = new String[]{"r-read,","u-update"};
-        when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
-
-        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("read update other");
-
-        new KeycloakRealmAuthorizer(request);
-    }
-
-    @Test
-    public void testRealmsHeaderWhitespace() throws ServletException {
-        String[] roles = new String[]{"w-write", "r-read", "u-update"};
-        when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
-
-        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("  read  update\twrite    ");
-
-        KeycloakRealmAuthorizer realmAuthorizer = new KeycloakRealmAuthorizer(request);
-        assertEquals(1, realmAuthorizer.getReadableRealms().size());
-        assertEquals(1, realmAuthorizer.getUpdatableRealms().size());
-        assertEquals(1, realmAuthorizer.getWritableRealms().size());
-
-        assertEquals(0, realmAuthorizer.getDeletableRealms().size());
     }
 
 }

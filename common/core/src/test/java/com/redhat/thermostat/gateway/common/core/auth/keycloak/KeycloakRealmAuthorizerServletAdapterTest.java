@@ -34,38 +34,31 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.server.auth.keycloak;
+package com.redhat.thermostat.gateway.common.core.auth.keycloak;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
-import org.mockito.ArgumentMatchers;
+import org.keycloak.representations.AccessToken.Access;
 
-import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer;
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizerServletAdapter;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer.CannotReduceRealmsException;
 
-public class KeycloakRequestFilterTest {
+public class KeycloakRealmAuthorizerServletAdapterTest {
 
-
-    HttpServletRequest request;
-    AccessToken.Access access;
+    private KeycloakRealmAuthorizerServletAdapter adapter = new KeycloakRealmAuthorizerServletAdapter();
+    private HttpServletRequest request;
+    private Access access;
 
     @Before
     public void setup() {
@@ -81,40 +74,42 @@ public class KeycloakRequestFilterTest {
     }
 
     @Test
-    public void verifyRealmsAuthorizerSet() throws IOException, ServletException {
-        String[] roles = new String[]{"a-realm"};
+    public void testRealmsHeaderSubset() throws CannotReduceRealmsException {
+        String[] roles = new String[]{"w-write", "r-read", "u-update"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        KeycloakRequestFilter keycloakRequestFilter = new KeycloakRequestFilter();
+        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("read update");
 
-        HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
-        FilterChain filterChain = mock(FilterChain.class);
+        KeycloakRealmAuthorizer realmAuthorizer = adapter.createAuthorizer(request);
+        assertEquals(1, realmAuthorizer.getReadableRealms().size());
+        assertEquals(1, realmAuthorizer.getUpdatableRealms().size());
 
-        keycloakRequestFilter.doFilter(request, httpServletResponse, filterChain);
+        assertEquals(0, realmAuthorizer.getWritableRealms().size());
+        assertEquals(0, realmAuthorizer.getDeletableRealms().size());
+    }
 
-        verify(request, times(1)).setAttribute(eq(RealmAuthorizer.class.getName()), ArgumentMatchers.any(KeycloakRealmAuthorizer.class));
+    @Test(expected = CannotReduceRealmsException.class)
+    public void testRealmsHeaderSuperset() throws CannotReduceRealmsException {
+        String[] roles = new String[]{"r-read,","u-update"};
+        when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        verify(filterChain, times(1)).doFilter(eq(request), eq(httpServletResponse));
+        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("read update other");
+
+        adapter.createAuthorizer(request);
     }
 
     @Test
-    public void verifyBadRequestSent() throws IOException, ServletException {
-        String[] roles = new String[]{"a-realm"};
+    public void testRealmsHeaderWhitespace() throws CannotReduceRealmsException {
+        String[] roles = new String[]{"w-write", "r-read", "u-update"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        when(request.getHeader(eq(KeycloakRealmAuthorizerServletAdapter.REALMS_HEADER))).thenReturn("blob");
+        when(request.getHeader(eq("X-Thermostat-Realms"))).thenReturn("  read  update\twrite    ");
 
-        KeycloakRequestFilter keycloakRequestFilter = new KeycloakRequestFilter();
+        KeycloakRealmAuthorizer realmAuthorizer = adapter.createAuthorizer(request);
+        assertEquals(1, realmAuthorizer.getReadableRealms().size());
+        assertEquals(1, realmAuthorizer.getUpdatableRealms().size());
+        assertEquals(1, realmAuthorizer.getWritableRealms().size());
 
-        HttpServletResponse httpServletResponse = mock(HttpServletResponse.class);
-        FilterChain filterChain = mock(FilterChain.class);
-
-        keycloakRequestFilter.doFilter(request, httpServletResponse, filterChain);
-
-        verify(httpServletResponse, times(1)).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), eq("Invalid realms header"));
-
-        verify(request, times(0)).setAttribute(eq(KeycloakRealmAuthorizer.class.getName()), ArgumentMatchers.any(KeycloakRealmAuthorizer.class));
-
-        verify(filterChain, times(0)).doFilter(eq(request), eq(httpServletResponse));
+        assertEquals(0, realmAuthorizer.getDeletableRealms().size());
     }
 }

@@ -52,8 +52,6 @@ import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
 public class RealmAuthorizerConfigurator extends Configurator {
 
-    private static final RealmAuthorizer DENY_ALL_AUTHORIZER = new RealmAuthorizer() {};
-
     @Override
     public void modifyHandshake(ServerEndpointConfig config, HandshakeRequest request, HandshakeResponse response) {
         Configuration serviceConfig = (Configuration)config.getUserProperties().get(GlobalConstants.SERVICE_CONFIG_KEY);
@@ -62,12 +60,12 @@ public class RealmAuthorizerConfigurator extends Configurator {
         if (isBasicAuthEnabled(serviceConfig)) {
             BasicWebUser user = (BasicWebUser)request.getUserPrincipal();
             if (user == null) {
-                realmAuthorizer = DENY_ALL_AUTHORIZER;
+                realmAuthorizer = RealmAuthorizer.DENY_ALL_AUTHORIZER;
             } else {
                 realmAuthorizer = new BasicRealmAuthorizer(user);
             }
         } else {
-            realmAuthorizer = DENY_ALL_AUTHORIZER;
+            realmAuthorizer = RealmAuthorizer.DENY_ALL_AUTHORIZER;
         }
         config.getUserProperties().put(RealmAuthorizer.class.getName(), realmAuthorizer);
     }

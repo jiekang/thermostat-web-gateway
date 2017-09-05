@@ -64,7 +64,7 @@ public class BasicAuthFilter implements Filter {
         BasicWebUser user = (BasicWebUser)httpServletRequest.getUserPrincipal();
         RealmAuthorizer realmAuthorizer;
         if (user == null) {
-            realmAuthorizer = new RealmAuthorizer() {}; // Deny-all realm authorizer
+            realmAuthorizer = RealmAuthorizer.DENY_ALL_AUTHORIZER;
         } else {
             realmAuthorizer = new BasicRealmAuthorizer(user);
         }

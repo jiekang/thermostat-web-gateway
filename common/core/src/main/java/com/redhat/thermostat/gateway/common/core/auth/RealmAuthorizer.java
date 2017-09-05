@@ -44,7 +44,16 @@ import com.redhat.thermostat.gateway.common.core.auth.keycloak.Action;
 
 public abstract class RealmAuthorizer {
 
-    protected Set<Role> clientRoles = Collections.emptySet();
+    /**
+     * A RealmAuthorizer that will deny any request.
+     */
+    public static final RealmAuthorizer DENY_ALL_AUTHORIZER = new RealmAuthorizer(Collections.<Role>emptySet()) {};
+
+    protected final Set<Role> clientRoles;
+
+    protected RealmAuthorizer(Set<Role> clientRoles) {
+        this.clientRoles = clientRoles;
+    }
 
     public boolean readable() {
         return checkActionExists(Action.READ);
