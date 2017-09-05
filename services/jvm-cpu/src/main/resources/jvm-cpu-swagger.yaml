@@ -1,0 +1,208 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: Thermostat Web Gateway JVM CPU Info API
+  license:
+    name: GPL v2 with Classpath Exception
+    url: 'http://www.gnu.org/licenses'
+consumes:
+  - application/json
+produces:
+  - application/json
+  - text/html; charset=utf-8
+basePath: /jvm-cpu/0.0.1
+paths:
+  /jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get JVM CPU information for JVM {jvmId}.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-cpu-info-get-response'
+  /systems/{systemId}/jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get JVM CPU information for system {systemId}.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-cpu-info-get-response'
+    post:
+      description: Add JVM CPU information for system {systemId}.
+      parameters:
+        - $ref: '#/parameters/jvm-cpu-info-array'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/metadata'
+    delete:
+      description: Delete JVM CPU information for system {systemId}.
+      parameters:
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/metadata'
+definitions:
+  jvm-cpu-info-get-response:
+    type: object
+    properties:
+      response:
+        $ref: '#/definitions/jvm-cpu-info-array'
+      metadata:
+        $ref: '#/definitions/metadata'
+  jvm-cpu-info-array:
+    type: array
+    items:
+      $ref: '#/definitions/jvm-cpu-info'
+  jvm-cpu-info:
+    type: object
+    properties:
+      cpuLoad:
+        type: number
+        format: double
+      programTicks:
+        $ref: '#/definitions/metric'
+      timeStamp:
+        $ref: '#/definitions/timeStamp'
+      agentId:
+        $ref: '#/definitions/metric'
+      jvmId:
+        $ref: '#/definitions/metric'
+  metric:
+    type: object
+    properties:
+      $numberLong:
+        type: string
+  timeStamp:
+    description: UNIX timestamp in milliseconds
+    type: object
+    properties:
+      $numberLong:
+        type: string
+  metadata:
+    type: object
+    properties:
+      payloadCount:
+        type: integer
+      count:
+        type: integer
+      prev:
+        type: string
+      next:
+        type: string
+      first:
+        type: string
+      last:
+        type: string
+      insertCount:
+        type: integer
+      matchCount:
+        type: integer
+      elapsed:
+        type: integer
+        format: int64
+parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
+  jvm-cpu-info-array:
+    name: jvm-cpu-info-array
+    in: body
+    description: The JVM CPU information
+    required: true
+    schema:
+      $ref: '#/definitions/jvm-cpu-info-array'
+  limit:
+    name: limit
+    in: query
+    description: Limit of items to return. Example '1'
+    type: integer
+    required: false
+    default: 1
+  offset:
+    name: offset
+    in: query
+    description: Offset of items to return. Example '0'
+    type: integer
+    required: true
+    default: 0
+  sort:
+    name: sort
+    in: query
+    description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?sort=+a,-b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    type: string
+    required: false
+  query:
+    name: query
+    in: query
+    description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?query=a==b,c!=d'. Keys are fields in documents and use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    type: string
+    required: false
+  include:
+    name: include
+    in: query
+    description: >-
+      Inclusion string. Comma separated list of fields to include in the
+      response. Example '?include=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'exclude' parameter Overriden by
+      'exclude' parameter
+    type: string
+    required: false
+  exclude:
+    name: exclude
+    in: query
+    description: >-
+      Exclusion string. Comma separated list of fields to exclude in the
+      response. Example '?exclude=a,b' Fields use dot notation for embedded
+      documents. Example 'outer.inner' refers to field inner contained in field
+      outer. Cannot be used in combination with 'include' parameter; takes
+      precedence over 'include' parameter
+    type: string
+    required: false
+  metadata:
+    name: metadata
+    type: boolean
+    in: query
+    description: "Metadata flag. If set to 'true', the subsequent request response will return metadata information. If set to 'false', such metadata information will be omitted."
+  thermostat-realms:
+    name: X-Thermostat-Realms
+    type: string
+    in: header
+    description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valiod realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"
