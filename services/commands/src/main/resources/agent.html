@@ -70,10 +70,24 @@
             };
 
             CmdChan.socket.onmessage = function (message) {
-                Console.log('Got: ' + message.data);
+                var data = JSON.parse(message.data);
+                var payload = data.payload;
+
+                var requestArguments = {}
+                for (var key in payload) {
+                    // Check for an actual key, and not a prototype value
+                    if (payload.hasOwnProperty(key)) {
+                        requestArguments[escapeHtml(key)] = escapeHtml(payload[key]);
+                    }
+                }
+
+                // Print message to screen
+                data.payload = requestArguments;
+                Console.log('Got: ' + JSON.stringify(data));
+
                 // parse message
                 Msg.fromRequest(message.data);
-                
+
                 // send the always-ok reply
                 CmdChan.socket.send(Response.asJson(Msg.sequence, 'OK'));
                 Console.log('Info: OK reply sent.');
@@ -104,7 +118,6 @@
 
         CmdChan.initialize();
 
-
         document.addEventListener("DOMContentLoaded", function() {
             // Remove elements with "noscript" class - <noscript> is not allowed in XHTML
             var noscripts = document.getElementsByClassName("noscript");
@@ -112,6 +125,10 @@
                 noscripts[i].parentNode.removeChild(noscripts[i]);
             }
         }, false);
+
+        var escapeHtml = function(unsafeStr) {
+            return unsafeStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
 
     //]]>
     </script>

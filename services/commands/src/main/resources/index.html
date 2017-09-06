@@ -76,22 +76,35 @@
         CmdChan.sendMessage = (function() {
             var action = document.getElementById('cmd-chan').value;
             var agent = document.getElementById('agent').value;
+            var argumentKeys = document.getElementsByClassName('optionArgument');
+            var argumentValues = document.getElementsByClassName('optionArgumentVal');
+
             if (action != '' && agent != '') {
                 var clientRequest = {};
                 var url = null;
                 clientRequest.type = 2;
                 clientRequest.payload = {};
+
+                // Parse command arguments
+                for (var i = 0; i < argumentValues.length; i++) {
+                    var key = argumentKeys[i].value.trim();
+                    var val = argumentValues[i].value.trim();
+
+                    if (val != '' && key != '') {
+                        clientRequest.payload[key] = val;
+                    }
+                }
+
                 if (window.location.protocol == 'http:') {
                   url = 'ws://' + window.location.host;
                 } else {
                   url = 'wss://' + window.location.host;
-                } 
+                }
                 url = url + '/commands/v1/actions/' + action + '/systems/ignored_system/agents/' + agent + '/jvms/ignored_jvm/sequence/' + CmdChan.sequence++;
                 CmdChan.connect( url, clientRequest );
                 document.getElementById('cmd-chan').value = '';
             }
         });
-
 
         var Console = {};
 
@@ -126,8 +139,13 @@
     Thermostat Commands: HTML Client
     </p>
     <p>
-        <input type="text" placeholder="type the action and press enter in order to send a message to the agent below." id="cmd-chan" />
-        <input type="text" placeholder="The agent to send messages to. Eg. 'testAgent' or 'otherAgent'" id="agent" />
+        <input type="text" placeholder="Type the action and press enter in order to send a message to the agent below." id="cmd-chan" />
+        <input type="text" placeholder="The agent to send messages to. Eg. 'testAgent' or 'otherAgent'" id="agent" /> <br>
+        <h3>Arguments: (blank fields will be omitted)</h3><br>
+        <input type="text" placeholder="Argument 1" class="optionArgument"/><input type="text" placeholder="Value 1" class="optionArgumentVal"/><br>
+        <input type="text" placeholder="Argument 2" class="optionArgument"/><input type="text" placeholder="Value 2" class="optionArgumentVal"/><br>
+        <input type="text" placeholder="Argument 3" class="optionArgument"/><input type="text" placeholder="Value 3" class="optionArgumentVal"/><br>
+
     </p>
     <div id="console-container">
         <div id="console"/>
