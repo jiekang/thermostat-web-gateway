@@ -51,11 +51,24 @@
   <name>Thermostat Web Gateway Command Channel Service</name>
 
   <properties>
+    <com.redhat.thermostat.gateway.SERVICE_NAME>commands</com.redhat.thermostat.gateway.SERVICE_NAME>
+    <!-- Needed for the plugin config assembly -->
     <thermostat.microservice.name>commands</thermostat.microservice.name>
   </properties>
 
   <build>
     <plugins>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+          <configuration>
+          <webResources>
+            <resource>
+              <directory>src/main/webapp</directory>
+              <filtering>true</filtering>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <version>3.0.0</version>

@@ -42,11 +42,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import com.redhat.thermostat.gateway.common.core.auth.basic.RoleAwareUser;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicWebUser;
 
 public class BasicUserStore {
 
-    private final Map<String, RoleAwareUser> users = new HashMap<>();
+    private final Map<String, BasicWebUser> users = new HashMap<>();
 
     public BasicUserStore(Map<String, String> userConfig) {
         for (Map.Entry<String, String> entry : userConfig.entrySet()) {
@@ -57,7 +57,7 @@ public class BasicUserStore {
         }
     }
 
-    public RoleAwareUser getUser(String userName) {
+    public BasicWebUser getUser(String userName) {
         return users.get(userName);
     }
 }

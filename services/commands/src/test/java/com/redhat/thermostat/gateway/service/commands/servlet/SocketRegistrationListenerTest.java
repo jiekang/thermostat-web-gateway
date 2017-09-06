@@ -36,23 +36,34 @@
 
 package com.redhat.thermostat.gateway.service.commands.servlet;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.websocket.DeploymentException;
 import javax.websocket.server.ServerContainer;
+import javax.websocket.server.ServerEndpointConfig;
 
-import com.redhat.thermostat.gateway.service.commands.http.handlers.CommandChannelAgentEndpointHandler;
-import com.redhat.thermostat.gateway.service.commands.http.handlers.CommandChannelClientEndpointHandler;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.CommandChannelAgentEndpointHandler;
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.CommandChannelClientEndpointHandler;
+import com.redhat.thermostat.gateway.service.commands.channel.endpoints.RealmAuthorizerConfigurator;
 
 public class SocketRegistrationListenerTest {
 
+    private static final String VERSION = "1.0.1";
     private ServletContextEvent event;
     private ServletContext context;
     private ServerContainer serverContainer;
@@ -62,6 +73,7 @@ public class SocketRegistrationListenerTest {
         serverContainer = mock(ServerContainer.class);
         context = mock(ServletContext.class);
         when(context.getAttribute(eq("javax.websocket.server.ServerContainer"))).thenReturn(serverContainer);
+        when(context.getInitParameter(eq(GlobalConstants.SERVICE_VERSION_KEY))).thenReturn(VERSION);
         event = mock(ServletContextEvent.class);
         when(event.getServletContext()).thenReturn(context);
     }
@@ -70,7 +82,18 @@ public class SocketRegistrationListenerTest {
     public void contextInitializedAddsSocketEndpoints() throws DeploymentException {
         SocketRegistrationListener listener = new SocketRegistrationListener();
         listener.contextInitialized(event);
-        verify(serverContainer).addEndpoint(CommandChannelAgentEndpointHandler.class);
-        verify(serverContainer).addEndpoint(CommandChannelClientEndpointHandler.class);
+        ArgumentCaptor<ServerEndpointConfig> configCaptor = ArgumentCaptor.forClass(ServerEndpointConfig.class);
+        verify(serverContainer, times(2)).addEndpoint(configCaptor.capture());
+        List<ServerEndpointConfig> configs = configCaptor.getAllValues();
+        ServerEndpointConfig agentConfig = configs.get(0);
+        ServerEndpointConfig clientConfig = configs.get(1);
+        assertEquals(CommandChannelAgentEndpointHandler.class, agentConfig.getEndpointClass());
+        assertEquals(CommandChannelClientEndpointHandler.class, clientConfig.getEndpointClass());
+        assertEquals("expected config to be added", 1, agentConfig.getUserProperties().size());
+        assertEquals("expected config to be added", 1, clientConfig.getUserProperties().size());
+        assertEquals("/1.0.1/actions/{action}/systems/{systemId}/agents/{agentId}/jvms/{jvmId}/sequence/{seqId}", clientConfig.getPath());
+        assertEquals("/1.0.1/systems/{systemId}/agents/{agentId}", agentConfig.getPath());
+        assertTrue(agentConfig.getConfigurator() instanceof RealmAuthorizerConfigurator);
+        assertTrue(clientConfig.getConfigurator() instanceof RealmAuthorizerConfigurator);
     }
 }

@@ -57,7 +57,9 @@ import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
 import org.mockito.ArgumentMatchers;
 
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizerServletAdapter;
 
 public class KeycloakRequestFilterTest {
 
@@ -90,7 +92,7 @@ public class KeycloakRequestFilterTest {
 
         keycloakRequestFilter.doFilter(request, httpServletResponse, filterChain);
 
-        verify(request, times(1)).setAttribute(eq(RealmAuthorizer.class.getName()), ArgumentMatchers.any(RealmAuthorizer.class));
+        verify(request, times(1)).setAttribute(eq(RealmAuthorizer.class.getName()), ArgumentMatchers.any(KeycloakRealmAuthorizer.class));
 
         verify(filterChain, times(1)).doFilter(eq(request), eq(httpServletResponse));
     }
@@ -100,7 +102,7 @@ public class KeycloakRequestFilterTest {
         String[] roles = new String[]{"a-realm"};
         when(access.getRoles()).thenReturn(new HashSet<>(Arrays.asList(roles)));
 
-        when(request.getHeader(eq(RealmAuthorizer.REALMS_HEADER))).thenReturn("blob");
+        when(request.getHeader(eq(KeycloakRealmAuthorizerServletAdapter.REALMS_HEADER))).thenReturn("blob");
 
         KeycloakRequestFilter keycloakRequestFilter = new KeycloakRequestFilter();
 
@@ -111,7 +113,7 @@ public class KeycloakRequestFilterTest {
 
         verify(httpServletResponse, times(1)).sendError(eq(HttpServletResponse.SC_BAD_REQUEST), eq("Invalid realms header"));
 
-        verify(request, times(0)).setAttribute(eq(RealmAuthorizer.class.getName()), ArgumentMatchers.any(RealmAuthorizer.class));
+        verify(request, times(0)).setAttribute(eq(KeycloakRealmAuthorizer.class.getName()), ArgumentMatchers.any(KeycloakRealmAuthorizer.class));
 
         verify(filterChain, times(0)).doFilter(eq(request), eq(httpServletResponse));
     }

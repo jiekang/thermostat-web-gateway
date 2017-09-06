@@ -47,7 +47,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.redhat.thermostat.gateway.common.core.auth.keycloak.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizer.CannotReduceRealmsException;
+import com.redhat.thermostat.gateway.common.core.auth.keycloak.KeycloakRealmAuthorizerServletAdapter;
 
 public class KeycloakRequestFilter implements Filter {
     @Override
@@ -59,12 +61,13 @@ public class KeycloakRequestFilter implements Filter {
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
         try {
             HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            RealmAuthorizer realmAuthorizer = new RealmAuthorizer(httpServletRequest);
+            KeycloakRealmAuthorizerServletAdapter adapter = new KeycloakRealmAuthorizerServletAdapter();
+            RealmAuthorizer realmAuthorizer = adapter.createAuthorizer(httpServletRequest);
 
             httpServletRequest.setAttribute(RealmAuthorizer.class.getName(), realmAuthorizer);
 
             chain.doFilter(request, response);
-        } catch (ServletException e) {
+        } catch (CannotReduceRealmsException e) {
             HttpServletResponse httpServletResponse = (HttpServletResponse) response;
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid realms header");
         }

@@ -45,6 +45,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
@@ -55,13 +56,16 @@ import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelp
 
 @Path("/")
 public class JvmGcHttpHandler {
+
     private static final String collectionName = "jvm-gc";
     private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
 
     @GET
+    @Path("/jvms/{" + RequestParameters.JVM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response getJvmGc(@QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
+    public Response getJvmGc(@PathParam(RequestParameters.JVM_ID) String jvmId,
+                             @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
                              @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
                              @QueryParam(RequestParameters.SORT) String sort,
                              @QueryParam(RequestParameters.QUERY) String queries,
@@ -70,37 +74,65 @@ public class JvmGcHttpHandler {
                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
                              @Context HttpServletRequest httpServletRequest,
                              @Context ServletContext context) {
-        return serviceHelper.handleGet(httpServletRequest, context, limit, offset, sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offset, sort, queries, includes, excludes, metadata);
+    }
+
+
+    @GET
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}/jvms/{" + RequestParameters.JVM_ID +"}")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json", "text/html; charset=utf-8" })
+    public Response getJvmGc(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                             @PathParam(RequestParameters.JVM_ID) String jvmId,
+                             @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
+                             @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
+                             @QueryParam(RequestParameters.SORT) String sort,
+                             @QueryParam(RequestParameters.QUERY) String queries,
+                             @QueryParam(RequestParameters.INCLUDE) String includes,
+                             @QueryParam(RequestParameters.EXCLUDE) String excludes,
+                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                             @Context HttpServletRequest httpServletRequest,
+                             @Context ServletContext context) {
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offset, sort, queries, includes, excludes, metadata);
     }
 
     @PUT
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}/jvms/{" + RequestParameters.JVM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response putJvmGc(String body,
+                             @PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                             @PathParam(RequestParameters.JVM_ID) String jvmId,
                              @QueryParam(RequestParameters.QUERY) String queries,
                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
                              @Context ServletContext context,
                              @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handlePut(httpServletRequest, context, queries, metadata, body);
+        return serviceHelper.handlePutWithJvmId(httpServletRequest, context, systemId, jvmId, queries, metadata, body);
     }
 
     @POST
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}/jvms/{" + RequestParameters.JVM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response postJvmGc(String body,
+                              @PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                              @PathParam(RequestParameters.JVM_ID) String jvmId,
                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
                               @Context ServletContext context,
                               @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handlePost(httpServletRequest, context, metadata, body);
+        return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
     }
 
     @DELETE
+    @Path("/systems/{" + RequestParameters.SYSTEM_ID +"}/jvms/{" + RequestParameters.JVM_ID +"}")
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response deleteJvmGc(@QueryParam(RequestParameters.QUERY) String queries,
+    public Response deleteJvmGc(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
+                                @PathParam(RequestParameters.JVM_ID) String jvmId,
+                                @QueryParam(RequestParameters.QUERY) String queries,
                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
                                 @Context ServletContext context,
                                 @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleDelete(httpServletRequest, context, queries, metadata);
+        return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, queries, metadata);
     }
 }

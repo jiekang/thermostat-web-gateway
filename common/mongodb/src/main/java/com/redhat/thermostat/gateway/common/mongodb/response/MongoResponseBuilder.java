@@ -56,6 +56,11 @@ public class MongoResponseBuilder {
 
     private final ArrayList<Document> response;
     private final MongoMetaDataResponseBuilder metaData;
+    private static final String NO_METADATA;
+
+    static {
+        NO_METADATA = "";
+    }
 
     public static class Builder {
 
@@ -92,14 +97,18 @@ public class MongoResponseBuilder {
             return this;
         }
 
-
         public Builder addMetaData(MongoMetaDataResponseBuilder metaData) {
             this.metaData = metaData;
             return this;
         }
 
         public String build() {
-            MongoResponseBuilder data = new MongoResponseBuilder(this);
+            if (queryDocuments == null && metaData == null) {
+                return NO_METADATA;
+            }
+
+            MongoResponseBuilder data;
+            data = new MongoResponseBuilder(this);
             return gson.toJson(data);
         }
     }

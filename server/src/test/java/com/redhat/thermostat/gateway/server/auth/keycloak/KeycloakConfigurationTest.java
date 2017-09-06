@@ -40,8 +40,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.google.gson.JsonSyntaxException;
-
 public class KeycloakConfigurationTest {
 
     private static final String expectedKeycloakJson = "{\n" +
@@ -65,7 +63,7 @@ public class KeycloakConfigurationTest {
         keycloakFactory.createKeycloakConfiguration(expectedKeycloakJson);
     }
 
-    @Test(expected = JsonSyntaxException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testInvalidJson() {
         keycloakFactory.createKeycloakConfiguration("{\"}");
     }

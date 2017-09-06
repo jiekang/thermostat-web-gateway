@@ -69,8 +69,8 @@ public class MongoMetaDataResponseBuilderTest {
                 .elapsed(5000)
                 .first(fakeUrl + "/0")
                 .last(fakeUrl + "/10")
-                .matchCount(10)
-                .insertCount(0);
+                .matchCount(10L)
+                .insertCount(0L);
 
         String output = mongoMetaDataResponseBuilder.build().toString();
         String expected = "{\"payloadCount\":5,\"count\":10,\"prev\":\"http://127.0.0.1:8080/fake/endpoint/0\"," +

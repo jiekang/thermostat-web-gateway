@@ -38,25 +38,37 @@ package com.redhat.thermostat.gateway.tests.utils;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import org.eclipse.jetty.client.HttpClient;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-
 public class HttpTestUtil {
 
     public static final String EMPTY_RESPONSE = "{\"response\":[]}";
 
-    public static void addRecords(HttpClient client, String resourceUrl, String content) throws InterruptedException, ExecutionException, TimeoutException {
+    public static void addRecords(HttpClient client, String resourceUrl, String content)
+            throws InterruptedException, ExecutionException, TimeoutException {
         StringContentProvider stringContentProvider = new StringContentProvider(content, "UTF-8");
         ContentResponse response = client.newRequest(resourceUrl)
                                          .method(HttpMethod.POST)
                                          .content(stringContentProvider, "application/json")
                                          .send();
         assertEquals(200, response.getStatus());
+    }
+
+    public static void addRecords(HttpClient client, String resourceUrl, String content, String expectedResponse)
+            throws InterruptedException, ExecutionException, TimeoutException {
+        StringContentProvider stringContentProvider = new StringContentProvider(content, "UTF-8");
+        ContentResponse response = client.newRequest(resourceUrl)
+                .method(HttpMethod.POST)
+                .content(stringContentProvider, "application/json")
+                .send();
+        assertEquals(200, response.getStatus());
+        assertEquals(expectedResponse, response.getContentAsString());
     }
 
     public static void testContentlessResponse(HttpClient client,
@@ -76,7 +88,9 @@ public class HttpTestUtil {
             throws InterruptedException, TimeoutException, ExecutionException {
         ContentResponse response = client.newRequest(url).method(httpMethod).send();
         assertEquals(expectedResponseStatus, response.getStatus());
-        assertEquals(expectedResponseContent, response.getContentAsString());
+        if (expectedResponseContent != null) {
+            assertEquals(expectedResponseContent, response.getContentAsString());
+        }
     }
 
     public static void testContentResponse(HttpClient client,
@@ -91,5 +105,21 @@ public class HttpTestUtil {
                                          .content(stringContentProvider, "application/json")
                                          .send();
         assertEquals(expectedResponseStatus, response.getStatus());
+    }
+
+    public static void testContentResponse(HttpClient client,
+                                           HttpMethod httpMethod,
+                                           String url,
+                                           String content,
+                                           int expectedResponseStatus,
+                                           String expectedResponse)
+            throws InterruptedException, TimeoutException, ExecutionException {
+        StringContentProvider stringContentProvider = new StringContentProvider(content, "UTF-8");
+        ContentResponse response = client.newRequest(url)
+                                         .method(httpMethod)
+                                         .content(stringContentProvider, "application/json")
+                                         .send();
+        assertEquals(expectedResponseStatus, response.getStatus());
+        assertEquals(expectedResponse, response.getContentAsString());
     }
 }

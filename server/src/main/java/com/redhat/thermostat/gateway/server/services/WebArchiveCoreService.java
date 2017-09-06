@@ -47,18 +47,22 @@ import javax.servlet.ServletException;
 
 import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
-import org.eclipse.jetty.security.LoginService;
-import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.IllegalConfigurationException;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
+import com.redhat.thermostat.gateway.server.auth.basic.BasicAuthFilter;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfiguration;
@@ -67,6 +71,9 @@ import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakRequestFilter;
 
 class WebArchiveCoreService implements CoreService {
 
+    // Users need to be in at least this role for authentication to succeed.
+    // This applies for keycloak and basic.
+    private static final String AUTH_ACCESS_ROLE = "thermostat";
     private final String contextPath;
     private final String warPath;
     private final Configuration serviceConfig;
@@ -86,6 +93,8 @@ class WebArchiveCoreService implements CoreService {
 
         webAppContext.setAttribute(GlobalConstants.SERVICE_CONFIG_KEY, serviceConfig);
         webAppContext.addSystemClass(Configuration.class.getName());
+        webAppContext.addSystemClass(RealmAuthorizer.class.getName());
+
 
         initializeWebSockets(server, webAppContext);
 
@@ -95,16 +104,48 @@ class WebArchiveCoreService implements CoreService {
     }
 
 
-    private void setupAuthForContext(WebAppContext webAppContext) {
-        if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC)) {
-            setupBasicAuthForContext(webAppContext);
-        } else if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_KEYCLOAK)) {
+    private void setupAuthForContext(WebAppContext webAppContext) throws IllegalConfigurationException {
+        // Check Keycloak first as it has higher priority. Only one auth scheme allowed
+        if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_KEYCLOAK)) {
             setupKeycloakAuthForContext(webAppContext);
+        } else if (isSet(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC)) {
+            setupBasicAuthForContext(webAppContext);
+        } else {
+            throw new IllegalConfigurationException("No auth scheme specified.");
         }
+    }
+
+    private void setupBasicAuthForContext(WebAppContext webAppContext) {
+        Map<String, String> userConfig = getBasicAuthUserConfig();
+        ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        String realmName = "Thermostat Realm"; // must match name of login service
+        Constraint cons = new Constraint();
+        cons.setName(realmName);
+        cons.setRoles(new String[] { AUTH_ACCESS_ROLE });
+        cons.setAuthenticate(true);
+        boolean isTLS = Boolean.parseBoolean((String)serviceConfig.asMap().get(GlobalConfiguration.ConfigurationKey.WITH_TLS.name()));
+        if (isTLS) {
+            cons.setDataConstraint(Constraint.DC_CONFIDENTIAL);
+        }
+        ConstraintMapping mapping = new ConstraintMapping();
+        mapping.setConstraint(cons);
+        mapping.setMethodOmissions(new String[] {});
+        mapping.setPathSpec("/*");
+        security.setConstraintMappings(Collections.singletonList(mapping));
+        security.setAuthenticator(new BasicAuthenticator());
+        security.setLoginService(new BasicLoginService(new BasicUserStore(userConfig), realmName));
+        webAppContext.setSecurityHandler(security);
+
+        // Add the realm authorizer
+        FilterHolder filterHolder = new FilterHolder(new BasicAuthFilter());
+        webAppContext.addFilter(filterHolder, "/*", EnumSet.of(DispatcherType.REQUEST));
     }
 
     private void setupKeycloakAuthForContext(WebAppContext webAppContext) {
         String keycloakConfig = (String) serviceConfig.asMap().get(ServiceConfiguration.ConfigurationKey.KEYCLOAK_CONFIG.name());
+        if (keycloakConfig == null) {
+            throw new IllegalStateException("KEYCLOAK_CONFIG file not specified in configuration!");
+        }
         KeycloakConfiguration keycloakConfiguration = new KeycloakConfigurationFactory().createKeycloakConfiguration(keycloakConfig);
         String realm = keycloakConfiguration.getRealm();
 
@@ -116,7 +157,7 @@ class WebArchiveCoreService implements CoreService {
 
         Constraint constraint = new Constraint();
         constraint.setName(Constraint.__BASIC_AUTH);
-        constraint.setRoles(new String[]{"thermostat"});
+        constraint.setRoles(new String[]{ AUTH_ACCESS_ROLE });
         constraint.setAuthenticate(true);
 
         ConstraintMapping constraintMapping = new ConstraintMapping();
@@ -128,17 +169,8 @@ class WebArchiveCoreService implements CoreService {
         webAppContext.setInitParameter("org.keycloak.json.adapterConfig", keycloakConfig);
         webAppContext.setSecurityHandler(securityHandler);
         webAppContext.addSystemClass("org.keycloak.");
-        webAppContext.addSystemClass("com.redhat.thermostat.gateway.common.core.auth.keycloak.");
 
         webAppContext.addFilter(KeycloakRequestFilter.class, "/*", EnumSet.of(DispatcherType.REQUEST));
-    }
-
-    private void setupBasicAuthForContext(WebAppContext webAppContext) {
-        Map<String, String> userConfig = getBasicAuthUserConfig();
-        SecurityHandler security = webAppContext.getSecurityHandler();
-        BasicUserStore userStore = new BasicUserStore(userConfig);
-        LoginService loginService = new BasicLoginService(userStore, security.getRealmName());
-        security.setLoginService(loginService);
     }
 
     @SuppressWarnings("unchecked")

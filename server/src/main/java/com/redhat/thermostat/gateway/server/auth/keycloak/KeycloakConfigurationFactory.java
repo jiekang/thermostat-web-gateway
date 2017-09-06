@@ -40,8 +40,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 
 public class KeycloakConfigurationFactory {
-    public KeycloakConfiguration createKeycloakConfiguration(String keycloakJson) throws JsonSyntaxException{
-        Gson gson = new Gson();
-        return gson.fromJson(keycloakJson, KeycloakConfiguration.class);
+    public KeycloakConfiguration createKeycloakConfiguration(String keycloakJson) {
+        try {
+            Gson gson = new Gson();
+            return gson.fromJson(keycloakJson, KeycloakConfiguration.class);
+        } catch (JsonSyntaxException e) {
+            throw new IllegalArgumentException("Failed to parse Keycloak JSON config: " + keycloakJson, e);
+        }
     }
 }

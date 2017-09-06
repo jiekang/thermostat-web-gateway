@@ -36,6 +36,8 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
+import java.util.LinkedHashMap;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
@@ -55,8 +57,8 @@ public class MongoMetaDataResponseBuilder {
     private final String next;
     private final String first;
     private final String last;
-    private final Integer insertCount;
-    private final Integer matchCount;
+    private final Long insertCount;
+    private final Long matchCount;
     private final Integer elapsed;
 
     public static class MetaBuilder {
@@ -67,8 +69,8 @@ public class MongoMetaDataResponseBuilder {
         private String next;
         private String first;
         private String last;
-        private Integer insertCount;
-        private Integer matchCount;
+        private Long insertCount;
+        private Long matchCount;
         private Integer elapsed;
 
         public MetaBuilder payloadCount(Integer payload) {
@@ -101,12 +103,12 @@ public class MongoMetaDataResponseBuilder {
             return this;
         }
 
-        public MetaBuilder insertCount(Integer count) {
+        public MetaBuilder insertCount(Long count) {
             this.insertCount = count;
             return this;
         }
 
-        public MetaBuilder matchCount(Integer count) {
+        public MetaBuilder matchCount(Long count) {
             this.matchCount = count;
             return this;
         }
@@ -120,12 +122,13 @@ public class MongoMetaDataResponseBuilder {
             return new MongoMetaDataResponseBuilder(this);
         }
 
-        public String getQueryArgumentsNoOffsetLimit(String[] URLQueryPath) {
+        public String getQueryArgumentsNoOffsetLimit(LinkedHashMap<String, String> requestParamArguments) {
             StringBuilder queryString = new StringBuilder();
             String sep = "";
-            for (String arg : URLQueryPath) {
-                if (!(arg.contains(RequestParameters.LIMIT) || arg.contains(RequestParameters.OFFSET))) {
-                    queryString.append(sep).append(arg);
+            for (String param : requestParamArguments.keySet()) {
+                String val = requestParamArguments.get(param);
+                if (!(RequestParameters.LIMIT.equals(param) || RequestParameters.OFFSET.equals(param) || (val == null))) {
+                    queryString.append(sep).append(param).append("=").append(val);
                     sep = "&";
                 }
             }

@@ -37,11 +37,14 @@
 package com.redhat.thermostat.gateway.tests.integration;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.CountDownLatch;
 
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.api.AuthenticationStore;
+import org.eclipse.jetty.client.util.BasicAuthentication;
 import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.component.LifeCycle;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
@@ -87,16 +90,25 @@ public class IntegrationTest {
 
     @BeforeClass
     public static void beforeClassIntegrationTest() throws Exception {
+        client = createAndStartHttpClient();
+        startServer();
+    }
+
+    public static HttpClient createAndStartHttpClient() throws Exception {
+        final HttpClient theclient;
         if (isTLSEnabled()) {
             SslContextFactory sslFactory = new SslContextFactory();
             sslFactory.setTrustAll(true);
-            client = new HttpClient(sslFactory);
+            theclient = new HttpClient(sslFactory);
         } else {
-            client = new HttpClient();
+            theclient = new HttpClient();
         }
-        client.start();
-
-        startServer();
+        AuthenticationStore authenticationStore = theclient.getAuthenticationStore();
+        URI uri = URI.create(baseUrl);
+        String realmName = "Thermostat Realm"; // must match Basic login service's realm name.
+        authenticationStore.addAuthentication(new BasicAuthentication(uri, realmName, "agent", "agent-pwd"));
+        theclient.start();
+        return theclient;
     }
 
     private static boolean isTLSEnabled() {

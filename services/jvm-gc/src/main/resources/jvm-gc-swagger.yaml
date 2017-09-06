@@ -10,11 +10,32 @@ consumes:
 produces:
   - application/json
   - text/html; charset=utf-8
-basePath: /jvm-gc/0.0.2
+basePath: /jvm-gc/0.0.3
 paths:
-  /:
+  /jvms/{jvmId}:
     parameters:
       - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get jvm gc information.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-gc-stats-response'
+  /systems/{systemId}/jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/jvm-id'
     get:
       description: Get jvm gc information.
       parameters:
@@ -127,6 +148,16 @@ definitions:
       "set":
         type: object
 parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
   jvm-gc-stats:
     name: jvm-gc-stats
     in: body
@@ -192,4 +223,4 @@ parameters:
     name: X-Thermostat-Realms
     type: string
     in: header
-    description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valid realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"
+    description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valiod realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"

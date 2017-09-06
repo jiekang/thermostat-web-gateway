@@ -52,6 +52,18 @@
             </param-value>
         </init-param>
     </servlet>
+    <filter>
+        <filter-name>ServiceVersionFilter</filter-name>
+        <filter-class>com.redhat.thermostat.gateway.common.core.servlet.ServiceVersionFilter</filter-class>
+        <init-param>
+            <param-name>version</param-name>
+            <param-value>0.0.1</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ServiceVersionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
     <servlet-mapping>
         <servlet-name>SystemMemoryServlet</servlet-name>
         <url-pattern>/0.0.1/*</url-pattern>
@@ -65,4 +77,12 @@
     <listener>
         <listener-class>com.redhat.thermostat.gateway.common.mongodb.servlet.StorageConnectionSettingListener</listener-class>
     </listener>
+    <!-- Allow viewing of API spec without authentication -->
+    <security-constraint>
+      <web-resource-collection>
+        <web-resource-name>Swagger API Spec File</web-resource-name>
+        <url-pattern>/0.0.1/doc/@com.redhat.thermostat.gateway.SERVICE_NAME@-swagger.yaml</url-pattern>
+      </web-resource-collection>
+      <!-- Explicitly no auth constraint for this file -->
+    </security-constraint>
 </web-app>

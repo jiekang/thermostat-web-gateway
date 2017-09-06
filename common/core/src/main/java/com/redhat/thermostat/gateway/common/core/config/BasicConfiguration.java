@@ -41,6 +41,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
@@ -98,8 +99,9 @@ abstract class BasicConfiguration implements Configuration {
                 try {
                     replaceValue = new String(Files.readAllBytes(Paths.get(basePath, value)));
                     config.put(replaceKey, replaceValue);
-                } catch (FileNotFoundException e) {
-                    // ignore
+                } catch (FileNotFoundException|NoSuchFileException e) {
+                    logger.log(Level.FINE, "Config file for property '" + replaceKey + "' not found: " + e.getMessage());
+                    config.put(replaceKey, "FILE_NOT_FOUND: " + value);
                 } catch (IOException e) {
                     logger.log(Level.FINE, "Error reading properties file", e);
                 }

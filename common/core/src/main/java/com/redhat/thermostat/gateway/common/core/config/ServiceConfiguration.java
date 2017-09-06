@@ -58,13 +58,17 @@ public class ServiceConfiguration extends BasicConfiguration {
     }
 
     public enum ConfigurationKey {
+
         /**
-         * Set to {@code true} for basic authentication
+         * Set to {@code true} for BASIC authentication
+         * and authorization. Disabled if SECURITY_KEYCLOAK
+         * is also {@code true}
          */
         SECURITY_BASIC,
         /**
-         * Only useful together with SECURITY_BASIC.
-         * Specifies the users a service knows about.
+         * Specifies the users a service knows about for
+         * BASIC authentication and authorization. Only
+         * useful together with SECURITY_BASIC
          */
         SECURITY_BASIC_USERS,
         /**
@@ -74,9 +78,8 @@ public class ServiceConfiguration extends BasicConfiguration {
         WEBSOCKETS,
 
         /**
-         * Set to {@code true} for keycloak authentication
-         * and authorization. Cannot be used along with
-         * {@link ConfigurationKey#SECURITY_BASIC}
+         * Set to {@code true} for Keycloak authentication
+         * and authorization. Disables Basic authentication
          */
         SECURITY_KEYCLOAK,
 

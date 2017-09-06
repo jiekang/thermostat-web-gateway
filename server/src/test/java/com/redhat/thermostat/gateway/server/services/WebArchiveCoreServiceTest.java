@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.jetty.security.ConstraintMapping;
 import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.LoginService;
 import org.eclipse.jetty.security.SecurityHandler;
@@ -53,11 +54,14 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.Test;
 import org.keycloak.adapters.jetty.KeycloakJettyAuthenticator;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
+import com.redhat.thermostat.gateway.common.core.config.IllegalConfigurationException;
 import com.redhat.thermostat.gateway.common.core.config.ServiceConfiguration;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.auth.basic.BasicLoginService;
@@ -65,6 +69,7 @@ import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakRequestFilter;
 
 public class WebArchiveCoreServiceTest {
 
+    private static final int UNSET_DATA_CONSTRAINT = -1;
     private final String contextPath = "/test";
     private final String warPath = "/test.war";
     private final String keycloakJson = "{\n" +
@@ -75,9 +80,22 @@ public class WebArchiveCoreServiceTest {
             "  \"resource\": \"thermostat-bearer\"\n" +
             "}";
 
+    @Test(expected = IllegalConfigurationException.class)
+    public void testNoAuthException() {
+        Map<String, Object> configurationMap = new HashMap<>();
+
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.asMap()).thenReturn(configurationMap);
+
+        WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath, configuration);
+
+        service.createServletContextHandler(mock(Server.class));
+    }
+
     @Test
     public void testBasicService() {
         Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
 
         Configuration configuration = mock(Configuration.class);
         when(configuration.asMap()).thenReturn(configurationMap);
@@ -96,6 +114,7 @@ public class WebArchiveCoreServiceTest {
     @Test
     public void testServiceConfigIsAdded() {
         Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
 
         Configuration configuration = mock(Configuration.class);
         when(configuration.asMap()).thenReturn(configurationMap);
@@ -172,6 +191,7 @@ public class WebArchiveCoreServiceTest {
     @Test
     public void testServiceWithWebSockets() {
         Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
         configurationMap.put(ServiceConfiguration.ConfigurationKey.WEBSOCKETS.name(), "true");
         Configuration configuration = mock(Configuration.class);
         when(configuration.asMap()).thenReturn(configurationMap);
@@ -189,5 +209,35 @@ public class WebArchiveCoreServiceTest {
         assertEquals(webAppContext.getWar(), warPath);
 
         assertEquals(webAppContext.getServer(), server);
+    }
+
+    @Test
+    public void testConfidentialWithTLS() {
+        doDataConstraintTest(true, Constraint.DC_CONFIDENTIAL);
+    }
+
+    @Test
+    public void testPlainDataWithoutTLS() {
+        doDataConstraintTest(false, UNSET_DATA_CONSTRAINT);
+    }
+
+    private void doDataConstraintTest(boolean withTLS, int expectedDataConstraint) {
+        Map<String, Object> configurationMap = new HashMap<>();
+        configurationMap.put(ServiceConfiguration.ConfigurationKey.SECURITY_BASIC.name(), "true");
+        configurationMap.put(GlobalConfiguration.ConfigurationKey.WITH_TLS.name(), Boolean.valueOf(withTLS).toString());
+        Configuration configuration = mock(Configuration.class);
+        when(configuration.asMap()).thenReturn(configurationMap);
+
+        WebArchiveCoreService service = new WebArchiveCoreService(contextPath, warPath, configuration);
+
+        Server server = mock(Server.class);
+        ServletContextHandler servletContextHandler = service.createServletContextHandler(server);
+
+        assertTrue(servletContextHandler instanceof WebAppContext);
+        WebAppContext webAppContext = (WebAppContext) servletContextHandler;
+        ConstraintSecurityHandler secHandler = (ConstraintSecurityHandler)webAppContext.getSecurityHandler();
+        ConstraintMapping constraints = secHandler.getConstraintMappings().get(0);
+        Constraint cons = constraints.getConstraint();
+        assertEquals(expectedDataConstraint, cons.getDataConstraint());
     }
 }

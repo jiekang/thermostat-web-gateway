@@ -10,9 +10,32 @@ consumes:
 produces:
   - application/json
   - text/html; charset=utf-8
-basePath: /jvm-memory/0.0.2
+basePath: /jvm-memory/0.0.3
 paths:
-  /:
+  /jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get jvm memory information.
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/sort'
+        - $ref: '#/parameters/include'
+        - $ref: '#/parameters/exclude'
+        - $ref: '#/parameters/query'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-memory-stats-response'
+  /systems/{systemId}/jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/jvm-id'
     get:
       description: Get jvm memory information.
       parameters:
@@ -158,6 +181,16 @@ definitions:
       "set":
         type: object
 parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
   jvm-memory-stats:
     name: jvm-memory-stats
     in: body
@@ -219,3 +252,8 @@ parameters:
     type: boolean
     in: query
     description: "Metadata flag. If set to 'true', the subsequent request response will return metadata information. If set to 'false', such metadata information will be omitted."
+  thermostat-realms:
+      name: X-Thermostat-Realms
+      type: string
+      in: header
+      description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valid realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"

@@ -39,7 +39,8 @@ package com.redhat.thermostat.gateway.server.webclient;
 import java.io.File;
 
 import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ResourceHandler;
+import org.eclipse.jetty.servlet.DefaultServlet;
+import org.eclipse.jetty.servlet.ServletContextHandler;
 
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
@@ -60,15 +61,14 @@ public class StaticAssetsHandler {
     }
 
     public ContextHandler create() {
-        ContextHandler apiContext = new ContextHandler();
-        apiContext.setContextPath(WEB_CLIENT_CONTEXT_PATH);
-        ResourceHandler resourceHandler = new ResourceHandler();
-        resourceHandler.setDirectoriesListed(false);
-        resourceHandler.setWelcomeFiles(new String[]{ "index.html" });
-        File webClientDir = getWebClientAssetsDir();
-        resourceHandler.setResourceBase(webClientDir.getAbsolutePath());
-        apiContext.setHandler(resourceHandler);
-        return apiContext;
+        ServletContextHandler servletContextHandler = new ServletContextHandler();
+        servletContextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.dirAllowed", "false");
+        servletContextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.gzip", "true");
+        servletContextHandler.setInitParameter("org.eclipse.jetty.servlet.Default.resourceBase", getWebClientAssetsDir().getAbsolutePath());
+        servletContextHandler.setContextPath(WEB_CLIENT_CONTEXT_PATH);
+        servletContextHandler.setWelcomeFiles(new String[]{ "index.html" });
+        servletContextHandler.addServlet(DefaultServlet.class, "/");
+        return servletContextHandler;
     }
 
     private File getWebClientAssetsDir() {

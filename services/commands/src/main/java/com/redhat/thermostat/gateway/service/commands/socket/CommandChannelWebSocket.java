@@ -44,6 +44,8 @@ import com.redhat.thermostat.gateway.service.commands.channel.model.Message;
 
 public interface CommandChannelWebSocket {
 
+    String COMMANDS_REALM = "commands";
+
     void onClose(int code, String message);
 
     void onConnect() throws IOException;
