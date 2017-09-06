@@ -326,6 +326,13 @@
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-service-jvm-cpu</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-service-systems</artifactId>
             <version>${project.version}</version>
             <type>war</type>
