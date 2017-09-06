@@ -162,16 +162,26 @@ public class MongoHttpHandlerHelper {
         return handlePut(httpServletRequest, context, null, null, queries, metadata, body);
     }
 
-    public Response handlePut(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, String queries, String metadata, String body) {
+    public Response handlePut(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, String queries, String returnMetadata, String body) {
         try {
             RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
+            boolean metadata = Boolean.valueOf(returnMetadata);
+
 
             if (realmAuthorizer.updatable()) {
                 ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-                mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries, realmAuthorizer.getUpdatableRealms(), systemId, jvmId);
+                MongoDataResultContainer execResult = mongoExecutor.execPutRequest(storage.getDatabase().getCollection(collectionName), body, queries, realmAuthorizer.getUpdatableRealms(), systemId, jvmId);
 
-                return Response.status(Response.Status.OK).build();
+                MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
+                if (metadata) {
+                    MongoMetaDataResponseBuilder.MetaBuilder metadataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
+                    metadataResponse.matchCount(execResult.getPutReqMatches());
+
+                    response.addMetaData(metadataResponse.build());
+                }
+
+                return Response.status(Response.Status.OK).entity(response.build()).build();
             } else {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }
@@ -196,16 +206,26 @@ public class MongoHttpHandlerHelper {
         return handlePost(httpServletRequest, context, null, null, returnMetadata, body);
     }
 
-    public Response handlePost(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, String metadata, String body) {
+    public Response handlePost(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, String returnMetadata, String body) {
         try {
             RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
+            boolean metadata = Boolean.valueOf(returnMetadata);
+
 
             if (realmAuthorizer.writable()) {
                 ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-                mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, realmAuthorizer.getWritableRealms(), systemId, jvmId);
+                MongoDataResultContainer execResult = mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, realmAuthorizer.getWritableRealms(), systemId, jvmId);
+                MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
 
-                return Response.status(Response.Status.OK).build();
+                if (metadata) {
+                    MongoMetaDataResponseBuilder.MetaBuilder metadataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
+                    metadataResponse.insertCount(execResult.getPostReqInsertions());
+
+                    response.addMetaData(metadataResponse.build());
+                }
+
+                return Response.status(Response.Status.OK).entity(response.build()).build();
             } else {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }
@@ -226,16 +246,24 @@ public class MongoHttpHandlerHelper {
         return handleDelete(httpServletRequest, context, andSystemIdJvmIdQuery(queries, systemId, jvmId), metadata);
     }
 
-    public Response handleDelete(HttpServletRequest httpServletRequest, ServletContext context, String queries, String metadata) {
+    public Response handleDelete(HttpServletRequest httpServletRequest, ServletContext context, String queries, String returnMetadata) {
         try {
             RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
-
+            boolean metadata = Boolean.valueOf(returnMetadata);
             if (realmAuthorizer.deletable()) {
                 ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-                mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries, realmAuthorizer.getDeletableRealms());
+                MongoDataResultContainer execResult = mongoExecutor.execDeleteRequest(storage.getDatabase().getCollection(collectionName), queries, realmAuthorizer.getDeletableRealms());
 
-                return Response.status(Response.Status.OK).build();
+                MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
+                if (metadata) {
+                    MongoMetaDataResponseBuilder.MetaBuilder metadataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
+                    metadataResponse.matchCount(execResult.getDeleteReqMatches());
+
+                    response.addMetaData(metadataResponse.build());
+                }
+
+                return Response.status(Response.Status.OK).entity(response.build()).build();
             } else {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }

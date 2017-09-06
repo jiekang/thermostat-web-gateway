@@ -77,6 +77,10 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     private static final String versionNumber = "0.0.3";
     private static final int HTTP_200_OK = 200;
     private static final int HTTP_404_NOTFOUND = 404;
+    private static final String NO_EXPECTED_RESPONSE = "";
+    private static final String NO_QUERY = "";
+    private static final String NO_DATA_TO_SEND = "";
+    private static final String NO_DATA_TYPE = "";
 
     private final String data = "[{ \"a\" : \"test\", \"b\" : \"test1\", \"c\" : \"test2\" }, { \"d\" : \"test3\"}," +
             "{\"e\" : \"test4\" }]";
@@ -96,7 +100,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     private static final String OFFSET_PREFIX = "offset";
     private static final String METADATA_PREFIX = "metadata";
     private static final String INCLUDE_PREFIX = "include";
-    private static final String IEXCLUDE_PREFIX = "exclude";
+    private static final String EXCLUDE_PREFIX = "exclude";
     private static final String TIMESTAMP_TOKEN = "\"$TIMESTAMP$\"";
     private static final String JVMID_TOKEN = "\"$JVMID_TOKEN\"";
 
@@ -134,7 +138,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         assertEquals(expectedStatus, postResponse.getStatus());
 
         if (!expectedResponse.equals("")) {
-            makeHttpGetRequest(serviceUrl, expectedResponse, expectedStatus);
+            if (httpMethod == HttpMethod.DELETE) {
+                assertEquals(expectedResponse, postResponse.getContentAsString());
+            } else {
+                makeHttpGetRequest(serviceUrl, expectedResponse, expectedStatus);
+            }
         }
     }
 
@@ -203,11 +211,9 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         getUnknown(systemid, jvmid);
     }
 
-
-
     @Test
     public void testGet() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         final String expectedResponse = "{\"response\":[{\"a\":\"test\",\"b\":\"test1\","+
                 "\"c\":\"test2\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         makeHttpGetRequest(serviceUrl, expectedResponse, 200);
@@ -215,7 +221,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     @Test
     public void testGetLimitParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         final String expectedResponse = "{\"response\":[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"" + SYSTEM_JVM_FRAGMENT + "}," +
                 "{\"d\":\"test3\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         makeHttpGetRequest(serviceUrl + '?' + LIMIT_PREFIX + "=2", expectedResponse, 200);
@@ -224,7 +230,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testGetSortParam() throws InterruptedException, TimeoutException, ExecutionException {
         final String data ="[{\"a\":\"1\"}, {\"a\":\"2\"}]";
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         final String expectedResponse = "{\"response\":[{\"a\":\"2\"" + SYSTEM_JVM_FRAGMENT + "}," +
                 "{\"a\":\"1\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         makeHttpGetRequest(serviceUrl + '?' + LIMIT_PREFIX + "=2&" + SORT_PREFIX + "=-a", expectedResponse, 200);
@@ -232,21 +238,21 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     @Test
     public void testGetProjectParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         final String expectedResponse = "{\"response\":[{\"b\":\"test1\",\"c\":\"test2\"}]}";
         makeHttpGetRequest(serviceUrl + '?' + INCLUDE_PREFIX + "=b,c", expectedResponse, 200);
     }
 
     @Test
     public void testGetOffsetParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         final String expectedResponse = "{\"response\":[{\"d\":\"test3\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         makeHttpGetRequest(serviceUrl + '?' + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
     @Test
     public void testGetQueryParam() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         final String expectedResponse = "{\"response\":[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1", expectedResponse, 200);
     }
@@ -254,44 +260,82 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testPostJSON() throws InterruptedException, TimeoutException, ExecutionException {
         final String expectedResponse = "{\"response\":[{\"f1\":\"test\"" + SYSTEM_JVM_FRAGMENT + "}]}";
-        makeHttpMethodRequest(HttpMethod.POST, '?' + METADATA_PREFIX + "=true","[{\"f1\":\"test\"}]","application/json",
+        makeHttpMethodRequest(HttpMethod.POST, '?' + METADATA_PREFIX + "=false", "[{\"f1\":\"test\"}]", "application/json",
                  expectedResponse, 200);
     }
 
     @Test
     public void testPostXML() throws InterruptedException,TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"","","application/xml","", 415);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, NO_DATA_TO_SEND, "application/xml", NO_EXPECTED_RESPONSE, 415);
+    }
+
+    @Test
+    public void testPostWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, "[{\"f1\":\"test\"}]", "application/json", NO_EXPECTED_RESPONSE, 200);
+        StringContentProvider stringContentProvider = new StringContentProvider("[{\"f1\":\"test\"}]", "UTF-8");
+        ContentResponse response = client.newRequest(serviceUrl + "?" + METADATA_PREFIX + "=true")
+                .method(HttpMethod.POST)
+                .content(stringContentProvider, "application/json")
+                .send();
+
+        assertEquals(200, response.getStatus());
+
+        assertEquals("{\"metaData\":{\"insertCount\":1}}", response.getContentAsString());
     }
 
     @Test
     public void testInvalidDataPost() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.POST,"","{\"badFormat\":\"missing square brackets\"}",
-                "application/json","", 400);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, "{\"badFormat\":\"missing square brackets\"}",
+                "application/json", NO_EXPECTED_RESPONSE, 400);
     }
 
     @Test
     public void testDelete() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.DELETE,"","","","", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE, NO_QUERY, NO_DATA_TO_SEND, NO_DATA_TYPE, NO_EXPECTED_RESPONSE, 200);
+    }
+
+    @Test
+    public void testDeleteWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, "[{\"f1\":\"test\"}]", "application/json", NO_EXPECTED_RESPONSE, 200);
+
+        makeHttpMethodRequest(HttpMethod.DELETE, "?" + QUERY_PREFIX + "=f1==test&" + METADATA_PREFIX + "=true",
+                NO_DATA_TO_SEND, NO_DATA_TYPE, "{\"metaData\":{\"matchCount\":1}}", 200);
     }
 
     @Test
     public void testNonExistentDataDelete() throws InterruptedException, TimeoutException, ExecutionException {
-        makeHttpMethodRequest(HttpMethod.DELETE,'?' + QUERY_PREFIX + "=nonExist==Null","","","", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE, '?' + QUERY_PREFIX + "=nonExist==Null", NO_DATA_TO_SEND, NO_DATA_TYPE,
+                NO_EXPECTED_RESPONSE, 200);
     }
 
     @Test
     public void testPostPutDeleteMockedData() throws InterruptedException, TimeoutException, ExecutionException {
         final String expectedResponse = "{\"response\":[{\"f1\":\"test\"" + SYSTEM_JVM_FRAGMENT + "}]}";
-        makeHttpMethodRequest(HttpMethod.POST,"","[{\"f1\":\"test\"}]","application/json",
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, "[{\"f1\":\"test\"}]", "application/json",
                  expectedResponse, 200);
 
         final String expectedResponse2 = "{\"response\":[{\"f1\":\"newdata\"" + SYSTEM_JVM_FRAGMENT + "}]}";
-        makeHttpMethodRequest(HttpMethod.PUT,'?' + QUERY_PREFIX + "=f1==test","{\"set\": {\"f1\":\"newdata\"}}",
+        makeHttpMethodRequest(HttpMethod.PUT, '?' + QUERY_PREFIX + "=f1==test", "{\"set\": {\"f1\":\"newdata\"}}",
                 "application/json", expectedResponse2, 200);
 
-        makeHttpMethodRequest(HttpMethod.DELETE,"?q=f1==test","","","", 200);
+        makeHttpMethodRequest(HttpMethod.DELETE, "?q=f1==test", NO_DATA_TO_SEND, NO_DATA_TYPE, NO_EXPECTED_RESPONSE, 200);
     }
 
+    @Test
+    public void testPutWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, "[{\"f1\":\"test\"}]", "application/json", NO_EXPECTED_RESPONSE, 200);
+        StringContentProvider stringContentProvider = new StringContentProvider("{\"set\": {\"f1\":\"newdata\"}}", "UTF-8");
+        ContentResponse response = client
+                .newRequest(serviceUrl + "?" + QUERY_PREFIX + "=f1==test&" + METADATA_PREFIX + "=true")
+                .method(HttpMethod.PUT)
+                .content(stringContentProvider, "application/json")
+                .send();
+
+        assertEquals(200, response.getStatus());
+        assertEquals("{\"metaData\":{\"matchCount\":1}}", response.getContentAsString());
+
+
+    }
     @Test
     public void testGetWithMetaDataAndLimit() throws InterruptedException, TimeoutException, ExecutionException {
         String data ="[{\"a\":\"test\",\"b\":\"test1\",\"c\":\"test2\"}, {\"b\":\"test1\"},"+
@@ -304,7 +348,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d1\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX  +"\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", expectedResponse, 200);
     }
 
@@ -320,7 +364,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"metaData\":{\"payloadCount\":1,\"count\":3,"+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d1\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX  +"\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         final String url1 =  baseUrl + "/" + serviceName + "/" + "0.0" + "/systems/" + AGENT_ID + "/jvms/" + JVM_ID;
         makeHttpGetRequest(url1 + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1", expectedResponse, 200);
@@ -344,7 +388,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d2\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
@@ -363,7 +407,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d1\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=3", expectedResponse, 200);
     }
 
@@ -380,7 +424,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d2\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=1&" + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
@@ -399,7 +443,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d3\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=1", expectedResponse, 200);
     }
 
@@ -419,7 +463,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d1\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=3", expectedResponse, 200);
     }
 
@@ -438,7 +482,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d4\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
 
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=2", expectedResponse, 200);
     }
 
@@ -457,7 +501,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"metaData\":{\"payloadCount\":2,\"count\":6," +
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
             "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d4\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=2&" + OFFSET_PREFIX + "=2", expectedResponse, 200);
     }
 
@@ -477,7 +521,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 "\"metaData\":{\"payloadCount\":1,\"count\":6,"+
                 "\"prev\":\"" + serviceUrl + "?" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\\u0026" + LIMIT_PREFIX + "\\u003d2\\u0026" + OFFSET_PREFIX + "\\u003d0\","+
                 "\"next\":\"" + serviceUrl + "?" + OFFSET_PREFIX + "\\u003d5\\u0026" + LIMIT_PREFIX + "\\u003d1\\u0026" + QUERY_PREFIX + "\\u003db\\u003d\\u003dtest1\\u0026" + METADATA_PREFIX + "\\u003dtrue\"}}";
-        makeHttpMethodRequest(HttpMethod.POST,"", data,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
         makeHttpGetRequest(serviceUrl + '?' + QUERY_PREFIX + "=b==test1&" + METADATA_PREFIX + "=true&" + LIMIT_PREFIX + "=3&" + OFFSET_PREFIX + "=2", expectedResponse, 200);
     }
 
@@ -493,7 +537,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         collection.insertMany(insertDocuments);
 
         String updateString = "{\"set\" : {\"realms\" : 1, \"a\" : 2}}";
-        makeHttpMethodRequest(HttpMethod.PUT,"", updateString,"application/json","", 200);
+        makeHttpMethodRequest(HttpMethod.PUT, NO_QUERY, updateString, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         FindIterable<Document> documents = collection.find();
         documents.forEach(new Block<Document>() {
@@ -509,11 +553,10 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         String data = "[{\"item\":1,}," +
                 "{\"item\":2}]";
 
-        makeHttpMethodRequest(HttpMethod.POST, "", data,
-                "application/json", "", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         String updateString = "{\"set\" : {\"realms\" : 1}}";
-        makeHttpMethodRequest(HttpMethod.PUT,"", updateString,"application/json","", 400);
+        makeHttpMethodRequest(HttpMethod.PUT, NO_QUERY, updateString,"application/json", NO_EXPECTED_RESPONSE, 400);
 
         MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
         final Gson gson = new GsonBuilder().create();
@@ -561,11 +604,10 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         String data = "[{\"item\":1,}," +
                 "{\"item\":2}]";
 
-        makeHttpMethodRequest(HttpMethod.POST, "", data,
-                "application/json", "", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         String updateString = "{\"set\" : {\"realms\" : 1, \"realms\" : 2}}";
-        makeHttpMethodRequest(HttpMethod.PUT,"", updateString,"application/json","", 400);
+        makeHttpMethodRequest(HttpMethod.PUT, NO_QUERY, updateString, "application/json", NO_EXPECTED_RESPONSE, 400);
 
         MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
         final Gson gson = new GsonBuilder().create();
@@ -583,8 +625,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testGetCannotSeeRealms() throws InterruptedException, ExecutionException, TimeoutException {
         String data = "[{\"item\":1},{\"item\":2}]";
-        makeHttpMethodRequest(HttpMethod.POST, "", data,
-                "application/json", "", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         String expected = "{\"response\":[{\"item\":1" + SYSTEM_JVM_FRAGMENT + "}]}";
 
@@ -594,8 +635,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testGetProjectionCannotSeeRealms() throws InterruptedException, ExecutionException, TimeoutException {
         String data = "[{\"item\":1},{\"item\":2}]";
-        makeHttpMethodRequest(HttpMethod.POST, "", data,
-                "application/json", "", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         String expected = "{\"response\":[{\"item\":1}]}";
 
@@ -605,8 +645,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testGetQueryCannotMatchRealms() throws InterruptedException, ExecutionException, TimeoutException {
         String data = "[{\"item\":1},{\"item\":2}]";
-        makeHttpMethodRequest(HttpMethod.POST, "", data,
-                "application/json", "", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         ContentResponse response = client.newRequest(serviceUrl)
                 .param(RequestParameters.QUERY, "realms==" + getRealmArray(BasicRealmAuthorizer.DEFAULT_REALM))
@@ -615,13 +654,12 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         assertEquals(400, response.getStatus());
     }
 
-
     @Test
     public void testPostCannotAddRealms() throws InterruptedException, ExecutionException, TimeoutException {
         String data = "[{\"item\":1,\"realms\":[\"a\",\"b\"]}," +
                 "{\"item\":2,\"realms\":[\"a\",\"b\"]}]";
 
-        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+        makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, data, "application/json", NO_EXPECTED_RESPONSE, 200);
 
         MongoCollection<Document> collection = mongodTestUtil.getCollection(serviceName);
         final Gson gson = new GsonBuilder().create();

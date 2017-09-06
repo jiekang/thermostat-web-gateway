@@ -57,8 +57,8 @@ public class MongoMetaDataResponseBuilder {
     private final String next;
     private final String first;
     private final String last;
-    private final Integer insertCount;
-    private final Integer matchCount;
+    private final Long insertCount;
+    private final Long matchCount;
     private final Integer elapsed;
 
     public static class MetaBuilder {
@@ -69,8 +69,8 @@ public class MongoMetaDataResponseBuilder {
         private String next;
         private String first;
         private String last;
-        private Integer insertCount;
-        private Integer matchCount;
+        private Long insertCount;
+        private Long matchCount;
         private Integer elapsed;
 
         public MetaBuilder payloadCount(Integer payload) {
@@ -103,12 +103,12 @@ public class MongoMetaDataResponseBuilder {
             return this;
         }
 
-        public MetaBuilder insertCount(Integer count) {
+        public MetaBuilder insertCount(Long count) {
             this.insertCount = count;
             return this;
         }
 
-        public MetaBuilder matchCount(Integer count) {
+        public MetaBuilder matchCount(Long count) {
             this.matchCount = count;
             return this;
         }

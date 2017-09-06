@@ -223,6 +223,12 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
+    public void testPostDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
+        HttpTestUtil.addRecords(client, serviceUrl + "?" + METADATA_PREFIX + "=true",
+                "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]", "{\"metaData\":{\"insertCount\":2}}");
+    }
+
+    @Test
     public void testPostPutAddsData() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedDataBeforePut = "{\"response\":[{\"a\":\"b\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         String expectedDataAfterPut = "{\"response\":[{\"a\":\"b\"" + SYSTEM_JVM_FRAGMENT + ",\"x\":\"y\"}]}";
@@ -257,6 +263,13 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     }
 
     @Test
+    public void testDeleteDifferentDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
+        HttpTestUtil.addRecords(client, serviceUrl, "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]");
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, serviceUrl + "?" + QUERY_PREFIX + "=a==b&"
+                + METADATA_PREFIX + "=true", 200, "{\"metaData\":{\"matchCount\":1}}");
+    }
+
+    @Test
     public void testMalformedDeleteRequestDoesNotMutateData() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedDataResponse = "{\"response\":[{\"fakedata\":\"test\"" + SYSTEM_JVM_FRAGMENT + "}]}";
         HttpTestUtil.addRecords(client, serviceUrl, "[{\"fakedata\":\"test\"}]");
@@ -271,6 +284,15 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         HttpTestUtil.testContentResponse(client, HttpMethod.PUT, serviceUrl, "{\"set\":{\"fakedata\":\"test\"}}", 200);
     }
 
+    @Test
+    public void testPutDifferentDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
+        String expectedDataResponse = "{\"response\":[{\"a\":\"b\"" + SYSTEM_JVM_FRAGMENT +
+                ",\"c\":\"d\"}]}";
+        HttpTestUtil.addRecords(client, serviceUrl, "[{\"a\":\"b\"}]");
+        HttpTestUtil.testContentResponse(client, HttpMethod.PUT, serviceUrl + "?" + QUERY_PREFIX + "=a==b&" +
+                METADATA_PREFIX + "=true", "{\"set\":{\"c\":\"d\"}}", 200, "{\"metaData\":{\"matchCount\":1}}");
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, serviceUrl + "?l=5", 200, expectedDataResponse);
+    }
     @Test
     public void testPostAndPutWithInvalidData() throws InterruptedException, TimeoutException, ExecutionException {
         String expectedDataResponse = "{\"response\":[{\"fakedata\":\"test\"" + SYSTEM_JVM_FRAGMENT + "}]}";
