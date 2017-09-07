@@ -34,29 +34,11 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.mongodb.filters;
+package com.redhat.thermostat.gateway.service.jvm.gc.mongo;
 
-import org.bson.conversions.Bson;
+class Fields {
+    static final String COLLECTOR_NAME = "collectorName";
 
-import com.mongodb.BasicDBObject;
-
-public class MongoSortFilters {
-
-    public static final Character DESCENDING_SORT = '-';
-    public static final Character ASCENDING_SORT = '+';
-
-    public static Bson createSortObject(String sort) {
-        BasicDBObject sortObject = new BasicDBObject();
-        if (sort != null) {
-            String[] items = sort.split(",");
-            for (String item : items) {
-                if (item.charAt(0) == ASCENDING_SORT) {
-                    sortObject.append(item.substring(1), 1);
-                } else if (item.charAt(0) == DESCENDING_SORT) {
-                    sortObject.append(item.substring(1), -1);
-                }
-            }
-        }
-        return sortObject;
-    }
+    static final String WALL_TIME = "wallTimeInMicros";
+    static final String WALL_TIME_DELTA = "wallTimeDelta";
 }

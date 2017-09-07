@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.jvm.gc;
+package com.redhat.thermostat.gateway.service.jvm.gc.http;
 
 import java.io.IOException;
 

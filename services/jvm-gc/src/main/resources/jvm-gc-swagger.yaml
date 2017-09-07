@@ -82,6 +82,21 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/metadata'
+  /delta/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get jvm gc information for jvm {jvmId} with deltas for wallTime. Always sorted by timeStamp ascending
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/before'
+        - $ref: '#/parameters/after'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-gc-delta-response'
 definitions:
   jvm-gc-stats-response:
     type: object
@@ -107,8 +122,34 @@ definitions:
         type: string
       runCount:
         $ref: '#/definitions/metric'
-      wallTime:
+      wallTimeInMicros:
         $ref: '#/definitions/metric'
+  jvm-gc-delta-response:
+    type: object
+    properties:
+      response:
+        $ref: '#/definitions/jvm-gc-delta-stats'
+  jvm-gc-delta-stats:
+    type: array
+    items:
+      $ref: '#/definitions/jvm-gc-delta-stat'
+  jvm-gc-delta-stat:
+      type: object
+      properties:
+        agentId:
+          type: string
+        jvmId:
+          type: string
+        timeStamp:
+          $ref: '#/definitions/timestamp'
+        collectorName:
+          type: string
+        runCount:
+          $ref: '#/definitions/metric'
+        wallTimeInMicros:
+          $ref: '#/definitions/metric'
+        wallTimeDelta:
+          $ref: '#/definitions/metric'
   metric:
     type: object
     properties:
@@ -165,6 +206,12 @@ parameters:
     required: true
     schema:
       $ref: '#/definitions/jvm-gc-stats'
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
+    description: The ID of the jvm
   put-body:
     name: putBody
     in: body
@@ -214,6 +261,18 @@ parameters:
       precedence over 'include' parameter
     type: string
     required: false
+  before:
+    name: b
+    in: query
+    description: Before timeStamp. A long that specifies to return documents before the timeStamp.
+    type: integer
+    format: int64
+  after:
+    name: a
+    in: query
+    description: After timeStamp. A long that specifies to return documents after the timeStamp.
+    type: integer
+    format: int64
   metadata:
     name: metadata
     type: boolean

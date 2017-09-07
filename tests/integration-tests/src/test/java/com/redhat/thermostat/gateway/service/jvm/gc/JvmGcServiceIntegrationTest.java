@@ -42,6 +42,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,6 +63,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.gson.Gson;
@@ -87,12 +89,12 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     private final String jsonData =
             "{\n" +
-            "   \"timeStamp\" : " + TIMESTAMP_TOKEN + ",\n" +
-            "   \"jvmId\" : " + JVMID_TOKEN + ",\n" +
-            "   \"collectorName\" : \"some-collection\",\n" +
-            "   \"runCount\" : \"22\",\n" +
-            "   \"wallTimeInMicros\" : \"333333\"\n" +
-            "}\n";
+                    "   \"timeStamp\" : " + TIMESTAMP_TOKEN + ",\n" +
+                    "   \"jvmId\" : " + JVMID_TOKEN + ",\n" +
+                    "   \"collectorName\" : \"some-collection\",\n" +
+                    "   \"runCount\" : \"22\",\n" +
+                    "   \"wallTimeInMicros\" : \"333333\"\n" +
+                    "}\n";
 
     private static final String QUERY_PREFIX = "query";
     private static final String LIMIT_PREFIX = "limit";
@@ -110,6 +112,8 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     private final String simpleUrl = baseUrl + "/" + serviceName + "/" + versionNumber;
     private final String serviceUrl = simpleUrl + "/systems/" + AGENT_ID + "/jvms/" + JVM_ID;
+    private final String deltaUrl = simpleUrl + "/delta";
+    private final String deltaJvmUrl = deltaUrl + "/" + JVM_ID;
     private final String SYSTEM_JVM_FRAGMENT = ",\"systemId\":\"" + AGENT_ID + "\",\"jvmId\":\"" + JVM_ID + "\"";
 
     public JvmGcServiceIntegrationTest() {
@@ -122,9 +126,13 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         ContentResponse response = client.newRequest(url).method(HttpMethod.GET).send();
 
         if (!expectedResponse.equals("")) {
-            assertEquals(expectedStatus, response.getStatus());
-            assertEquals(expectedResponse, response.getContentAsString());
+            verifyResponse(response, expectedResponse, expectedStatus);
         }
+    }
+
+    private void verifyResponse(ContentResponse response, String expectedResponse, int expectedStatus) {
+        assertEquals(expectedStatus, response.getStatus());
+        assertEquals(expectedResponse, response.getContentAsString());
     }
 
     private void makeHttpMethodRequest(HttpMethod httpMethod, String urlQuery, String dataToSend, String dataType,
@@ -620,6 +628,252 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 assertEquals(getRealmArray(BasicRealmAuthorizer.DEFAULT_REALM), gson.toJson(document.get("realms"), listType));
             }
         });
+    }
+
+    @Test
+    public void testGetDeltaWallTime() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
+                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":41977}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetSingleDeltaWallTime() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
+                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT +  "," +
+                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "2").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetMultipleDeltaWallTime() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
+                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":41977}},{\"collectorName\":\"CMS\"," +
+                "\"timeStamp\":500,\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":156887}},{\"collectorName\":\"CMS\"," +
+                "\"timeStamp\":400,\"wallTimeInMicros\":14000" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetDeltaWallTimeWithOffset() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+        String offset = "1";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":500," +
+                "\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "1").param("o", offset).send();
+
+        verifyResponse(response, expectedResponse, 200);
+
+        offset = "2";
+        expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":400," +
+                "\"wallTimeInMicros\":14000" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "1").param("o", offset).send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetDeltaWallTimeWithAfter() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
+                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":41977}},{\"collectorName\":\"CMS\"," +
+                "\"timeStamp\":500,\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10").param("a", "400").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetDeltaWallTimeWithOffsetAndAfter() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":500," +
+                "\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
+                .param("a", "400").param("o", "1").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetDeltaWallTimeWithBefore() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":400," +
+                "\"wallTimeInMicros\":14000" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
+                .param("b", "500").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetDeltaWallTimeWithBeforeAndAfter() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":500,\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + ",\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
+                .param("b", "600").param("a", "400").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    public void testGetDeltaWallTimeWithMultipleCollectors() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"} }," +
+                "{\"collectorName\" : \"ABC\", \"timeStamp\" : { \"$numberLong\" : \"440\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"500\" } }," +
+                "{\"collectorName\" : \"ABC\", \"timeStamp\" : { \"$numberLong\" : \"660\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"2000\" } }," +
+                "{\"collectorName\" : \"ABC\", \"timeStamp\": { \"$numberLong\" : \"550\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"1000\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"ABC\",\"timeStamp\":660," +
+                "\"wallTimeInMicros\":2000" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":1000}},{\"collectorName\":\"CMS\",\"timeStamp\":600," +
+                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":41977}},{\"collectorName\":\"ABC\",\"timeStamp\":550," +
+                "\"wallTimeInMicros\":1000" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":500}}]}";
+        ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
+                .param("a", "500").send();
+
+        verifyResponse(response, expectedResponse, 200);
+    }
+
+    @Test
+    @Ignore
+    public void testGetDeltaWallTimeWithMultipleJvms() throws InterruptedException, ExecutionException, TimeoutException, UnsupportedEncodingException {
+        String data = "[{\"jvmId\" : \"jvm-X\",\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"400\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"14000\" } }," +
+                "{\"jvmId\" : \"jvm-X\",\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"600\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"212864\" } }," +
+                "{\"jvmId\" : \"jvm-X\",\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"500\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"170887\"} }," +
+                "{\"jvmId\" : \"jvm-Y\",\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"440\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"500\" } }," +
+                "{\"jvmId\" : \"jvm-Y\",\"collectorName\" : \"CMS\", \"timeStamp\" : { \"$numberLong\" : \"660\" }," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"2000\" } }," +
+                "{\"jvmId\" : \"jvm-Y\",\"collectorName\" : \"CMS\", \"timeStamp\": { \"$numberLong\" : \"550\"}," +
+                "\"wallTimeInMicros\": { \"$numberLong\" : \"1000\"}}]";
+
+        makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
+
+        /*
+        {"response":[{"jvmId":"jvm-X","collectorName":"CMS","timeStamp":600,
+        "wallTimeInMicros":212864,"wallTimeDelta":{"$numberLong":41977}},
+        {"jvmId":"jvm-X","collectorName":"CMS","timeStamp":500,
+        "wallTimeInMicros":170887,"wallTimeDelta":{"$numberLong":156887}},
+        {"jvmId":"jvm-X","collectorName":"CMS","timeStamp":400,
+        "wallTimeInMicros":14000,"wallTimeDelta":{"$numberLong":0}}]}
+         */
+        String expectedResponse = "{\"response\":[{\"jvmId\":\"jvm-X\",\"collectorName\":\"CMS\",\"timeStamp\":600," +
+                "\"wallTimeInMicros\":212864,\"wallTimeDelta\":{\"$numberLong\":41977}}," +
+                "{\"jvmId\":\"jvm-X\",\"collectorName\":\"CMS\",\"timeStamp\":500," +
+                "\"wallTimeInMicros\":170887,\"wallTimeDelta\":{\"$numberLong\":156887}}," +
+                "{\"jvmId\":\"jvm-X\",\"collectorName\":\"CMS\",\"timeStamp\":400," +
+                "\"wallTimeInMicros\":14000,\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        ContentResponse response = client.newRequest(deltaUrl + "/jvm-X").method(HttpMethod.GET).param("l", "10").send();
+        verifyResponse(response, expectedResponse, 200);
+
+        /*
+        {"response":[{"jvmId":"jvm-Y","collectorName":"CMS","timeStamp":660,
+        "wallTimeInMicros":2000,"wallTimeDelta":{"$numberLong":1000}},
+        {"jvmId":"jvm-Y","collectorName":"CMS","timeStamp":550,
+        "wallTimeInMicros":1000,"wallTimeDelta":{"$numberLong":500}},
+        {"jvmId":"jvm-Y","collectorName":"CMS","timeStamp":440,
+        "wallTimeInMicros":500,"wallTimeDelta":{"$numberLong":0}}]}
+         */
+        expectedResponse = "{\"response\":[{\"jvmId\":\"jvm-Y\",\"collectorName\":\"CMS\",\"timeStamp\":660," +
+                "\"wallTimeInMicros\":2000,\"wallTimeDelta\":{\"$numberLong\":1000}}," +
+                "{\"jvmId\":\"jvm-Y\",\"collectorName\":\"CMS\",\"timeStamp\":550," +
+                "\"wallTimeInMicros\":1000,\"wallTimeDelta\":{\"$numberLong\":500}}," +
+                "{\"jvmId\":\"jvm-Y\",\"collectorName\":\"CMS\",\"timeStamp\":440," +
+                "\"wallTimeInMicros\":500,\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        response = client.newRequest(deltaUrl + "/jvm-Y").method(HttpMethod.GET).param("l", "10").send();
+
+
+        verifyResponse(response, expectedResponse, 200);
     }
 
     @Test

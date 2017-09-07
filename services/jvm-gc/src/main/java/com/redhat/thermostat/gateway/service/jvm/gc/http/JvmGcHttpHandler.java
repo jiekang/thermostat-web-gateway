@@ -34,7 +34,7 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.jvm.gc;
+package com.redhat.thermostat.gateway.service.jvm.gc.http;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -51,13 +51,19 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
+import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
+import com.redhat.thermostat.gateway.service.jvm.gc.mongo.JvmGcMongoStorageHandler;
 
 @Path("/")
 public class JvmGcHttpHandler {
 
+
     private static final String collectionName = "jvm-gc";
+    private final JvmGcMongoStorageHandler mongoStorageHandler = new JvmGcMongoStorageHandler();
     private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper( collectionName );
 
     @GET
@@ -134,5 +140,35 @@ public class JvmGcHttpHandler {
                                 @Context ServletContext context,
                                 @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, queries, metadata);
+    }
+
+    @GET
+    @Path("/delta/{jvmId}")
+    @Consumes({ "application/json" })
+    @Produces({ "application/json", "text/html; charset=utf-8" })
+    public Response getJvmGcDelta(@PathParam("jvmId") String jvmId,
+                                  @QueryParam("l") @DefaultValue("1") Integer limit,
+                                  @QueryParam("o") @DefaultValue("0") Integer offset,
+                                  @QueryParam("a") Long afterTimeStamp,
+                                  @QueryParam("b") Long beforeTimeStamp,
+                                  @QueryParam("m") @DefaultValue("false") Boolean metadata,
+                                  @Context HttpServletRequest httpServletRequest,
+                                  @Context ServletContext context) {
+        try {
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
+
+            if (realmAuthorizer.readable()) {
+                ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+
+                String response = mongoStorageHandler.getJvmGcDelta(storage.getDatabase().getCollection(collectionName),
+                        jvmId, limit, offset, afterTimeStamp, beforeTimeStamp, metadata, httpServletRequest,
+                        realmAuthorizer.getReadableRealms());
+                return Response.status(Response.Status.OK).entity(response).build();
+            } else {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        }
     }
 }
