@@ -43,12 +43,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import com.mongodb.client.MongoCollection;
-import com.redhat.thermostat.gateway.common.util.OS;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
+import com.redhat.thermostat.gateway.common.util.OS;
 
 public class MongodTestUtil {
 
@@ -57,7 +57,7 @@ public class MongodTestUtil {
 
     private final String databaseName = "thermostat";
     private final String host = "127.0.0.1";
-    private final int port = 27518;
+    private final int port = 27519;
     public final String listenAddress = host + ":" + port;
 
     private MongoClient mongoClient;
