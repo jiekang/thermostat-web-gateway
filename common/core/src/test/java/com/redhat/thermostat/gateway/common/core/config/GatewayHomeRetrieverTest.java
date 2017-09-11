@@ -37,52 +37,52 @@
 package com.redhat.thermostat.gateway.common.core.config;
 
 import static org.junit.Assert.assertEquals;
-
-import java.util.HashMap;
-import java.util.Map;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
 
-public class ConfigurationFactoryTest extends ConfigurationTest {
+import com.redhat.thermostat.gateway.common.core.config.GatewayHomeRetriever.EnvHelper;
+import com.redhat.thermostat.gateway.common.core.config.GatewayHomeRetriever.PropertyHelper;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
-    private ConfigurationFactory factory;
-    private Map<String, Object> services;
+public class GatewayHomeRetrieverTest {
+
+    private static final String TEST_GW_HOME_ENV = "path/to/test/gw/home";
+    private static final String TEST_GW_HOME_PROP = "path/to/test/gw/home/prop";
+    private GatewayHomeRetriever retriever;
+    private PropertyHelper propHelper;
+
 
     @Before
     public void setup() {
-        factory = new ConfigurationFactory(getTestRoot());
-        services = new HashMap<String, Object>();
-        services.put("/service1", "/path/to/microservice.war");
+        EnvHelper envHelper = mock(EnvHelper.class);
+        when(envHelper.getEnv(eq(GlobalConstants.GATEWAY_HOME_ENV))).thenReturn(TEST_GW_HOME_ENV);
+        propHelper = mock(PropertyHelper.class);
+        retriever = new GatewayHomeRetriever(envHelper, propHelper);
     }
 
     @Test
-    public void canGetMergedConfigForService() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("foo", "service-value"); // override from service config
-        expected.put("bar", "baz"); // global only config
-        expected.put("test", "me"); // service only config
-        expected.put("SERVICES", services);
-        Configuration config = factory.createServiceConfiguration("test-service");
-        assertEquals(expected, config.asMap());
+    public void canGetGatewayHomeFromEnv() {
+        when(propHelper.getProperty(eq(GlobalConstants.GATEWAY_HOME_ENV), eq(TEST_GW_HOME_ENV))).thenReturn(TEST_GW_HOME_ENV);
+        String actual = retriever.getGatewayHome();
+        assertEquals(TEST_GW_HOME_ENV, actual);
     }
 
     @Test
-    public void canGetGlobalServicesConfig() {
-        Configuration globalServicesConfig = factory.createGlobalServicesConfig();
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("/service1", "/path/to/microservice.war");
-
-        assertEquals(expected, globalServicesConfig.asMap());
+    public void canGetGatewayHomeFromProperty() {
+        when(propHelper.getProperty(eq(GlobalConstants.GATEWAY_HOME_ENV), any(String.class))).thenReturn(TEST_GW_HOME_PROP);
+        String actual = retriever.getGatewayHome();
+        assertEquals(TEST_GW_HOME_PROP, actual);
     }
 
-    @Test
-    public void canGetGlobalConfig() {
-        Map<String, Object> expected = new HashMap<>();
-        expected.put("foo", "bar");
-        expected.put("bar", "baz");
-        expected.put("SERVICES", services);
-        Configuration globalConfig = factory.createGlobalConfiguration();
-        assertEquals(expected, globalConfig.asMap());
+    @Test(expected = RuntimeException.class)
+    public void noGwHomeThrowsException() {
+        GatewayHomeRetriever noEnvAndProp = new GatewayHomeRetriever(mock(EnvHelper.class), mock(PropertyHelper.class));
+        noEnvAndProp.getGatewayHome();
     }
+
 }

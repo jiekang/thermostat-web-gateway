@@ -58,6 +58,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GatewayHomeRetriever;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration.ConfigurationKey;
 import com.redhat.thermostat.gateway.server.apidoc.SwaggerUiHandler;
@@ -71,18 +72,24 @@ public class CoreServerBuilder {
     private final SwaggerUiHandler swaggerHandler;
     private final StaticAssetsHandler staticAssetsHandler;
     private final Server server = new Server();
+    private final GatewayHomeRetriever retriever;
     private CoreServiceBuilder coreServiceBuilder;
     private Configuration serverConfig;
-    private String gatewayHome;
 
     public CoreServerBuilder() {
-        this(new SwaggerUiHandler(), new StaticAssetsHandler());
+        this(new SwaggerUiHandler(), new StaticAssetsHandler(), new GatewayHomeRetriever());
+    }
+
+    // package-private for test-overrides
+    CoreServerBuilder(SwaggerUiHandler swaggerHandler, StaticAssetsHandler staticHandler, GatewayHomeRetriever retriever) {
+        this.staticAssetsHandler = staticHandler;
+        this.swaggerHandler = swaggerHandler;
+        this.retriever = retriever;
     }
 
     // package-private for test-overrides
     CoreServerBuilder(SwaggerUiHandler swaggerHandler, StaticAssetsHandler staticHandler) {
-        this.staticAssetsHandler = staticHandler;
-        this.swaggerHandler = swaggerHandler;
+        this(swaggerHandler, staticHandler, new GatewayHomeRetriever());
     }
 
 
@@ -94,11 +101,6 @@ public class CoreServerBuilder {
 
     public CoreServerBuilder setServerConfiguration(Configuration config) {
         this.serverConfig = config;
-        return this;
-    }
-
-    public CoreServerBuilder setGatewayHome(String gatewayHome) {
-        this.gatewayHome = gatewayHome;
         return this;
     }
 
@@ -163,6 +165,7 @@ public class CoreServerBuilder {
     }
 
     private Connector getHttpsConnector(String listenAddress, int listenPort, Map<String, Object> serverConfigMap) {
+        String gatewayHome = retriever.getGatewayHome();
         String keystoreCandidate = (String)serverConfigMap.get((GlobalConfiguration.ConfigurationKey.KEYSTORE_FILE.name()));
         Path keystoreFile = Paths.get(keystoreCandidate);
         if (!keystoreFile.isAbsolute()) {

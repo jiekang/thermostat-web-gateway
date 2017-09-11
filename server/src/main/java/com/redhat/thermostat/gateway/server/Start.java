@@ -41,7 +41,6 @@ import org.eclipse.jetty.util.component.AbstractLifeCycle;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
-import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilderFactory.CoreServiceType;
@@ -59,16 +58,10 @@ public class Start implements Runnable {
     }
 
     public void run() {
-        String gatewayHome = System.getProperty(GlobalConstants.GATEWAY_HOME_ENV, System.getenv(GlobalConstants.GATEWAY_HOME_ENV));
-        if (gatewayHome == null) {
-            throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
-        }
-
-        ConfigurationFactory factory = new ConfigurationFactory(gatewayHome);
+        ConfigurationFactory factory = new ConfigurationFactory();
         CoreServerBuilder serverBuilder = new CoreServerBuilder();
         setServerConfig(serverBuilder, factory);
         setServiceBuilder(serverBuilder, factory);
-        serverBuilder.setGatewayHome(gatewayHome);
 
         server = serverBuilder.build();
         if (listener != null) {

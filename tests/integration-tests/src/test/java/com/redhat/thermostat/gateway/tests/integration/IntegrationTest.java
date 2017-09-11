@@ -53,10 +53,9 @@ import org.junit.BeforeClass;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
 import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
+import com.redhat.thermostat.gateway.common.core.config.GatewayHomeRetriever;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
-import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.server.Start;
-import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
 
 public class IntegrationTest {
     private static final ConfigurationFactory factory;
@@ -67,12 +66,9 @@ public class IntegrationTest {
     protected static final Path distributionImage;
 
     static {
-        final String distDir = System.getProperty(GlobalConstants.GATEWAY_HOME_ENV, System.getenv(GlobalConstants.GATEWAY_HOME_ENV));
-        distributionImage = distDir != null ? Paths.get(distDir) : null;
-        if (distributionImage == null) {
-            throw new RuntimeException("Environment variable THERMOSTAT_GATEWAY_HOME not defined!");
-        }
-        factory = new ConfigurationFactory(distDir);
+        String distDir = new GatewayHomeRetriever().getGatewayHome();
+        distributionImage = Paths.get(distDir);
+        factory = new ConfigurationFactory();
         String scheme;
         if (isTLSEnabled()) {
             scheme = "https";

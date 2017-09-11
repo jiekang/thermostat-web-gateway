@@ -36,64 +36,40 @@
 
 package com.redhat.thermostat.gateway.common.core.config;
 
-import java.util.Map;
+import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 
-/**
- * Configuration factory for creating relevant configuration instances.
- *
- */
-public class ConfigurationFactory {
+public class GatewayHomeRetriever {
 
-    private static final GatewayHomeRetriever RETRIEVER = new GatewayHomeRetriever();
-    private final String gatewayHome;
-    private final GlobalConfiguration globalConfig;
+    private final EnvHelper envHelper;
+    private final PropertyHelper propertyHelper;
 
-    public ConfigurationFactory() {
-        this(RETRIEVER.getGatewayHome());
+    public GatewayHomeRetriever() {
+        this(new EnvHelper(), new PropertyHelper());
     }
 
     // package-private for testing
-    ConfigurationFactory(String gatewayHome) {
-        this.gatewayHome = gatewayHome;
-        this.globalConfig = new GlobalConfiguration(gatewayHome);
+    GatewayHomeRetriever(EnvHelper envHelper, PropertyHelper propHelper) {
+        this.envHelper = envHelper;
+        this.propertyHelper = propHelper;
     }
 
-    /**
-     * Creates the specific service configuration for the named service.
-     *
-     * @param serviceName The name of the service.
-     *
-     * @return The specific service configuration.
-     */
-    public Configuration createServiceConfiguration(String serviceName) {
-        Configuration serviceConfig = new ServiceConfiguration(gatewayHome, serviceName);
-        return new ConfigurationMerger(globalConfig, serviceConfig);
+    public String getGatewayHome() {
+        String gatewayHome = propertyHelper.getProperty(GlobalConstants.GATEWAY_HOME_ENV, envHelper.getEnv(GlobalConstants.GATEWAY_HOME_ENV));
+        if (gatewayHome == null) {
+            throw new RuntimeException("THERMOSTAT_GATEWAY_HOME not defined!");
+        }
+        return gatewayHome;
     }
 
-    /**
-     * Creates the global server (servlet container) configuration.
-     *
-     * @return The server configuration.
-     */
-    public Configuration createGlobalConfiguration() {
-        return globalConfig;
+    static class EnvHelper {
+        String getEnv(String name) {
+            return System.getenv(name);
+        }
     }
 
-    /**
-     * Creates the global configuration that specifies which services shall
-     * get deployed in the server.
-     *
-     * @return The to-be-deployed services configuration.
-     */
-    public Configuration createGlobalServicesConfig() {
-        return new Configuration() {
-
-            @SuppressWarnings("unchecked")
-            @Override
-            public Map<String, Object> asMap() {
-                return (Map<String, Object>)globalConfig.asMap().get(GlobalConfiguration.ConfigurationKey.SERVICES.name());
-            }
-
-        };
+    static class PropertyHelper {
+        String getProperty(String name, String defaultVal) {
+            return System.getProperty(name, defaultVal);
+        }
     }
 }
