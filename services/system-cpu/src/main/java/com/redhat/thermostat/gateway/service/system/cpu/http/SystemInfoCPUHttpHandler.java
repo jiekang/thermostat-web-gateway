@@ -70,7 +70,7 @@ public class SystemInfoCPUHttpHandler {
                                @QueryParam(RequestParameters.QUERY) String queries,
                                @QueryParam(RequestParameters.INCLUDE) String includes,
                                @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, limit, offset, sort, queries, includes, excludes, metadata);
@@ -83,7 +83,7 @@ public class SystemInfoCPUHttpHandler {
     public Response putCPUInfo(String body,
                                @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                @QueryParam(RequestParameters.QUERY) String queries,
-                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePutWithSystemId(httpServletRequest, context, systemId, queries, metadata, body);
@@ -95,7 +95,7 @@ public class SystemInfoCPUHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response postCPUInfo(String body,
                                 @PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                 @Context ServletContext context,
                                 @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithSystemID(httpServletRequest, context, systemId, metadata, body);
@@ -107,7 +107,7 @@ public class SystemInfoCPUHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response deleteCPUInfo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                   @QueryParam(RequestParameters.QUERY) String queries,
-                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                   @Context ServletContext context,
                                   @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithSystemID(httpServletRequest, context, systemId, queries, metadata);

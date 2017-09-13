@@ -77,7 +77,7 @@ public class JvmGcHttpHandler {
                              @QueryParam(RequestParameters.QUERY) String queries,
                              @QueryParam(RequestParameters.INCLUDE) String includes,
                              @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                              @Context HttpServletRequest httpServletRequest,
                              @Context ServletContext context) {
         return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offset, sort, queries, includes, excludes, metadata);
@@ -96,7 +96,7 @@ public class JvmGcHttpHandler {
                              @QueryParam(RequestParameters.QUERY) String queries,
                              @QueryParam(RequestParameters.INCLUDE) String includes,
                              @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                              @Context HttpServletRequest httpServletRequest,
                              @Context ServletContext context) {
         return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offset, sort, queries, includes, excludes, metadata);
@@ -110,7 +110,7 @@ public class JvmGcHttpHandler {
                              @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                              @PathParam(RequestParameters.JVM_ID) String jvmId,
                              @QueryParam(RequestParameters.QUERY) String queries,
-                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                              @Context ServletContext context,
                              @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePutWithJvmId(httpServletRequest, context, systemId, jvmId, queries, metadata, body);
@@ -123,7 +123,7 @@ public class JvmGcHttpHandler {
     public Response postJvmGc(String body,
                               @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                               @PathParam(RequestParameters.JVM_ID) String jvmId,
-                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                               @Context ServletContext context,
                               @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
@@ -136,7 +136,7 @@ public class JvmGcHttpHandler {
     public Response deleteJvmGc(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                 @PathParam(RequestParameters.JVM_ID) String jvmId,
                                 @QueryParam(RequestParameters.QUERY) String queries,
-                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                 @Context ServletContext context,
                                 @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, queries, metadata);

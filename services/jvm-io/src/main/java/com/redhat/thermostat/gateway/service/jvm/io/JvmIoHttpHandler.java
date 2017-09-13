@@ -71,7 +71,7 @@ public class JvmIoHttpHandler {
                                  @QueryParam(RequestParameters.QUERY) String queries,
                                  @QueryParam(RequestParameters.INCLUDE) String includes,
                                  @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
@@ -89,7 +89,7 @@ public class JvmIoHttpHandler {
                                  @QueryParam(RequestParameters.QUERY) String queries,
                                  @QueryParam(RequestParameters.INCLUDE) String includes,
                                  @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
@@ -103,7 +103,7 @@ public class JvmIoHttpHandler {
                                  @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                  @PathParam(RequestParameters.JVM_ID) String jvmId,
                                  @QueryParam(RequestParameters.QUERY) String queries,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePutWithJvmId(httpServletRequest, context, systemId, jvmId, queries, metadata, body);
@@ -116,7 +116,7 @@ public class JvmIoHttpHandler {
     public Response postJvmIo(String body,
                                   @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                   @PathParam(RequestParameters.JVM_ID) String jvmId,
-                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                   @Context ServletContext context,
                                   @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
@@ -129,7 +129,7 @@ public class JvmIoHttpHandler {
     public Response deleteJvmIo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                     @PathParam(RequestParameters.JVM_ID) String jvmId,
                                     @QueryParam(RequestParameters.QUERY) String queries,
-                                    @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                    @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                     @Context ServletContext context,
                                     @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, queries, metadata);

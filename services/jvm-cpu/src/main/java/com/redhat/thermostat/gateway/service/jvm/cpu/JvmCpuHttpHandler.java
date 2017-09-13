@@ -70,7 +70,7 @@ public class JvmCpuHttpHandler {
                               @QueryParam(RequestParameters.QUERY) String queries,
                               @QueryParam(RequestParameters.INCLUDE) String includes,
                               @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                               @Context HttpServletRequest httpServletRequest,
                               @Context ServletContext context) {
         return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offset, sort, queries, includes, excludes, metadata);
@@ -88,7 +88,7 @@ public class JvmCpuHttpHandler {
                               @QueryParam(RequestParameters.QUERY) String queries,
                               @QueryParam(RequestParameters.INCLUDE) String includes,
                               @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                              @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                               @Context HttpServletRequest httpServletRequest,
                               @Context ServletContext context) {
         return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offset, sort, queries, includes, excludes, metadata);
@@ -101,7 +101,7 @@ public class JvmCpuHttpHandler {
     public Response postJvmCpu(String body,
                                @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                @PathParam(RequestParameters.JVM_ID) String jvmId,
-                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
@@ -114,7 +114,7 @@ public class JvmCpuHttpHandler {
     public Response deleteJvmCpu(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                  @PathParam(RequestParameters.JVM_ID) String jvmId,
                                  @QueryParam(RequestParameters.QUERY) String queries,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, queries, metadata);
