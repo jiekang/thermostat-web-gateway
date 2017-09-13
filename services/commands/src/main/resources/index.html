@@ -88,8 +88,13 @@
         CmdChan.sendMessage = (function() {
             var action = document.getElementById('cmd-chan').value;
             var agent = document.getElementById('agent').value;
+            var systemId = document.getElementById('systemId').value;
+            var jvmId = document.getElementById('jvmId').value;
             var argumentKeys = document.getElementsByClassName('optionArgument');
             var argumentValues = document.getElementsByClassName('optionArgumentVal');
+
+            systemId = (systemId.length == 0) ? 'ignored_system' : systemId;
+            jvmId = (jvmId.length == 0) ? 'ignored_jvm' : jvmId;
 
             if (action != '' && agent != '') {
                 var clientRequest = {};
@@ -117,7 +122,8 @@
                 if (token != null) {
                     query_string = "?access_token=" + token;
                 }
-                url = url + '/commands/v1/actions/' + action + '/systems/ignored_system/agents/' + agent + '/jvms/ignored_jvm/sequence/' + CmdChan.sequence++ + query_string;
+                url = url + '/commands/v1/actions/' + action + '/systems/' + systemId + '/agents/' + agent + '/jvms/' + jvmId +'/sequence/' + CmdChan.sequence++ + query_string;
+
                 CmdChan.connect( url, clientRequest );
                 document.getElementById('cmd-chan').value = '';
             }
@@ -157,7 +163,9 @@
     </p>
     <p>
         <input type="text" placeholder="Type the action and press enter in order to send a message to the agent below." id="cmd-chan" />
-        <input type="text" placeholder="The agent to send messages to. Eg. 'testAgent' or 'otherAgent'" id="agent" /> <br>
+        <input type="text" placeholder="The agent to send messages to. Eg. 'testAgent' or 'otherAgent'" id="agent" />
+        <input type="text" placeholder="System Id" id="systemId"/>
+        <input type="text" placeholder="JVM Id" id="jvmId"/>
         <h3>Arguments: (blank fields will be omitted)</h3><br>
         <input type="text" placeholder="Argument 1" class="optionArgument"/><input type="text" placeholder="Value 1" class="optionArgumentVal"/><br>
         <input type="text" placeholder="Argument 2" class="optionArgument"/><input type="text" placeholder="Value 2" class="optionArgumentVal"/><br>

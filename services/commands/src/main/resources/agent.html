@@ -83,6 +83,8 @@
 
             CmdChan.socket.onmessage = function (message) {
                 var data = JSON.parse(message.data);
+                var jvmId = escapeHtml(data.jvmId);
+                var systemId = escapeHtml(data.systemId);
                 var payload = data.payload;
 
                 var requestArguments = {}
@@ -95,6 +97,8 @@
 
                 // Print message to screen
                 data.payload = requestArguments;
+                data.jvmId = jvmId;
+                data.systemId = systemId;
                 Console.log('Got: ' + JSON.stringify(data));
 
                 // parse message
