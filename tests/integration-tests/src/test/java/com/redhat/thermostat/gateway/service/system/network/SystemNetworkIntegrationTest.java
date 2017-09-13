@@ -57,7 +57,8 @@ public class SystemNetworkIntegrationTest extends SystemIntegrationTestSuites<Sy
 
     private static final String collectionName = "network-info";
     private static final String versionString = "0.0.1";
-    private static final String serviceURL = baseUrl + "/system-network/" + versionString;
+    private static final String serviceName = "system-network";
+    private static final String serviceURL = baseUrl + "/" + serviceName + "/" + versionString;
     private static final String memInfoJSON =
             "{\n" +
                     "   \"timeStamp\" : " + TIMESTAMP_TOKEN + ",\n" +
@@ -96,6 +97,16 @@ public class SystemNetworkIntegrationTest extends SystemIntegrationTestSuites<Sy
 
     public SystemNetworkIntegrationTest() {
         super(serviceURL, collectionName);
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionString;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     private static long getLong(JsonObject json, final String id) {

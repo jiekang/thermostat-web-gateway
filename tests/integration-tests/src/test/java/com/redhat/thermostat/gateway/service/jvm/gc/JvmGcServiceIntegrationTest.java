@@ -38,7 +38,6 @@
 package com.redhat.thermostat.gateway.service.jvm.gc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -50,13 +49,6 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 import org.bson.Document;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
@@ -68,10 +60,17 @@ import org.junit.Test;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
+import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 
 public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
@@ -118,6 +117,16 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
     public JvmGcServiceIntegrationTest() {
         super(serviceName + "/" + versionNumber, serviceName);
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionNumber;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     private void makeHttpGetRequest(String url, String expectedResponse, int expectedStatus)

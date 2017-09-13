@@ -36,17 +36,8 @@
 
 package com.redhat.thermostat.gateway.service.systems;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.redhat.thermostat.gateway.tests.integration.SystemIntegrationTest;
-import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,12 +45,22 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpMethod;
+import org.junit.Test;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.redhat.thermostat.gateway.tests.integration.SystemIntegrationTest;
+import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
 
 public class SystemInfoIntegrationTest extends SystemIntegrationTest<SystemInfoIntegrationTest.TinyHostInfo> {
 
-    private static final String serviceName = "system-info";
+    private static final String serviceName = "systems";
     private static final String versionString = "0.0.1";
     private static final String CPU_STRING1 = "Intel";
     private static final String CPU_STRING2 = "AMD";
@@ -91,7 +92,17 @@ public class SystemInfoIntegrationTest extends SystemIntegrationTest<SystemInfoI
     }
 
     public SystemInfoIntegrationTest() {
-        super("systems/" + versionString, serviceName);
+        super("systems/" + versionString, "system-info");
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionString;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     @Test

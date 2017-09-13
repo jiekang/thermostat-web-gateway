@@ -57,7 +57,8 @@ public class SystemCPUIntegrationTest extends SystemIntegrationTestSuites<System
 
     private static final String collectionName = "cpu-info";
     private static final String versionString = "0.0.1";
-    private static final String serviceURL = baseUrl + "/system-cpu/" + versionString;
+    private static final String serviceName = "system-cpu";
+    private static final String serviceURL = baseUrl + "/" + serviceName + "/" + versionString;
 
     private static final String cpuInfoJSON =
             "{\n" +
@@ -99,6 +100,16 @@ public class SystemCPUIntegrationTest extends SystemIntegrationTestSuites<System
     @Override
     protected String createJSONTimeStamp(long ts) {
         return cpuInfoJSON.replace(TIMESTAMP_TOKEN, Long.toString(ts));
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionString;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     protected List<TinyCPUInfo> parse(ContentResponse contentResponse, final String expectedSystemId) {

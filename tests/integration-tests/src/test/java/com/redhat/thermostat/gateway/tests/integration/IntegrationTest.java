@@ -57,6 +57,11 @@ import com.redhat.thermostat.gateway.common.core.config.GatewayHomeRetriever;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.server.Start;
 
+/**
+ * Integration tests base class. It's sole responsibility is it to start/stop
+ * the gateway service.
+ *
+ */
 public class IntegrationTest {
     private static final ConfigurationFactory factory;
 
@@ -90,7 +95,13 @@ public class IntegrationTest {
         startServer();
     }
 
-    public static HttpClient createAndStartHttpClient() throws Exception {
+    @AfterClass
+    public static void afterClassIntegrationTest() throws Exception {
+        client.stop();
+        stopServer();
+    }
+
+    static HttpClient createAndStartHttpClient() throws Exception {
         final HttpClient theclient;
         if (isTLSEnabled()) {
             SslContextFactory sslFactory = new SslContextFactory();
@@ -99,17 +110,9 @@ public class IntegrationTest {
         } else {
             theclient = new HttpClient();
         }
-        AuthenticationStore authenticationStore = theclient.getAuthenticationStore();
-        URI uri = URI.create(baseUrl);
-        String realmName = "Thermostat Realm"; // must match Basic login service's realm name.
-        authenticationStore.addAuthentication(new BasicAuthentication(uri, realmName, "agent", "agent-pwd"));
+        addAuthentication(theclient);
         theclient.start();
         return theclient;
-    }
-
-    private static boolean isTLSEnabled() {
-        Configuration config = factory.createGlobalConfiguration();
-        return Boolean.parseBoolean((String)config.asMap().get(GlobalConfiguration.ConfigurationKey.WITH_TLS.name()));
     }
 
     private static Thread serverThread = null;
@@ -179,9 +182,32 @@ public class IntegrationTest {
         }
     }
 
-    @AfterClass
-    public static void afterClassIntegrationTest() throws Exception {
-        client.stop();
-        stopServer();
+    private static boolean isTLSEnabled() {
+        Configuration config = factory.createGlobalConfiguration();
+        return Boolean.parseBoolean((String)config.asMap().get(GlobalConfiguration.ConfigurationKey.WITH_TLS.name()));
     }
+
+    /**
+     * Adds authentication credentials to the given client: {@code agent:agent-pwd}.
+     * @param theClient The HttpClient to operate on.
+     */
+    protected static void addAuthentication(HttpClient theClient) {
+        AuthenticationStore authenticationStore = theClient.getAuthenticationStore();
+        URI uri = URI.create(baseUrl);
+        String realmName = "Thermostat Realm"; // must match Basic login service's realm name.
+        authenticationStore.addAuthentication(new BasicAuthentication(uri, realmName, "agent", "agent-pwd"));
+    }
+
+    /**
+     * Removes authentication credentials from the given client. It also clears previous
+     * authentication results from it.
+     *
+     * @param theClient The HttpClient to operate on.
+     */
+    protected static void removeAuthentication(HttpClient theClient) {
+        AuthenticationStore authStore = theClient.getAuthenticationStore();
+        authStore.clearAuthentications();
+        authStore.clearAuthenticationResults();
+    }
+
 }

@@ -47,13 +47,12 @@ import javax.ws.rs.core.Response;
 
 import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
 
-@Path("{fileName: .+\\.html}")
-@Produces(MediaType.TEXT_HTML)
-public class HtmlResourceHandler extends BasicResourceHandler {
+@Path("{fileName: .+(\\.(yaml|html))}")
+@Produces(MediaType.TEXT_PLAIN)
+public class StaticResourcesHandler extends BasicResourceHandler {
 
     @GET
-    public Response getPage(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(HtmlResourceHandler.class.getClassLoader(), fileName);
+    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
+        return getFileAsResponse(StaticResourcesHandler.class.getClassLoader(), fileName);
     }
-
 }

@@ -40,10 +40,11 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
-import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
+
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
 
 public class JvmCompilerServiceIntegrationTest extends MongoIntegrationTest {
 
@@ -57,6 +58,16 @@ public class JvmCompilerServiceIntegrationTest extends MongoIntegrationTest {
 
     public JvmCompilerServiceIntegrationTest() {
         super(SERVICE_NAME + "/" + VERSION_NUMBER + "/systems/" + SYSTEM_ID + "/jvms/" + JVM_ID, SERVICE_NAME);
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return VERSION_NUMBER;
+    }
+
+    @Override
+    public String getServiceName() {
+        return SERVICE_NAME;
     }
 
     @Test

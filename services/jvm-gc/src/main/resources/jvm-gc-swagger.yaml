@@ -194,11 +194,6 @@ parameters:
     in: path
     required: true
     type: string
-  jvm-id:
-    name: jvmId
-    in: path
-    required: true
-    type: string
   jvm-gc-stats:
     name: jvm-gc-stats
     in: body

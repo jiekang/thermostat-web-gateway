@@ -34,25 +34,27 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.service.commands.http.handlers;
+package com.redhat.thermostat.gateway.service.commands;
 
-import java.io.IOException;
+import com.redhat.thermostat.gateway.tests.integration.ServiceIntegrationTest;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+public class CommandsServiceIntegrationTest extends ServiceIntegrationTest {
 
-import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
+    private static final String SERVICE_NAME = "commands";
+    private static final String SERVICE_VERSION = "v1";
 
-@Path("doc/{fileName: .+\\.yaml}")
-@Produces(MediaType.TEXT_PLAIN)
-public class SwaggerSpecResourceHandler extends BasicResourceHandler {
-
-    @GET
-    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(SwaggerSpecResourceHandler.class.getClassLoader(), fileName);
+    public CommandsServiceIntegrationTest() {
+        super("ignore-me");
     }
+
+    @Override
+    public String getServiceVersion() {
+        return SERVICE_VERSION;
+    }
+
+    @Override
+    public String getServiceName() {
+        return SERVICE_NAME;
+    }
+
 }

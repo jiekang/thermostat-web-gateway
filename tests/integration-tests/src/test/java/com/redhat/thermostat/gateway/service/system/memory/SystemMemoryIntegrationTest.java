@@ -56,10 +56,11 @@ import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
 
 
 public class SystemMemoryIntegrationTest extends SystemIntegrationTestSuites<SystemMemoryIntegrationTest.TinyMemoryInfo> {
-    
+
     private static final String collectionName = "memory-info";
     private static final String versionString = "0.0.1";
-    private static final String serviceURL = baseUrl + "/system-memory/" + versionString;
+    private static final String serviceName = "system-memory";
+    private static final String serviceURL = baseUrl + "/" + serviceName + "/" + versionString;
     private static final String TIMESTAMP_TOKEN = "$TIMESTAMP$";
     private static final String AGENT_ID = getRandomSystemId();
     private static final String memInfoJSON =
@@ -101,6 +102,16 @@ public class SystemMemoryIntegrationTest extends SystemIntegrationTestSuites<Sys
 
     public SystemMemoryIntegrationTest() {
         super(serviceURL, collectionName);
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionString;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     @Test

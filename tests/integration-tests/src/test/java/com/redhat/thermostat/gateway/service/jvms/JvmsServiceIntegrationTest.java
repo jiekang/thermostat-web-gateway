@@ -36,26 +36,28 @@
 
 package com.redhat.thermostat.gateway.service.jvms;
 
-import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Array;
-import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Map;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.thermostat.gateway.tests.utils.ContentWrapper;
-import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
-import com.redhat.thermostat.gateway.tests.utils.ResponseSetWrapper;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.utils.ContentWrapper;
+import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Array;
+import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Map;
+import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
+import com.redhat.thermostat.gateway.tests.utils.ResponseSetWrapper;
 
 public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
-    private static final String jvmsUrl = baseUrl + "/jvms/0.0.1";
+    private static final String serviceName = "jvms";
+    private static final String serviceVersion = "0.0.1";
+    private static final String jvmsUrl = baseUrl + "/" + serviceName + "/" + serviceVersion;
 
     private static final ContentWrapper postDataWrapper = new ContentWrapper().addToResponse(
          Map.of("agentId", "aid",
@@ -158,6 +160,16 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
     public JvmsServiceIntegrationTest() {
         super(jvmsUrl, "jvm-info");
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return serviceVersion;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     @Test
