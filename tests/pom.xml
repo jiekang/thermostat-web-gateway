@@ -51,6 +51,7 @@
 
     <modules>
         <module>integration-tests</module>
+        <module>keycloak-integration-tests</module>
         <module>test-utils</module>
     </modules>
 </project>

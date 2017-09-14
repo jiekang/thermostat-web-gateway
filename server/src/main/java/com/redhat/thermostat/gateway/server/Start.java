@@ -49,16 +49,22 @@ public class Start implements Runnable {
 
     private Server server = null;
     private AbstractLifeCycle.AbstractLifeCycleListener listener = null;
+    private final ConfigurationFactory factory;
 
     public Start() {
+        this(null, new ConfigurationFactory());
     }
 
     public Start(AbstractLifeCycle.AbstractLifeCycleListener listener) {
+        this(listener, new ConfigurationFactory());
+    }
+
+    public Start(AbstractLifeCycle.AbstractLifeCycleListener listener, ConfigurationFactory factory) {
         this.listener = listener;
+        this.factory = factory;
     }
 
     public void run() {
-        ConfigurationFactory factory = new ConfigurationFactory();
         CoreServerBuilder serverBuilder = new CoreServerBuilder();
         setServerConfig(serverBuilder, factory);
         setServiceBuilder(serverBuilder, factory);

@@ -103,9 +103,15 @@ public class JvmsHttpHandler {
                                 @Context HttpServletRequest httpServletRequest
     ) {
         try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            String message = mongoStorageHandler.getJvmInfos(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, queries, includes, excludes);
-            return Response.status(Response.Status.OK).entity(message).build();
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
+
+            if (realmAuthorizer.readable()) {
+                ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+                String message = mongoStorageHandler.getJvmInfos(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, queries, includes, excludes);
+                return Response.status(Response.Status.OK).entity(message).build();
+            } else {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
         } catch (Exception e) {
             return exceptionHandler.generateResponseForException(e);
         }

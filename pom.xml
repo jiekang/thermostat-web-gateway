@@ -77,8 +77,10 @@
 
         <license.skip>false</license.skip>
 
+        <!-- True to skip integration tests. Default to false -->
         <maven.itest.skip>false</maven.itest.skip>
-
+        <!-- True to skip keycloak integration tests. Default to true -->
+        <maven.ktest.skip>true</maven.ktest.skip>
         <!-- Intentionally empty. See java-7 profile -->
         <surefire.argline></surefire.argline>
     </properties>

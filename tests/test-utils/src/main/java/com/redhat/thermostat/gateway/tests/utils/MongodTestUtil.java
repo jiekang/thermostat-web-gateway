@@ -54,17 +54,27 @@ public class MongodTestUtil {
 
     private static final int WAIT_FOR_MAX_ITERATIONS = 100;
     private static final long WAIT_FOR_SLEEP_DURATION = 100L;
+    private static final int DEFAULT_PORT = 27519;
 
     private final String databaseName = "thermostat";
     private final String host = "127.0.0.1";
-    private final int port = 27519;
-    public final String listenAddress = host + ":" + port;
+    private final int port;
+    public final String listenAddress;
 
     private MongoClient mongoClient;
     private Path tempDbDir;
     private Path tempLogFile;
     public Process process;
     private boolean connectedToDatabase;
+
+    public MongodTestUtil() {
+        this(DEFAULT_PORT);
+    }
+
+    public MongodTestUtil(int port) {
+        this.port = port;
+        this.listenAddress = host + ":" + port;
+    }
 
     public void startMongod() throws IOException, InterruptedException {
         tempDbDir = Files.createTempDirectory("tms-mongo");
