@@ -206,12 +206,6 @@ parameters:
     required: true
     schema:
       $ref: '#/definitions/jvm-gc-stats'
-  jvm-id:
-    name: jvmId
-    in: path
-    required: true
-    type: string
-    description: The ID of the jvm
   put-body:
     name: putBody
     in: body

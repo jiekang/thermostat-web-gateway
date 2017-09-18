@@ -57,6 +57,7 @@
         <module>jvm-memory</module>
         <module>jvm-cpu</module>
         <module>jvm-io</module>
+        <module>jvm-compiler</module>
         <module>systems</module>
         <module>system-cpu</module>
         <module>system-memory</module>
