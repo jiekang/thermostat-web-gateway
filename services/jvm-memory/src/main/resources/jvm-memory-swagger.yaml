@@ -210,21 +210,27 @@ parameters:
     in: query
     description: Limit of items to return. Example '1'
     type: integer
+    default: 1
+    required: false
   offset:
     name: offset
     in: query
     description: Offset of items to return. Example '0'
     type: integer
+    required: false
+    default: 0
   sort:
     name: sort
     in: query
     description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?s=+a,-b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
     type: string
+    required: false
   query:
     name: query
     in: query
     description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?q=a==b,c!=d'. Keys are fields in documents and use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
     type: string
+    required: false
   include:
     name: include
     in: query

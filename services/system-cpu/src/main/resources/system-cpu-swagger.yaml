@@ -117,7 +117,7 @@ parameters:
     in: query
     description: Offset of items to return. Example '0'
     type: integer
-    required: true
+    required: false
     default: 0
   sort:
     name: sort
