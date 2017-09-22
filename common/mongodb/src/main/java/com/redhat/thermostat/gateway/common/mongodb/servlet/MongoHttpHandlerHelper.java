@@ -36,10 +36,24 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.servlet;
 
+import static com.redhat.thermostat.gateway.common.util.ServiceException.CANNOT_QUERY_REALMS_PROPERTY;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.DATABASE_UNAVAILABLE;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.EXPECTED_JSON_ARRAY;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.MALFORMED_CLIENT_REQUEST;
+import static com.redhat.thermostat.gateway.common.util.ServiceException.UNEXPECTED_ERROR;
+
+import java.io.IOException;
+import java.util.LinkedHashMap;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.Response;
+
+import org.bson.json.JsonParseException;
+
 import com.mongodb.DBObject;
 import com.mongodb.MongoTimeoutException;
 import com.mongodb.MongoWriteException;
-
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
@@ -49,19 +63,6 @@ import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenera
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
 import com.redhat.thermostat.gateway.common.util.HttpResponseExceptionHandler;
-import org.bson.json.JsonParseException;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.util.LinkedHashMap;
-
-import static com.redhat.thermostat.gateway.common.util.ServiceException.CANNOT_QUERY_REALMS_PROPERTY;
-import static com.redhat.thermostat.gateway.common.util.ServiceException.DATABASE_UNAVAILABLE;
-import static com.redhat.thermostat.gateway.common.util.ServiceException.EXPECTED_JSON_ARRAY;
-import static com.redhat.thermostat.gateway.common.util.ServiceException.MALFORMED_CLIENT_REQUEST;
-import static com.redhat.thermostat.gateway.common.util.ServiceException.UNEXPECTED_ERROR;
 
 public class MongoHttpHandlerHelper {
 
@@ -105,7 +106,7 @@ public class MongoHttpHandlerHelper {
 
     /*
      * originalQueries contains only query info from the client's original request argument. queries contains this info,
-     * as well as added JVM/SYS ids built by andSystemIdJvmIdQuery(...). 
+     * as well as added JVM/SYS ids built by andSystemIdJvmIdQuery(...).
      */
     public Response handleGet(HttpServletRequest httpServletRequest, ServletContext context, int limit, int offset,
                               String sort, String queries, String includes, String excludes, boolean returnMetadata,

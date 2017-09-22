@@ -223,6 +223,13 @@
                         </artifactItem>
                         <artifactItem>
                             <groupId>com.redhat.thermostat</groupId>
+                            <artifactId>thermostat-web-gateway-service-jvm-byteman</artifactId>
+                            <version>${project.version}</version>
+                            <type>war</type>
+                            <overWrite>false</overWrite>
+                        </artifactItem>
+                        <artifactItem>
+                            <groupId>com.redhat.thermostat</groupId>
                             <artifactId>thermostat-web-gateway-service-jvm-cpu</artifactId>
                             <version>${project.version}</version>
                             <type>war</type>
@@ -305,21 +312,21 @@
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-service-jvm-byteman</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-service-jvm-cpu</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
             <artifactId>thermostat-web-gateway-service-jvm-gc</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-web-gateway-service-jvms</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-web-gateway-service-jvm-memory</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>
@@ -333,7 +340,14 @@
         </dependency>
         <dependency>
             <groupId>com.redhat.thermostat</groupId>
-            <artifactId>thermostat-web-gateway-service-jvm-cpu</artifactId>
+            <artifactId>thermostat-web-gateway-service-jvm-memory</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.redhat.thermostat</groupId>
+            <artifactId>thermostat-web-gateway-service-jvms</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>provided</scope>
