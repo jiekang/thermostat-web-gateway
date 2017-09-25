@@ -42,6 +42,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
@@ -51,9 +52,13 @@ import javax.ws.rs.core.Response;
 public class BasicResourceHandler {
 
     protected Response getFileAsResponse(ClassLoader loader, String fileName) throws IOException {
+        return getFileAsResponse(loader, fileName, MediaType.TEXT_PLAIN_TYPE);
+    }
+
+    protected Response getFileAsResponse(ClassLoader loader, String fileName, MediaType type) throws IOException {
         try (InputStream stream = loader.getResourceAsStream(fileName);) {
             String responseContent = read(stream);
-            return Response.ok(responseContent).build();
+            return Response.ok(responseContent, type).build();
         }
     }
 

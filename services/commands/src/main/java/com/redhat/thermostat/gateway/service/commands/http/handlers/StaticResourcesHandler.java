@@ -48,11 +48,15 @@ import javax.ws.rs.core.Response;
 import com.redhat.thermostat.gateway.common.core.servlet.BasicResourceHandler;
 
 @Path("{fileName: .+(\\.(yaml|html))}")
-@Produces(MediaType.TEXT_PLAIN)
+@Produces({MediaType.TEXT_PLAIN, MediaType.TEXT_HTML})
 public class StaticResourcesHandler extends BasicResourceHandler {
 
     @GET
-    public Response getFileAsPlainText(@PathParam("fileName") String fileName) throws IOException {
-        return getFileAsResponse(StaticResourcesHandler.class.getClassLoader(), fileName);
+    public Response getFileAsTextOrHtml(@PathParam("fileName") String fileName) throws IOException {
+        MediaType type = MediaType.TEXT_PLAIN_TYPE;
+        if (fileName.endsWith(".html")) {
+            type = MediaType.TEXT_HTML_TYPE;
+        }
+        return getFileAsResponse(StaticResourcesHandler.class.getClassLoader(), fileName, type);
     }
 }
