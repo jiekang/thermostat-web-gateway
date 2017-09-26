@@ -49,6 +49,7 @@ import java.util.Set;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -63,14 +64,14 @@ import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
 
 public class MongoExecutor {
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, int limit, int offset,
-                                                   String sort, String queries, String includes, String excludes,
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, String queries,
+                                                   CommonQueryParams params,
                                                    Set<String> realms) throws IOException {
-        return execGetRequest(collection, limit, offset, sort, buildClientQueries(queries), includes, excludes, realms);
+        return execGetRequest(collection, buildClientQueries(queries), params, realms);
     }
 
-    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, int limit, int offset,
-                                                   String sort, List<String> queries, String includes, String excludes,
+    public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, List<String> queries,
+                                                   CommonQueryParams params,
                                                    Set<String> realms) {
         FindIterable<Document> documents = collection.find();
         MongoDataResultContainer queryDataContainer = new MongoDataResultContainer();
@@ -79,10 +80,10 @@ public class MongoExecutor {
         documents = documents.filter(query);
         long count = collection.count(query);
         queryDataContainer.setGetReqCount(count);
-        queryDataContainer.setRemainingNumQueryDocuments((int) (count - (limit + offset)));
-        documents = buildProjection(documents, includes, excludes);
-        final Bson sortObject = MongoSortFilters.createSortObject(sort);
-        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
+        queryDataContainer.setRemainingNumQueryDocuments((int) (count - (params.getLimit() + params.getOffset())));
+        documents = buildProjection(documents, params.getIncludes(), params.getExcludes());
+        final Bson sortObject = MongoSortFilters.createSortObject(params.getSort());
+        documents = documents.sort(sortObject).limit(params.getLimit()).skip(params.getOffset()).batchSize(params.getLimit()).cursorType(CursorType.NonTailable);
         queryDataContainer.setQueryDataResult(documents);
 
         return queryDataContainer;

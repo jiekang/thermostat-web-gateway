@@ -45,7 +45,10 @@ import java.util.LinkedHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -69,7 +72,7 @@ public class MongoMetaDataGeneratorTest {
         LinkedHashMap<String, String> paramArgs = new LinkedHashMap<>();
         paramArgs.put(RequestParameters.METADATA, "true");
 
-        fullGenerator = new MongoMetaDataGenerator(2, 2, "", "test1==b", "", "", paramArgs, container, baseUrl);
+        fullGenerator = new MongoMetaDataGenerator(new CommonQueryParams(new LimitParameter(2), new OffsetParameter(2), "", "test1==b", "", "", true), paramArgs, container, baseUrl);
         response = new MongoMetaDataResponseBuilder.MetaBuilder();
     }
 

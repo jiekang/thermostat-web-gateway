@@ -50,8 +50,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 
 @Path("/metrics")
 public class JvmBytemanMetricsHttpHandler {
@@ -74,7 +75,7 @@ public class JvmBytemanMetricsHttpHandler {
                                          @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                          @Context ServletContext context,
                                          @Context HttpServletRequest httpServletRequest) {
-        return metricsServiceHelper.handleGetWithJvmID(httpServletRequest, context, NO_SYSTEM_ID, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
+        return metricsServiceHelper.handleGetWithJvmID(httpServletRequest, context, NO_SYSTEM_ID, jvmId, new CommonQueryParams(limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata));
     }
 
     @POST

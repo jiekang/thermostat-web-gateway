@@ -39,13 +39,14 @@ package com.redhat.thermostat.gateway.service.jvm.gc.mongo;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
 import org.bson.Document;
 
 import com.mongodb.client.MongoCollection;
@@ -57,7 +58,6 @@ import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 
 public class JvmGcMongoStorageHandler {
 
@@ -81,7 +81,7 @@ public class JvmGcMongoStorageHandler {
         }
 
         MongoDataResultContainer execResult = mongoExecutor.execGetRequest(
-                collection, limit, offset, descendingSort, queries, null, null, realms);
+                collection, queries, new CommonQueryParams(limit, offset, descendingSort, "", null, null, false), realms);
 
         MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
 
@@ -120,7 +120,7 @@ public class JvmGcMongoStorageHandler {
             nextQuery.add(ThermostatFields.JVM_ID + "==" + jvmId);
 
             MongoDataResultContainer execLastResult = mongoExecutor.execGetRequest(
-                    collection, 1, 0, descendingSort, nextQuery, null, null, realms);
+                    collection, nextQuery, new CommonQueryParams(1, 0, descendingSort, null, null, null, false), realms);
 
             Document first = execLastResult.getQueryDataResult().first();
 
@@ -134,27 +134,20 @@ public class JvmGcMongoStorageHandler {
         }
 
         if (metadata) {
-            setMetadata(limit, offset, descendingSort, null, null, null, httpServletRequest, execResult, response);
+            setMetadata(new CommonQueryParams(limit, offset, descendingSort, null, null, null, true), httpServletRequest, execResult, response);
         }
 
         return response.build();
     }
 
-    private void setMetadata(int limit, int offset, String sort, String queries, String includes, String excludes, HttpServletRequest httpServletRequest,
+    private void setMetadata(CommonQueryParams params, HttpServletRequest httpServletRequest,
                              MongoDataResultContainer execResult, MongoResponseBuilder.Builder response) {
         MongoMetaDataResponseBuilder.MetaBuilder metaDataResponse = new MongoMetaDataResponseBuilder.MetaBuilder();
 
-        LinkedHashMap<String, String> paramArgs = new LinkedHashMap<>();
-        paramArgs.put(RequestParameters.SORT, sort);
-        paramArgs.put(RequestParameters.QUERY, queries);
-        paramArgs.put(RequestParameters.INCLUDE, includes);
-        paramArgs.put(RequestParameters.EXCLUDE, excludes);
-        paramArgs.put(RequestParameters.METADATA, "true");
-        paramArgs.put(RequestParameters.LIMIT, String.valueOf(limit));
-        paramArgs.put(RequestParameters.OFFSET, String.valueOf(offset));
+        Map<String, String> paramArgs = params.buildParams();
         String baseUrl = httpServletRequest.getRequestURL().toString();
 
-        MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(limit, offset, sort, queries, includes, excludes, paramArgs, execResult, baseUrl);
+        MongoMetaDataGenerator metaDataGenerator = new MongoMetaDataGenerator(params, paramArgs, execResult, baseUrl);
 
         metaDataGenerator.setDocAndPayloadCount(metaDataResponse);
         metaDataGenerator.setPrev(metaDataResponse);

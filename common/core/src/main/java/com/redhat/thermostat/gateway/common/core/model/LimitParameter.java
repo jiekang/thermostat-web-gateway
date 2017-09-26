@@ -34,20 +34,32 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.mongodb.servlet;
+package com.redhat.thermostat.gateway.common.core.model;
 
-public interface RequestParameters {
-    String SYSTEM_ID = "systemId";
-    String JVM_ID = "jvmId";
+import com.redhat.thermostat.gateway.common.core.jaxrs.InvalidParameterValueException;
 
-    String METADATA = "metadata";
-    String SORT = "sort";
-    String QUERY = "query";
-    String OFFSET = "offset";
-    String LIMIT = "limit";
-    String INCLUDE = "include";
-    String EXCLUDE = "exclude";
+public class LimitParameter {
 
-    String TIMESTAMP = "timeStamp";
-    String ALIVE_ONLY = "aliveOnly";
+    private final Integer limit;
+
+    public LimitParameter(Integer limit) {
+        this.limit = limit;
+    }
+
+    public Integer getValue() {
+        return limit;
+    }
+
+    public static LimitParameter valueOf(String rawParam) {
+        if (rawParam == null) {
+            return null;
+        }
+        Integer intVal = Integer.valueOf(rawParam);
+        if (intVal < 0) {
+            // JAX RS throws 404 on illegal parameter types by default, make it throw
+            // 400 instead.
+            throw new InvalidParameterValueException("Limit value must not be negative");
+        }
+        return new LimitParameter(intVal);
+    }
 }

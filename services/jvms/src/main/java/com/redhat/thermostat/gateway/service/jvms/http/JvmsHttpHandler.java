@@ -62,7 +62,9 @@ import javax.ws.rs.core.Response;
 import com.mongodb.MongoTimeoutException;
 import com.mongodb.MongoWriteException;
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
@@ -92,8 +94,8 @@ public class JvmsHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmInfos(@PathParam(RequestParameters.SYSTEM_ID) final String systemId,
-                                @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") final Integer offset,
+                                @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                                @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                                 @QueryParam(RequestParameters.SORT) String sort,
                                 @QueryParam(RequestParameters.QUERY) String queries,
                                 @QueryParam(RequestParameters.INCLUDE) String includes,

@@ -50,9 +50,11 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 
 @Path("/")
 public class JvmCompilerHttpHandler {
@@ -65,7 +67,7 @@ public class JvmCompilerHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmCompiler(@PathParam(RequestParameters.JVM_ID) String jvmId,
-                              @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
+                              @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
                               @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                               @QueryParam(RequestParameters.SORT) String sort,
                               @QueryParam(RequestParameters.QUERY) String queries,
@@ -74,7 +76,7 @@ public class JvmCompilerHttpHandler {
                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                               @Context HttpServletRequest httpServletRequest,
                               @Context ServletContext context) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offset.getValue(), sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId,  new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @GET
@@ -83,7 +85,7 @@ public class JvmCompilerHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmCompiler(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                               @PathParam(RequestParameters.JVM_ID) String jvmId,
-                              @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
+                              @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
                               @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                               @QueryParam(RequestParameters.SORT) String sort,
                               @QueryParam(RequestParameters.QUERY) String queries,
@@ -92,7 +94,7 @@ public class JvmCompilerHttpHandler {
                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                               @Context HttpServletRequest httpServletRequest,
                               @Context ServletContext context) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offset.getValue(), sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId,  new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @POST

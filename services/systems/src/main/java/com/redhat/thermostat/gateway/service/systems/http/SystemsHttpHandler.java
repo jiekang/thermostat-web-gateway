@@ -51,7 +51,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 
 @Path("/")
@@ -62,8 +65,8 @@ public class SystemsHttpHandler {
     @GET
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
-    public Response getSystemInfoAll(@QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                     @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
+    public Response getSystemInfoAll(@QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                                     @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                                      @QueryParam(RequestParameters.SORT) String sort,
                                      @QueryParam(RequestParameters.QUERY) String queries,
                                      @QueryParam(RequestParameters.INCLUDE) String includes,
@@ -71,7 +74,7 @@ public class SystemsHttpHandler {
                                      @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                      @Context ServletContext context,
                                      @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGet(httpServletRequest, context, limit, offset, sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGet(httpServletRequest, context, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @GET
@@ -79,8 +82,8 @@ public class SystemsHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getSystemInfo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                                  @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                  @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
+                                  @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                                  @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                                   @QueryParam(RequestParameters.SORT) String sort,
                                   @QueryParam(RequestParameters.QUERY) String queries,
                                   @QueryParam(RequestParameters.INCLUDE) String includes,
@@ -88,7 +91,7 @@ public class SystemsHttpHandler {
                                   @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                   @Context ServletContext context,
                                   @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, limit, offset, sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @PUT

@@ -51,8 +51,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
 
 @Path("/status")
 public class JvmBytemanStatusHttpHandler {
@@ -74,7 +75,7 @@ public class JvmBytemanStatusHttpHandler {
                                         @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                         @Context ServletContext context,
                                         @Context HttpServletRequest httpServletRequest) {
-        return statusServiceHelper.handleGetWithJvmID(httpServletRequest, context, NO_SYSTEM_ID, jvmId, LIMIT_ONE, OFFSET_ZERO, DESCENDING_TIMESTAMP_SORT, NO_QUERIES, includes, excludes, metadata);
+        return statusServiceHelper.handleGetWithJvmID(httpServletRequest, context, NO_SYSTEM_ID, jvmId, new CommonQueryParams(LIMIT_ONE, OFFSET_ZERO, DESCENDING_TIMESTAMP_SORT, NO_QUERIES, includes, excludes, metadata));
     }
 
     @POST

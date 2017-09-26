@@ -51,8 +51,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 
 @Path("/")
@@ -65,8 +67,8 @@ public class JvmMemoryHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmMemory(@PathParam(RequestParameters.JVM_ID) String jvmId,
-                                 @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offsetParam,
+                                 @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                                  @QueryParam(RequestParameters.SORT) String sort,
                                  @QueryParam(RequestParameters.QUERY) String queries,
                                  @QueryParam(RequestParameters.INCLUDE) String includes,
@@ -74,7 +76,7 @@ public class JvmMemoryHttpHandler {
                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @GET
@@ -83,8 +85,8 @@ public class JvmMemoryHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmMemory(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                  @PathParam(RequestParameters.JVM_ID) String jvmId,
-                                 @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offsetParam,
+                                 @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                                  @QueryParam(RequestParameters.SORT) String sort,
                                  @QueryParam(RequestParameters.QUERY) String queries,
                                  @QueryParam(RequestParameters.INCLUDE) String includes,
@@ -92,7 +94,7 @@ public class JvmMemoryHttpHandler {
                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @PUT

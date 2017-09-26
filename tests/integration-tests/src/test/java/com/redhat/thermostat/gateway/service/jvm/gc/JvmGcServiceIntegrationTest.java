@@ -69,7 +69,7 @@ import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.redhat.thermostat.gateway.common.core.auth.basic.BasicRealmAuthorizer;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
 
 public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {

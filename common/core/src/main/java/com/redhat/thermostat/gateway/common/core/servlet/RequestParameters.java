@@ -34,32 +34,20 @@
  * to do so, delete this exception statement from your version.
  */
 
-package com.redhat.thermostat.gateway.common.core.model;
+package com.redhat.thermostat.gateway.common.core.servlet;
 
-import com.redhat.thermostat.gateway.common.core.jaxrs.InvalidParameterValueException;
+public interface RequestParameters {
+    String SYSTEM_ID = "systemId";
+    String JVM_ID = "jvmId";
 
-public class OffsetParameter {
+    String METADATA = "metadata";
+    String SORT = "sort";
+    String QUERY = "query";
+    String OFFSET = "offset";
+    String LIMIT = "limit";
+    String INCLUDE = "include";
+    String EXCLUDE = "exclude";
 
-    private final Integer offset;
-
-    public OffsetParameter(Integer offset) {
-        this.offset = offset;
-    }
-
-    public Integer getValue() {
-        return offset;
-    }
-
-    public static OffsetParameter valueOf(String rawParam) {
-        if (rawParam == null) {
-            return null;
-        }
-        Integer intVal = Integer.valueOf(rawParam);
-        if (intVal < 0) {
-            // JAX RS throws 404 on illegal parameter types by default, make it throw
-            // 400 instead.
-            throw new InvalidParameterValueException("Offset value must not be negative");
-        }
-        return new OffsetParameter(intVal);
-    }
+    String TIMESTAMP = "timeStamp";
+    String ALIVE_ONLY = "aliveOnly";
 }
