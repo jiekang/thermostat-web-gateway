@@ -50,6 +50,10 @@ import com.mongodb.ServerAddress;
 import com.mongodb.client.MongoCollection;
 import com.redhat.thermostat.gateway.common.util.OS;
 
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.net.InetSocketAddress;
+
 public class MongodTestUtil {
 
     private static final int WAIT_FOR_MAX_ITERATIONS = 100;
@@ -100,6 +104,7 @@ public class MongodTestUtil {
             mongoClient.close();
             mongoClient = null;
             waitForMongodStop();
+            waitForSocketToClose(port);
             finish();
         }
     }
@@ -171,6 +176,21 @@ public class MongodTestUtil {
             Thread.sleep(WAIT_FOR_SLEEP_DURATION);
         }
 
+        return false;
+    }
+
+    private boolean waitForSocketToClose(int port) throws InterruptedException {
+        for (int i = 0; i < WAIT_FOR_MAX_ITERATIONS; ++i) {
+            /* Try to bind socket, if it fails, port is still in use */
+            try (ServerSocket socket = new ServerSocket()) {
+                SocketAddress address = new InetSocketAddress(port);
+                socket.bind(address, 0);
+                return true;
+            } catch (IOException e) {
+                /* ignored */
+            }
+            Thread.sleep(WAIT_FOR_SLEEP_DURATION);
+        }
         return false;
     }
 
