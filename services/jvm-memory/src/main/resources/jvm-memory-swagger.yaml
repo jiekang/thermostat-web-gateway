@@ -100,7 +100,9 @@ definitions:
       jvmId:
         type: string
       timeStamp:
-        $ref: '#/definitions/timestamp'
+        allOf:
+          - $ref: '#/definitions/metric'
+          - description: UNIX timestamp in milliseconds
       metaspaceMaxCapacity:
         $ref: '#/definitions/metric'
       metaspaceMinCapacity:
@@ -109,6 +111,10 @@ definitions:
         $ref: '#/definitions/metric'
       metaspaceUsed:
         $ref: '#/definitions/metric'
+      residentMemory:
+        allOf:
+          - $ref: '#/definitions/metric'
+          - description: Resident memory size in KB
       generations:
         type: array
         items:
@@ -168,13 +174,6 @@ definitions:
     properties:
       $numberLong:
         type: string
-  timestamp:
-    description: UNIX timestamp in milliseconds
-    type: object
-    properties:
-      $numberLong:
-        type: string
-
   put-body:
     type: object
     properties:
