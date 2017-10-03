@@ -100,6 +100,11 @@ public class MongodTestUtil {
             try {
                 mongoClient.getDatabase("admin").runCommand(new Document("shutdown", 1));
             } catch (Exception ignored) {
+                /*
+                following exception is always thrown:
+                com.mongodb.MongoSocketReadException: Prematurely reached end of stream
+                ( probably expected, connection get closed? )
+                */
             }
             mongoClient.close();
             mongoClient = null;
@@ -140,6 +145,7 @@ public class MongodTestUtil {
     }
 
     private boolean waitForMongodStop() throws IOException, InterruptedException {
+        // dbexit string is not logged by newer mongodb (>= 3.4 ?)
         return waitFor("dbexit:  rc: 0");
     }
 
@@ -179,19 +185,19 @@ public class MongodTestUtil {
         return false;
     }
 
-    private boolean waitForSocketToClose(int port) throws InterruptedException {
+    private void waitForSocketToClose(int port) throws InterruptedException {
         for (int i = 0; i < WAIT_FOR_MAX_ITERATIONS; ++i) {
             /* Try to bind socket, if it fails, port is still in use */
             try (ServerSocket socket = new ServerSocket()) {
                 SocketAddress address = new InetSocketAddress(port);
                 socket.bind(address, 0);
-                return true;
+                return;
             } catch (IOException e) {
                 /* ignored */
             }
             Thread.sleep(WAIT_FOR_SLEEP_DURATION);
         }
-        return false;
+        throw new RuntimeException("Timeout waiting for mongodb socket to close reached!");
     }
 
     public boolean isConnectedToDatabase() {
