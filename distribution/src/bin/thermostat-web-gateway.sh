@@ -79,4 +79,5 @@ fi
 THERMOSTAT_GATEWAY_LIBS=${THERMOSTAT_GATEWAY_HOME}/libs
 
 export THERMOSTAT_GATEWAY_HOME
-exec java -cp "${THERMOSTAT_GATEWAY_LIBS}/*" "${LOGGING_ARGS[@]}" com.redhat.thermostat.gateway.server.Start
+exec java ${THERMOSTAT_GATEWAY_EXT_JAVA_OPTS} -cp "${THERMOSTAT_GATEWAY_LIBS}/*" \
+        "${LOGGING_ARGS[@]}" com.redhat.thermostat.gateway.server.Start
