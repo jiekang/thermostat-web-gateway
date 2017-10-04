@@ -38,13 +38,11 @@ package com.redhat.thermostat.gateway.common.mongodb.response;
 
 import java.util.ArrayList;
 
-import org.bson.Document;
-
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.mongodb.Block;
 import com.mongodb.client.FindIterable;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
+import org.bson.Document;
 
 /*
  *  Builds the appropriate response after executing the request's MongoDB Query.
@@ -66,7 +64,7 @@ public class MongoResponseBuilder {
 
         private ArrayList<Document> queryDocuments;
         private MongoMetaDataResponseBuilder metaData;
-        private final Gson gson = new GsonBuilder().create();
+        private final Gson gson = MongoGsonFactory.getGson();
 
         public Builder addQueryDocuments(FindIterable<Document> documents) {
             queryDocuments = new ArrayList<>();

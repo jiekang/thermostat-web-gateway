@@ -51,7 +51,6 @@ import com.redhat.thermostat.gateway.tests.integration.SystemIntegrationTest;
 
 public abstract class SystemIntegrationTestSuites<T> extends SystemIntegrationTest<T> {
 
-
     protected static final String TIMESTAMP_TOKEN = "$TIMESTAMP$";
     protected static final String AGENT_ID = getRandomSystemId();
 

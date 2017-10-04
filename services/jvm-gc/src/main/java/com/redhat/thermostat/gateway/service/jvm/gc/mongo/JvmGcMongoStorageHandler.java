@@ -96,7 +96,7 @@ public class JvmGcMongoStorageHandler {
                         long prevWall = pre.get(Fields.WALL_TIME, Long.class);
                         long thisWall = current.get(Fields.WALL_TIME, Long.class);
                         long wallTimeDelta = prevWall - thisWall;
-                        setWallTimeDelta(pre, wallTimeDelta);
+                        pre.put(Fields.WALL_TIME_DELTA, wallTimeDelta);
                         previous.put(collectorName, current);
                     } else {
                         previous.put(collectorName, current);
@@ -130,7 +130,7 @@ public class JvmGcMongoStorageHandler {
                 long lastWall = first.get(Fields.WALL_TIME, Long.class);
                 wallTimeDelta = prevWall - lastWall;
             }
-            setWallTimeDelta(item.getValue(), wallTimeDelta);
+            item.getValue().put(Fields.WALL_TIME_DELTA, wallTimeDelta);
         }
 
         if (metadata) {
@@ -154,11 +154,5 @@ public class JvmGcMongoStorageHandler {
         metaDataGenerator.setNext(metaDataResponse);
 
         response.addMetaData(metaDataResponse.build());
-    }
-
-    private void setWallTimeDelta(Document toSet, long delta) {
-        Document d = new Document();
-        d.put(LONG_KEY, delta);
-        toSet.put(Fields.WALL_TIME_DELTA, d);
     }
 }

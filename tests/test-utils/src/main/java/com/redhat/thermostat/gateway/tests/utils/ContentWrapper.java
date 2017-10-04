@@ -171,6 +171,10 @@ public class ContentWrapper {
             }
             return map;
         }
+
+        public static HashMap ofNumberLong(long longValue) {
+            return Map.of("$numberLong", Long.toString(longValue));
+        }
     }
 
     // A small class designed to get Gson to write a list as a list of

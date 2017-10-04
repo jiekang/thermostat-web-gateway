@@ -297,7 +297,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         assertEquals(200, response.getStatus());
 
-        assertEquals("{\"metaData\":{\"insertCount\":1}}", response.getContentAsString());
+        assertEquals("{\"metaData\":{\"insertCount\":{\"$numberLong\":\"1\"}}}", response.getContentAsString());
     }
 
     @Test
@@ -316,7 +316,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
         makeHttpMethodRequest(HttpMethod.POST, NO_QUERY, "[{\"f1\":\"test\"}]", "application/json", NO_EXPECTED_RESPONSE, 200);
 
         makeHttpMethodRequest(HttpMethod.DELETE, "?" + QUERY_PREFIX + "=f1==test&" + METADATA_PREFIX + "=true",
-                NO_DATA_TO_SEND, NO_DATA_TYPE, "{\"metaData\":{\"matchCount\":1}}", 200);
+                NO_DATA_TO_SEND, NO_DATA_TYPE, "{\"metaData\":{\"matchCount\":{\"$numberLong\":\"1\"}}}", 200);
     }
 
     @Test
@@ -349,7 +349,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                 .send();
 
         assertEquals(200, response.getStatus());
-        assertEquals("{\"metaData\":{\"matchCount\":1}}", response.getContentAsString());
+        assertEquals("{\"metaData\":{\"matchCount\":{\"$numberLong\":\"1\"}}}", response.getContentAsString());
 
 
     }
@@ -648,9 +648,9 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
-                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":41977}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"600\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"212864\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"41977\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).send();
 
         verifyResponse(response, expectedResponse, 200);
@@ -663,9 +663,9 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
-                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT +  "," +
-                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"600\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"212864\"}" + SYSTEM_JVM_FRAGMENT +  "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"0\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "2").send();
 
         verifyResponse(response, expectedResponse, 200);
@@ -682,13 +682,13 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
-                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":41977}},{\"collectorName\":\"CMS\"," +
-                "\"timeStamp\":500,\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":156887}},{\"collectorName\":\"CMS\"," +
-                "\"timeStamp\":400,\"wallTimeInMicros\":14000" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"600\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"212864\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"41977\"}},{\"collectorName\":\"CMS\"," +
+                "\"timeStamp\":{\"$numberLong\":\"500\"},\"wallTimeInMicros\":{\"$numberLong\":\"170887\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"156887\"}},{\"collectorName\":\"CMS\"," +
+                "\"timeStamp\":{\"$numberLong\":\"400\"},\"wallTimeInMicros\":{\"$numberLong\":\"14000\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"0\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10").send();
 
         verifyResponse(response, expectedResponse, 200);
@@ -705,17 +705,17 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
         String offset = "1";
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":500," +
-                "\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"500\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"170887\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"156887\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "1").param("o", offset).send();
 
         verifyResponse(response, expectedResponse, 200);
 
         offset = "2";
-        expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":400," +
-                "\"wallTimeInMicros\":14000" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"400\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"14000\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"0\"}}]}";
         response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "1").param("o", offset).send();
 
         verifyResponse(response, expectedResponse, 200);
@@ -732,11 +732,11 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":600," +
-                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":41977}},{\"collectorName\":\"CMS\"," +
-                "\"timeStamp\":500,\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"600\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"212864\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"41977\"}},{\"collectorName\":\"CMS\"," +
+                "\"timeStamp\":{\"$numberLong\":\"500\"},\"wallTimeInMicros\":{\"$numberLong\":\"170887\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"156887\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10").param("a", "400").send();
 
         verifyResponse(response, expectedResponse, 200);
@@ -753,9 +753,9 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":500," +
-                "\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"500\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"170887\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"156887\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
                 .param("a", "400").param("o", "1").send();
 
@@ -773,9 +773,9 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":400," +
-                "\"wallTimeInMicros\":14000" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":0}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"400\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"14000\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"0\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
                 .param("b", "500").send();
 
@@ -793,7 +793,8 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":500,\"wallTimeInMicros\":170887" + SYSTEM_JVM_FRAGMENT + ",\"wallTimeDelta\":{\"$numberLong\":156887}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"500\"},\"wallTimeInMicros\":{\"$numberLong\":\"170887\"}" +
+                                  SYSTEM_JVM_FRAGMENT + ",\"wallTimeDelta\":{\"$numberLong\":\"156887\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
                 .param("b", "600").param("a", "400").send();
 
@@ -817,13 +818,13 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
 
         makeHttpMethodRequest(HttpMethod.POST, "", data, "application/json", "", 200);
 
-        String expectedResponse = "{\"response\":[{\"collectorName\":\"ABC\",\"timeStamp\":660," +
-                "\"wallTimeInMicros\":2000" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":1000}},{\"collectorName\":\"CMS\",\"timeStamp\":600," +
-                "\"wallTimeInMicros\":212864" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":41977}},{\"collectorName\":\"ABC\",\"timeStamp\":550," +
-                "\"wallTimeInMicros\":1000" + SYSTEM_JVM_FRAGMENT + "," +
-                "\"wallTimeDelta\":{\"$numberLong\":500}}]}";
+        String expectedResponse = "{\"response\":[{\"collectorName\":\"ABC\",\"timeStamp\":{\"$numberLong\":\"660\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"2000\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"1000\"}},{\"collectorName\":\"CMS\",\"timeStamp\":{\"$numberLong\":\"600\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"212864\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"41977\"}},{\"collectorName\":\"ABC\",\"timeStamp\":{\"$numberLong\":\"550\"}," +
+                "\"wallTimeInMicros\":{\"$numberLong\":\"1000\"}" + SYSTEM_JVM_FRAGMENT + "," +
+                "\"wallTimeDelta\":{\"$numberLong\":\"500\"}}]}";
         ContentResponse response = client.newRequest(deltaJvmUrl).method(HttpMethod.GET).param("l", "10")
                 .param("a", "500").send();
 

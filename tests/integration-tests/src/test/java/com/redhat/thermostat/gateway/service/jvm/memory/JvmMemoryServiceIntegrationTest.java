@@ -233,7 +233,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testPostDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, serviceUrl + "?" + METADATA_PREFIX + "=true",
-                "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]", "{\"metaData\":{\"insertCount\":2}}");
+                "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]", "{\"metaData\":{\"insertCount\":{\"$numberLong\":\"2\"}}}");
     }
 
     @Test
@@ -274,7 +274,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     public void testDeleteDifferentDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, serviceUrl, "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, serviceUrl + "?" + QUERY_PREFIX + "=a==b&"
-                + METADATA_PREFIX + "=true", 200, "{\"metaData\":{\"matchCount\":1}}");
+                + METADATA_PREFIX + "=true", 200, "{\"metaData\":{\"matchCount\":{\"$numberLong\":\"1\"}}}");
     }
 
     @Test
@@ -298,7 +298,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
                 ",\"c\":\"d\"}]}";
         HttpTestUtil.addRecords(client, serviceUrl, "[{\"a\":\"b\"}]");
         HttpTestUtil.testContentResponse(client, HttpMethod.PUT, serviceUrl + "?" + QUERY_PREFIX + "=a==b&" +
-                METADATA_PREFIX + "=true", "{\"set\":{\"c\":\"d\"}}", 200, "{\"metaData\":{\"matchCount\":1}}");
+                METADATA_PREFIX + "=true", "{\"set\":{\"c\":\"d\"}}", 200, "{\"metaData\":{\"matchCount\":{\"$numberLong\":\"1\"}}}");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, serviceUrl + "?l=5", 200, expectedDataResponse);
     }
     @Test
