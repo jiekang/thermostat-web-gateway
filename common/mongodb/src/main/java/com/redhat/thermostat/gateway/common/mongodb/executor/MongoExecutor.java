@@ -46,6 +46,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.UpdateResult;
@@ -140,7 +142,6 @@ public class MongoExecutor {
     public MongoDataResultContainer execPostRequest(MongoCollection<DBObject> collection, String body,
                                                     Set<String> realms, String systemId, String jvmId) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
-
         if (body.length() > 0) {
             List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
 

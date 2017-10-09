@@ -53,6 +53,7 @@
     <modules>
         <module>commands</module>
         <module>jvms</module>
+        <module>jcmd</module>
         <module>jvm-byteman</module>
         <module>jvm-cpu</module>
         <module>jvm-gc</module>

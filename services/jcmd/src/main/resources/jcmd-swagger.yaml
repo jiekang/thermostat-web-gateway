@@ -1,0 +1,108 @@
+swagger: '2.0'
+info:
+  version: 0.0.1
+  title: Thermostat Web Gateway JCMD API
+  license:
+    name: GPL v2 with Classpath Exception
+    url: 'http://www.gnu.org/licenses'
+consumes:
+  - application/json
+produces:
+  - application/json
+basePath: /jcmd/0.0.1
+paths:
+  /systems/{systemId}/jvms/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/thermostat-realms'
+      - $ref: '#/parameters/system-id'
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get JCMD information for {jvmId}
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-jcmd-get-response'
+    post:
+      description: Add JCMD information for {jvmId}
+      parameters:
+        - $ref: '#/parameters/jvm-jcmd-info'
+        - $ref: '#/parameters/metadata'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/metadata'
+definitions:
+  jvm-jcmd-get-response:
+    type: object
+    properties:
+      response:
+          $ref: '#/definitions/jvm-jcmd-info'
+      metadata:
+        $ref: '#/definitions/metadata'
+  jvm-jcmd-info:
+    type: object
+    properties:
+      jvmId:
+        type: string
+      timeStamp:
+        $ref: '#/definitions/timestamp'
+      payload:
+        type: string
+  metadata:
+      type: object
+      properties:
+        payloadCount:
+          type: integer
+        count:
+          type: integer
+        prev:
+          type: string
+        next:
+          type: string
+        first:
+          type: string
+        last:
+          type: string
+        insertCount:
+          type: integer
+        matchCount:
+          type: integer
+        elapsed:
+          type: integer
+          format: int64
+  timestamp:
+    description: UNIX timestamp in milliseconds
+    type: object
+    properties:
+      $numberLong:
+        type: string
+parameters:
+  system-id:
+    name: systemId
+    in: path
+    required: true
+    type: string
+  jvm-id:
+    name: jvmId
+    in: path
+    required: true
+    type: string
+  jvm-jcmd-info:
+    name: jvm-jcmd-info
+    in: body
+    description: The JVM JCMD information
+    required: true
+    schema:
+      $ref: '#/definitions/jvm-jcmd-info'
+  metadata:
+    name: metadata
+    type: boolean
+    in: query
+    description: "Metadata flag. If set to 'true', the subsequent request response will return metadata information. If set to 'false', such metadata information will be omitted."
+  thermostat-realms:
+      name: X-Thermostat-Realms
+      type: string
+      in: header
+      description: "Realms Header used to specify a subset of roles to use for Keycloak authorization. Attempts to specify realms that the client does not have, or no valid realms at all will result in a 400 Bad Request response. Expects a space separated list of realms. Example 'X-Thermostat-Realms: realm-one realm-two'"
