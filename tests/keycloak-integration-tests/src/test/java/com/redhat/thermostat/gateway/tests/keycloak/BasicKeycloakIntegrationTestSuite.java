@@ -48,6 +48,7 @@ import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.HttpStatus;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.tests.utils.EndpointDefinition;
@@ -155,17 +156,17 @@ public abstract class BasicKeycloakIntegrationTestSuite extends MongoKeycloakInt
         for (EndpointDefinition endpoint : endpoints) {
             ContentResponse response = httpRequestUtil.buildRequest(baseResourceUrl + endpoint.getEndpointUrl(), endpoint.getMethod()).send();
 
-            verifyResponse(endpoint, response, 401);
-            assertEquals(401, response.getStatus());
+            verifyResponse(endpoint, response, HttpStatus.UNAUTHORIZED_401);
+            assertEquals(HttpStatus.UNAUTHORIZED_401, response.getStatus());
         }
     }
 
     private void verifyEndpointsWhenAuthorized(List<EndpointDefinition> endpoints, KeycloakUserCredentials keycloakUserCredentials) throws InterruptedException, ExecutionException, TimeoutException, IOException {
-        verifyEndpoints(endpoints, keycloakUserCredentials, 200);
+        verifyEndpoints(endpoints, keycloakUserCredentials, HttpStatus.OK_200);
     }
 
     private void verifyEndpointsWhenUnauthorized(List<EndpointDefinition> endpoints, KeycloakUserCredentials keycloakUserCredentials) throws InterruptedException, ExecutionException, TimeoutException, IOException {
-        verifyEndpoints(endpoints, keycloakUserCredentials, 403);
+        verifyEndpoints(endpoints, keycloakUserCredentials, HttpStatus.FORBIDDEN_403);
     }
 
     private void verifyEndpoints(List<EndpointDefinition> endpoints, KeycloakUserCredentials keycloakUserCredentials, int expectedStatus) throws InterruptedException, ExecutionException, TimeoutException, IOException {
