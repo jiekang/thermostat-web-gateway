@@ -36,9 +36,10 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 
 public class MongoMetaDataGenerator {
@@ -50,17 +51,17 @@ public class MongoMetaDataGenerator {
     private final String includes;
     private final String excludes;
     private final MongoDataResultContainer execResult;
-    private final LinkedHashMap<String, String> requestParamArguments;
+    private final Map<String, String> requestParamArguments;
     private final String baseURL;
 
-    public MongoMetaDataGenerator(Integer limit, Integer offset, String sort, String queries, String includes, String excludes,
-                                  LinkedHashMap<String, String> requestParamArguments, MongoDataResultContainer execResult, String baseUrl) {
-        this.limit = limit;
-        this.offset = offset;
-        this.sort = sort;
-        this.queries = queries;
-        this.includes = includes;
-        this.excludes = excludes;
+    public MongoMetaDataGenerator(CommonQueryParams params,
+                                  Map<String, String> requestParamArguments, MongoDataResultContainer execResult, String baseUrl) {
+        this.limit = params.getLimit();
+        this.offset = params.getOffset();
+        this.sort = params.getSort();
+        this.queries = params.getQueries();
+        this.includes = params.getIncludes();
+        this.excludes = params.getExcludes();
         this.execResult = execResult;
         this.requestParamArguments = requestParamArguments;
         this.baseURL = baseUrl;

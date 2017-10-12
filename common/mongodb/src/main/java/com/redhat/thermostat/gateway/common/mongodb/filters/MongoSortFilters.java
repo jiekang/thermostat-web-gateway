@@ -42,14 +42,17 @@ import com.mongodb.BasicDBObject;
 
 public class MongoSortFilters {
 
+    public static final Character DESCENDING_SORT = '-';
+    public static final Character ASCENDING_SORT = '+';
+
     public static Bson createSortObject(String sort) {
         BasicDBObject sortObject = new BasicDBObject();
         if (sort != null) {
             String[] items = sort.split(",");
             for (String item : items) {
-                if (item.charAt(0) == '+') {
+                if (item.charAt(0) == ASCENDING_SORT) {
                     sortObject.append(item.substring(1), 1);
-                } else if (item.charAt(0) == '-') {
+                } else if (item.charAt(0) == DESCENDING_SORT) {
                     sortObject.append(item.substring(1), -1);
                 }
             }

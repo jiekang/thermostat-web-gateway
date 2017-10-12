@@ -51,8 +51,10 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 
 @Path("/")
@@ -65,16 +67,16 @@ public class JvmIoHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmIo(@PathParam(RequestParameters.JVM_ID) String jvmId,
-                                 @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offsetParam,
-                                 @QueryParam(RequestParameters.SORT) String sort,
-                                 @QueryParam(RequestParameters.QUERY) String queries,
-                                 @QueryParam(RequestParameters.INCLUDE) String includes,
-                                 @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
-                                 @Context ServletContext context,
-                                 @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
+                             @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                             @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
+                             @QueryParam(RequestParameters.SORT) String sort,
+                             @QueryParam(RequestParameters.QUERY) String queries,
+                             @QueryParam(RequestParameters.INCLUDE) String includes,
+                             @QueryParam(RequestParameters.EXCLUDE) String excludes,
+                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
+                             @Context ServletContext context,
+                             @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, null, jvmId, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @GET
@@ -82,17 +84,17 @@ public class JvmIoHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmIo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                                 @PathParam(RequestParameters.JVM_ID) String jvmId,
-                                 @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                 @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offsetParam,
-                                 @QueryParam(RequestParameters.SORT) String sort,
-                                 @QueryParam(RequestParameters.QUERY) String queries,
-                                 @QueryParam(RequestParameters.INCLUDE) String includes,
-                                 @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
-                                 @Context ServletContext context,
-                                 @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, limit, offsetParam.getValue(), sort, queries, includes, excludes, metadata);
+                             @PathParam(RequestParameters.JVM_ID) String jvmId,
+                             @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                             @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
+                             @QueryParam(RequestParameters.SORT) String sort,
+                             @QueryParam(RequestParameters.QUERY) String queries,
+                             @QueryParam(RequestParameters.INCLUDE) String includes,
+                             @QueryParam(RequestParameters.EXCLUDE) String excludes,
+                             @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
+                             @Context ServletContext context,
+                             @Context HttpServletRequest httpServletRequest) {
+        return serviceHelper.handleGetWithJvmID(httpServletRequest, context, systemId, jvmId, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @PUT
@@ -103,7 +105,7 @@ public class JvmIoHttpHandler {
                                  @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                  @PathParam(RequestParameters.JVM_ID) String jvmId,
                                  @QueryParam(RequestParameters.QUERY) String queries,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePutWithJvmId(httpServletRequest, context, systemId, jvmId, queries, metadata, body);
@@ -116,7 +118,7 @@ public class JvmIoHttpHandler {
     public Response postJvmIo(String body,
                                   @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                   @PathParam(RequestParameters.JVM_ID) String jvmId,
-                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                   @Context ServletContext context,
                                   @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
@@ -129,7 +131,7 @@ public class JvmIoHttpHandler {
     public Response deleteJvmIo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                     @PathParam(RequestParameters.JVM_ID) String jvmId,
                                     @QueryParam(RequestParameters.QUERY) String queries,
-                                    @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                    @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                     @Context ServletContext context,
                                     @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, queries, metadata);

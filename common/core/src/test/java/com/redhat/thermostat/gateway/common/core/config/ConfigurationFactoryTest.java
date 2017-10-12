@@ -44,9 +44,6 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.redhat.thermostat.gateway.common.core.config.Configuration;
-import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
-
 public class ConfigurationFactoryTest extends ConfigurationTest {
 
     private ConfigurationFactory factory;

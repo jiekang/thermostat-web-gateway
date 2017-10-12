@@ -31,6 +31,7 @@ $ ./distribution/target/image/bin/thermostat-web-gateway.sh
 ```
 
 This will run the Web Gateway with default configuration, listening on http://127.0.0.1:30000
+Additional Java options can be passed to the Java command that launches the Web Gateway using the `THERMOSTAT_GATEWAY_EXT_JAVA_OPTS` environment variable.
 
 ## How to Stop
 

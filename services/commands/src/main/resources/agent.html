@@ -51,6 +51,18 @@
 
         CmdChan.socket = null;
 
+        CmdChan.getTokenParam = (function(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split("&");
+            for (var i=0;i<vars.length;i++) {
+                var pair = vars[i].split("=");
+                if (pair[0] == variable) {
+                    return pair[1];
+                }
+            }
+            return null;
+        });
+
         CmdChan.connect = (function(host) {
             if ('WebSocket' in window) {
                 CmdChan.socket = new WebSocket(host);
@@ -70,10 +82,28 @@
             };
 
             CmdChan.socket.onmessage = function (message) {
-                Console.log('Got: ' + message.data);
+                var data = JSON.parse(message.data);
+                var jvmId = escapeHtml(data.jvmId);
+                var systemId = escapeHtml(data.systemId);
+                var payload = data.payload;
+
+                var requestArguments = {}
+                for (var key in payload) {
+                    // Check for an actual key, and not a prototype value
+                    if (payload.hasOwnProperty(key)) {
+                        requestArguments[escapeHtml(key)] = escapeHtml(payload[key]);
+                    }
+                }
+
+                // Print message to screen
+                data.payload = requestArguments;
+                data.jvmId = jvmId;
+                data.systemId = systemId;
+                Console.log('Got: ' + JSON.stringify(data));
+
                 // parse message
                 Msg.fromRequest(message.data);
-                
+
                 // send the always-ok reply
                 CmdChan.socket.send(Response.asJson(Msg.sequence, 'OK'));
                 Console.log('Info: OK reply sent.');
@@ -81,10 +111,15 @@
         });
 
         CmdChan.initialize = function() {
+            var query_string = "";
+            var token = CmdChan.getTokenParam("access_token");
+            if (token != null) {
+                query_string = "?access_token=" + token;
+            }
             if (window.location.protocol == 'http:') {
-                CmdChan.connect('ws://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent');
+                CmdChan.connect('ws://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent' + query_string);
             } else {
-                CmdChan.connect('wss://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent');
+                CmdChan.connect('wss://' + window.location.host + '/commands/v1/systems/ignored_system/agents/testAgent' + query_string);
             }
         };
 
@@ -104,7 +139,6 @@
 
         CmdChan.initialize();
 
-
         document.addEventListener("DOMContentLoaded", function() {
             // Remove elements with "noscript" class - <noscript> is not allowed in XHTML
             var noscripts = document.getElementsByClassName("noscript");
@@ -112,6 +146,10 @@
                 noscripts[i].parentNode.removeChild(noscripts[i]);
             }
         }, false);
+
+        var escapeHtml = function(unsafeStr) {
+            return unsafeStr.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
 
     //]]>
     </script>

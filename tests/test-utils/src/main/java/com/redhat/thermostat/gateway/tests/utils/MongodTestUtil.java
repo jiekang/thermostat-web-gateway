@@ -43,28 +43,42 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
-import com.mongodb.client.MongoCollection;
-import com.redhat.thermostat.gateway.common.util.OS;
 import org.bson.Document;
 
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.client.MongoCollection;
+import com.redhat.thermostat.gateway.common.util.OS;
+
+import java.net.ServerSocket;
+import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 public class MongodTestUtil {
 
     private static final int WAIT_FOR_MAX_ITERATIONS = 100;
     private static final long WAIT_FOR_SLEEP_DURATION = 100L;
+    private static final int DEFAULT_PORT = 27519;
 
     private final String databaseName = "thermostat";
     private final String host = "127.0.0.1";
-    private final int port = 27518;
-    public final String listenAddress = host + ":" + port;
+    private final int port;
+    public final String listenAddress;
 
     private MongoClient mongoClient;
     private Path tempDbDir;
     private Path tempLogFile;
     public Process process;
     private boolean connectedToDatabase;
+
+    public MongodTestUtil() {
+        this(DEFAULT_PORT);
+    }
+
+    public MongodTestUtil(int port) {
+        this.port = port;
+        this.listenAddress = host + ":" + port;
+    }
 
     public void startMongod() throws IOException, InterruptedException {
         tempDbDir = Files.createTempDirectory("tms-mongo");
@@ -86,10 +100,16 @@ public class MongodTestUtil {
             try {
                 mongoClient.getDatabase("admin").runCommand(new Document("shutdown", 1));
             } catch (Exception ignored) {
+                /*
+                following exception is always thrown:
+                com.mongodb.MongoSocketReadException: Prematurely reached end of stream
+                ( probably expected, connection get closed? )
+                */
             }
             mongoClient.close();
             mongoClient = null;
             waitForMongodStop();
+            waitForSocketToClose(port);
             finish();
         }
     }
@@ -125,6 +145,7 @@ public class MongodTestUtil {
     }
 
     private boolean waitForMongodStop() throws IOException, InterruptedException {
+        // dbexit string is not logged by newer mongodb (>= 3.4 ?)
         return waitFor("dbexit:  rc: 0");
     }
 
@@ -162,6 +183,21 @@ public class MongodTestUtil {
         }
 
         return false;
+    }
+
+    private void waitForSocketToClose(int port) throws InterruptedException {
+        for (int i = 0; i < WAIT_FOR_MAX_ITERATIONS; ++i) {
+            /* Try to bind socket, if it fails, port is still in use */
+            try (ServerSocket socket = new ServerSocket()) {
+                SocketAddress address = new InetSocketAddress(port);
+                socket.bind(address, 0);
+                return;
+            } catch (IOException e) {
+                /* ignored */
+            }
+            Thread.sleep(WAIT_FOR_SLEEP_DURATION);
+        }
+        throw new RuntimeException("Timeout waiting for mongodb socket to close reached!");
     }
 
     public boolean isConnectedToDatabase() {

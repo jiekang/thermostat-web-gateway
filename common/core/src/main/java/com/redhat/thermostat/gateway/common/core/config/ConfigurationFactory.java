@@ -44,10 +44,16 @@ import java.util.Map;
  */
 public class ConfigurationFactory {
 
+    private static final GatewayHomeRetriever RETRIEVER = new GatewayHomeRetriever();
     private final String gatewayHome;
     private final GlobalConfiguration globalConfig;
 
-    public ConfigurationFactory(String gatewayHome) {
+    public ConfigurationFactory() {
+        this(RETRIEVER.getGatewayHome());
+    }
+
+    // package-private for testing
+    ConfigurationFactory(String gatewayHome) {
         this.gatewayHome = gatewayHome;
         this.globalConfig = new GlobalConfiguration(gatewayHome);
     }

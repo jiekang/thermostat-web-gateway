@@ -62,7 +62,9 @@ import javax.ws.rs.core.Response;
 import com.mongodb.MongoTimeoutException;
 import com.mongodb.MongoWriteException;
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
@@ -92,20 +94,26 @@ public class JvmsHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response getJvmInfos(@PathParam(RequestParameters.SYSTEM_ID) final String systemId,
-                                @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                                @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") final Integer offset,
+                                @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                                @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                                 @QueryParam(RequestParameters.SORT) String sort,
                                 @QueryParam(RequestParameters.QUERY) String queries,
                                 @QueryParam(RequestParameters.INCLUDE) String includes,
                                 @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                 @Context ServletContext context,
                                 @Context HttpServletRequest httpServletRequest
     ) {
         try {
-            ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
-            String message = mongoStorageHandler.getJvmInfos(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, queries, includes, excludes);
-            return Response.status(Response.Status.OK).entity(message).build();
+            RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
+
+            if (realmAuthorizer.readable()) {
+                ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
+                String message = mongoStorageHandler.getJvmInfos(storage.getDatabase().getCollection(collectionName), systemId, limit, offset, sort, queries, includes, excludes);
+                return Response.status(Response.Status.OK).entity(message).build();
+            } else {
+                return Response.status(Response.Status.FORBIDDEN).build();
+            }
         } catch (Exception e) {
             return exceptionHandler.generateResponseForException(e);
         }
@@ -117,7 +125,7 @@ public class JvmsHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response postJvmInfos(String body,
                                  @PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                 @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                  @Context ServletContext context,
                                  @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithSystemID(httpServletRequest, context, systemId, metadata, body);
@@ -129,7 +137,7 @@ public class JvmsHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response deleteJvmInfos(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                                   @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                   @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                    @Context ServletContext context,
                                    @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithSystemID(httpServletRequest, context, systemId, null, metadata);
@@ -143,7 +151,7 @@ public class JvmsHttpHandler {
                                @PathParam(RequestParameters.JVM_ID) String jvmId,
                                @QueryParam(RequestParameters.INCLUDE) String includes,
                                @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest
     ) {
@@ -170,7 +178,7 @@ public class JvmsHttpHandler {
                                @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                @PathParam(RequestParameters.JVM_ID) String jvmId,
                                @QueryParam(RequestParameters.QUERY) String queries,
-                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePutWithJvmId(httpServletRequest, context, systemId, jvmId, queries, metadata, body);
@@ -182,7 +190,7 @@ public class JvmsHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response deleteJvmInfo(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                   @PathParam(RequestParameters.JVM_ID) String jvmId,
-                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                  @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                   @Context ServletContext context,
                                   @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithJvmID(httpServletRequest, context, systemId, jvmId, null, metadata);
@@ -193,7 +201,7 @@ public class JvmsHttpHandler {
     public Response putUpdateTimestamp(String body,
                                        @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                                        @PathParam(RequestParameters.TIMESTAMP) Long timeStamp,
-                                       @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                       @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                        @Context ServletContext context,
                                        @Context HttpServletRequest httpServletRequest) {
         try {
@@ -218,7 +226,7 @@ public class JvmsHttpHandler {
     public Response getJvmInfoTree(@QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
                                    @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
                                    @QueryParam(RequestParameters.ALIVE_ONLY) @DefaultValue("true") Boolean aliveOnly,
-                                   @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                                   @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                    @QueryParam(RequestParameters.INCLUDE) String includes,
                                    @QueryParam(RequestParameters.EXCLUDE) String excludes,
                                    @Context ServletContext context,

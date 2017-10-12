@@ -51,6 +51,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -122,7 +124,7 @@ public class JvmInfoMongoStorageHandler  {
         return mongoResponseBuilder.addQueryDocuments(documents, runnable).build();
     }
 
-    public String getJvmInfos(MongoCollection<Document> collection, String systemId, Integer limit, Integer offset, String sort, String queries, String includes, String excludes) {
+    public String getJvmInfos(MongoCollection<Document> collection, String systemId, LimitParameter limit, OffsetParameter offset, String sort, String queries, String includes, String excludes) {
         final Bson baseQuery;
         baseQuery = eq(StorageFields.SYSTEM_ID, systemId);
         FindIterable<Document> documents;
@@ -153,7 +155,7 @@ public class JvmInfoMongoStorageHandler  {
         }
 
         final Bson sortObject = MongoSortFilters.createSortObject(sort);
-        documents = documents.sort(sortObject).limit(limit).skip(offset).batchSize(limit).cursorType(CursorType.NonTailable);
+        documents = documents.sort(sortObject).limit(limit.getValue()).skip(offset.getValue()).batchSize(limit.getValue()).cursorType(CursorType.NonTailable);
 
         return mongoResponseBuilder.addQueryDocuments(documents, runnable).build();
     }

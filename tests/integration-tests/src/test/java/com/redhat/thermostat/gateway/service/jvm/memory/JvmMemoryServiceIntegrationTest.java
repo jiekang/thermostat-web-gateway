@@ -36,19 +36,8 @@
 
 package com.redhat.thermostat.gateway.service.jvm.memory;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.redhat.thermostat.gateway.service.jvm.gc.JvmGcServiceIntegrationTest;
-import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
-import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
-import org.eclipse.jetty.client.api.ContentResponse;
-import org.eclipse.jetty.client.api.Request;
-import org.eclipse.jetty.client.util.StringContentProvider;
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.http.HttpMethod;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,17 +45,26 @@ import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import org.eclipse.jetty.client.api.ContentResponse;
+import org.eclipse.jetty.client.api.Request;
+import org.eclipse.jetty.client.util.StringContentProvider;
+import org.eclipse.jetty.http.HttpHeader;
+import org.eclipse.jetty.http.HttpMethod;
+import org.eclipse.jetty.http.HttpStatus;
+import org.junit.Test;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
 
 public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
 
     private static final String serviceName = "jvm-memory";
     private static final String versionNumber = "0.0.3";
 
-    private static final int HTTP_200_OK = 200;
-    private static final int HTTP_404_NOTFOUND = 404;
-    
     private static final String QUERY_PREFIX = "query";
     private static final String LIMIT_PREFIX = "limit";
     private static final String SORT_PREFIX = "sort";
@@ -94,12 +92,22 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
 
     private final String simpleUrl = baseUrl + "/" + serviceName + "/" + versionNumber;
     private final String serviceUrl = simpleUrl + "/systems/" + AGENT_ID + "/jvms/" + JVM_ID;
-    
+
     private final String returnedUrl;
 
     public JvmMemoryServiceIntegrationTest() {
         super(serviceName + "/" + versionNumber, serviceName);
         this.returnedUrl = serviceUrl;
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionNumber;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     @Test
@@ -225,7 +233,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     @Test
     public void testPostDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, serviceUrl + "?" + METADATA_PREFIX + "=true",
-                "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]", "{\"metaData\":{\"insertCount\":2}}");
+                "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]", "{\"metaData\":{\"insertCount\":{\"$numberLong\":\"2\"}}}");
     }
 
     @Test
@@ -266,7 +274,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
     public void testDeleteDifferentDataWithMetaData() throws InterruptedException, TimeoutException, ExecutionException {
         HttpTestUtil.addRecords(client, serviceUrl, "[{\"fakedata\":\"test\",\"a\":\"b\"},{\"c\":\"d\"}]");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, serviceUrl + "?" + QUERY_PREFIX + "=a==b&"
-                + METADATA_PREFIX + "=true", 200, "{\"metaData\":{\"matchCount\":1}}");
+                + METADATA_PREFIX + "=true", 200, "{\"metaData\":{\"matchCount\":{\"$numberLong\":\"1\"}}}");
     }
 
     @Test
@@ -290,7 +298,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
                 ",\"c\":\"d\"}]}";
         HttpTestUtil.addRecords(client, serviceUrl, "[{\"a\":\"b\"}]");
         HttpTestUtil.testContentResponse(client, HttpMethod.PUT, serviceUrl + "?" + QUERY_PREFIX + "=a==b&" +
-                METADATA_PREFIX + "=true", "{\"set\":{\"c\":\"d\"}}", 200, "{\"metaData\":{\"matchCount\":1}}");
+                METADATA_PREFIX + "=true", "{\"set\":{\"c\":\"d\"}}", 200, "{\"metaData\":{\"matchCount\":{\"$numberLong\":\"1\"}}}");
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, serviceUrl + "?l=5", 200, expectedDataResponse);
     }
     @Test
@@ -608,7 +616,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         final String contentStr = createJSON(ts);
         request.content(new StringContentProvider("{ \"set\" : " +contentStr + "}"));
         ContentResponse response = request.method(HttpMethod.PUT).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
+        assertEquals(HttpStatus.OK_200, response.getStatus());
         final String expected = "";
         assertEquals(expected, response.getContentAsString());
         return response;
@@ -619,7 +627,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         request.header(HttpHeader.CONTENT_TYPE, "application/json");
         request.content(new StringContentProvider( '[' + createJSON() + ']'));
         ContentResponse response = request.method(HttpMethod.POST).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
+        assertEquals(HttpStatus.OK_200, response.getStatus());
         final String expected = "";
         assertEquals(expected, response.getContentAsString());
         return response;
@@ -639,7 +647,7 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
 
     private ContentResponse get(final String systemid, final String jvmid) throws InterruptedException, ExecutionException, TimeoutException {
         ContentResponse response = client.newRequest(simpleUrl + "/systems/" + systemid + "/jvms/" + jvmid).method(HttpMethod.GET).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
+        assertEquals(HttpStatus.OK_200, response.getStatus());
         return response;
     }
 
@@ -647,13 +655,13 @@ public class JvmMemoryServiceIntegrationTest extends MongoIntegrationTest {
         final Request rq = client.newRequest(simpleUrl + "/systems/" + systemid + "/jvms/" + jvmid + query);
         rq.method(HttpMethod.GET);
         ContentResponse response = rq.send();
-        assertEquals(HTTP_200_OK, response.getStatus());
+        assertEquals(HttpStatus.OK_200, response.getStatus());
         return response;
     }
 
     private ContentResponse delete(final String systemid, final String jvmid) throws InterruptedException, ExecutionException, TimeoutException {
         ContentResponse response = client.newRequest(simpleUrl + "/systems/" + systemid + "/jvms/" + jvmid).method(HttpMethod.DELETE).send();
-        assertEquals(HTTP_200_OK, response.getStatus());
+        assertEquals(HttpStatus.OK_200, response.getStatus());
         final String expected = "";
         assertEquals(expected, response.getContentAsString());
         return response;

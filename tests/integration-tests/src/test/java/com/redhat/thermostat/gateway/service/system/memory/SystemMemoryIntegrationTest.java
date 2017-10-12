@@ -37,12 +37,14 @@
 package com.redhat.thermostat.gateway.service.system.memory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import com.redhat.thermostat.gateway.common.mongodb.response.MongoGsonFactory;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.junit.Test;
 
@@ -56,51 +58,38 @@ import com.redhat.thermostat.gateway.tests.integration.VersionTestUtil;
 
 
 public class SystemMemoryIntegrationTest extends SystemIntegrationTestSuites<SystemMemoryIntegrationTest.TinyMemoryInfo> {
-    
+
     private static final String collectionName = "memory-info";
     private static final String versionString = "0.0.1";
-    private static final String serviceURL = baseUrl + "/system-memory/" + versionString;
+    private static final String serviceName = "system-memory";
+    private static final String serviceURL = baseUrl + "/" + serviceName + "/" + versionString;
     private static final String TIMESTAMP_TOKEN = "$TIMESTAMP$";
     private static final String AGENT_ID = getRandomSystemId();
     private static final String memInfoJSON =
             "{\n" +
-            "    \"total\" : 12566220800,\n" +
-            "    \"free\" : 2338582528,\n" +
-            "    \"buffers\" : 0,\n" +
-            "    \"cached\" : 0,\n" +
-            "    \"swapTotal\" : 17666494464,\n" +
-            "    \"swapFree\" : 3524055040,\n" +
-            "    \"commitLimit\" : 0,\n" +
-            "    \"timeStamp\" : " + TIMESTAMP_TOKEN + ",\n" +
+            "    \"total\" : { \"$numberLong\" : \"12566220800\" },\n" +
+            "    \"free\" : { \"$numberLong\" : \"23677331911\" },\n" +
+            "    \"buffers\" : { \"$numberLong\" : \"0\" },\n" +
+            "    \"cached\" : { \"$numberLong\" : \"0\" },\n" +
+            "    \"swapTotal\" : { \"$numberLong\" : \"17666494464\" },\n" +
+            "    \"swapFree\" : { \"$numberLong\" : \"3524055040\" },\n" +
+            "    \"commitLimit\" : { \"$numberLong\" : \"0\" },\n" +
+            "    \"timestamp\" : { \"$numberLong\" : \"" + TIMESTAMP_TOKEN + "\" },\n" +
             "    \"agentId\" : \"" + AGENT_ID + "\",\n" +
             "}";
 
-    static class TinyMemoryInfo {
-        private String agentId;
-        private String systemId;
-        private long total;
-        private long free;
-        private long buffers;
-
-        TinyMemoryInfo(String systemId, String agentId, long total, long free, long buffers) {
-            this.systemId = systemId;
-            this.agentId = agentId;
-            this.total = total;
-            this.free = free;
-            this.buffers = buffers;
-        }
-
-        public String getAgentId() {
-            return agentId;
-        }
-
-        public String getSystemId() {
-            return systemId;
-        }
-    }
-
     public SystemMemoryIntegrationTest() {
         super(serviceURL, collectionName);
+    }
+
+    @Override
+    public String getServiceVersion() {
+        return versionString;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
     }
 
     @Test
@@ -108,16 +97,6 @@ public class SystemMemoryIntegrationTest extends SystemIntegrationTestSuites<Sys
         final String systemid = super.getRandomSystemId();
         post(systemid);
         VersionTestUtil.testAllVersions(baseUrl + "/system-memory", versionString, "/systems/" + systemid);
-    }
-
-    private static long getLong(JsonObject json, final String id) {
-        JsonElement el = json.get(id);
-        if (el.isJsonObject()) {
-            final JsonObject o = el.getAsJsonObject();
-            return o.get("$numberLong").getAsLong();
-        } else {
-            return el.getAsLong();
-        }
     }
 
     @Override
@@ -130,16 +109,24 @@ public class SystemMemoryIntegrationTest extends SystemIntegrationTestSuites<Sys
 
         JsonArray allData = response.getAsJsonArray();
 
-        Gson gson = new Gson();
-        for (JsonElement entry : allData) {
-            TinyMemoryInfo TinyMemoryEntry = gson.fromJson(entry.toString(), TinyMemoryInfo.class);
+        Gson gson = MongoGsonFactory.getGson();
+        for (int entryIndex = 0; entryIndex < allData.size(); entryIndex++) {
+            TinyMemoryInfo tinyMemoryEntry = gson.fromJson(allData.get(entryIndex).toString(), TinyMemoryInfo.class);
 
-            assertEquals(AGENT_ID, TinyMemoryEntry.getAgentId());
+            assertEquals(AGENT_ID, tinyMemoryEntry.getAgentId());
             if (expectedSystemId != null) {
-                assertEquals(expectedSystemId, TinyMemoryEntry.getSystemId());
+                assertEquals(expectedSystemId, tinyMemoryEntry.getSystemId());
             }
+            assertEquals(12566220800L, tinyMemoryEntry.getTotal());
+            assertEquals(23677331911L, tinyMemoryEntry.getFree());
+            assertEquals(0L, tinyMemoryEntry.getBuffers());
+            assertEquals(0L, tinyMemoryEntry.getCached());
+            assertEquals(17666494464L, tinyMemoryEntry.getSwapTotal());
+            assertEquals(3524055040L, tinyMemoryEntry.getSwapFree());
+            assertEquals(0L, tinyMemoryEntry.getCommitLimit());
+            assertNotEquals(0L, tinyMemoryEntry.getTimestamp());
 
-            result.add(TinyMemoryEntry);
+            result.add(tinyMemoryEntry);
         }
 
         return result;
@@ -183,5 +170,58 @@ public class SystemMemoryIntegrationTest extends SystemIntegrationTestSuites<Sys
     @Test
     public void testSystemMemoryDeleteOne() throws InterruptedException, ExecutionException, TimeoutException {
         super.testDeleteOne();
+    }
+
+    static class TinyMemoryInfo {
+        private String agentId;
+        private String systemId;
+        private Long timestamp;
+        private Long total;
+        private Long free;
+        private Long buffers;
+        private Long cached;
+        private Long swapTotal;
+        private Long swapFree;
+        private Long commitLimit;
+
+        public String getAgentId() {
+            return agentId;
+        }
+
+        public String getSystemId() {
+            return systemId;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public long getTotal() {
+            return total;
+        }
+
+        public long getFree() {
+            return free;
+        }
+
+        public long getBuffers() {
+            return buffers;
+        }
+
+        public long getCached() {
+            return cached;
+        }
+
+        public long getSwapTotal() {
+            return swapTotal;
+        }
+
+        public long getSwapFree() {
+            return swapFree;
+        }
+
+        public long getCommitLimit() {
+            return commitLimit;
+        }
     }
 }

@@ -46,6 +46,7 @@ import static org.mockito.Mockito.when;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -55,7 +56,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
-import com.redhat.thermostat.gateway.common.core.config.ConfigurationFactory;
 import com.redhat.thermostat.gateway.common.core.servlet.GlobalConstants;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.configuration.MongoConfiguration;
@@ -72,7 +72,8 @@ public class StorageConnectionSettingListenerTest {
         when(evt.getServletContext()).thenReturn(ctxt);
         when(ctxt.getInitParameter(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
         when(ctxt.getAttribute(eq(GlobalConstants.GATEWAY_HOME_KEY))).thenReturn(getTestGatewayRoot());
-        when(ctxt.getAttribute(eq(GlobalConstants.SERVICE_CONFIG_KEY))).thenReturn(getTestGatewayConfiguration());
+        Configuration testConfig = getTestGatewayConfiguration();
+        when(ctxt.getAttribute(eq(GlobalConstants.SERVICE_CONFIG_KEY))).thenReturn(testConfig);
     }
 
     @Test
@@ -100,7 +101,15 @@ public class StorageConnectionSettingListenerTest {
     }
 
     private Configuration getTestGatewayConfiguration() {
-        return new ConfigurationFactory(getTestGatewayRoot()).createServiceConfiguration("foo-service");
+        Map<String, Object> testConfig = new HashMap<>();
+        testConfig.put("MONGO_URL", "mongodb://localhost:21793");
+        testConfig.put("MONGO_DB", "foo");
+        testConfig.put("MONGO_USERNAME", "foo-user");
+        testConfig.put("MONGO_PASSWORD", "foo-password");
+        testConfig.put("MONGO_SERVER_TIMEOUT", "3");
+        Configuration config = mock(Configuration.class);
+        when(config.asMap()).thenReturn(testConfig);
+        return config;
     }
 
     private String decodeFilePath(URL url) {

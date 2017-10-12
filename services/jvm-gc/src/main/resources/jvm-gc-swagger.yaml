@@ -82,6 +82,21 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/metadata'
+  /delta/{jvmId}:
+    parameters:
+      - $ref: '#/parameters/jvm-id'
+    get:
+      description: Get jvm gc information for jvm {jvmId} with deltas for wallTime. Always sorted by timeStamp ascending
+      parameters:
+        - $ref: '#/parameters/limit'
+        - $ref: '#/parameters/offset'
+        - $ref: '#/parameters/before'
+        - $ref: '#/parameters/after'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/jvm-gc-delta-response'
 definitions:
   jvm-gc-stats-response:
     type: object
@@ -107,8 +122,34 @@ definitions:
         type: string
       runCount:
         $ref: '#/definitions/metric'
-      wallTime:
+      wallTimeInMicros:
         $ref: '#/definitions/metric'
+  jvm-gc-delta-response:
+    type: object
+    properties:
+      response:
+        $ref: '#/definitions/jvm-gc-delta-stats'
+  jvm-gc-delta-stats:
+    type: array
+    items:
+      $ref: '#/definitions/jvm-gc-delta-stat'
+  jvm-gc-delta-stat:
+      type: object
+      properties:
+        agentId:
+          type: string
+        jvmId:
+          type: string
+        timeStamp:
+          $ref: '#/definitions/timestamp'
+        collectorName:
+          type: string
+        runCount:
+          $ref: '#/definitions/metric'
+        wallTimeInMicros:
+          $ref: '#/definitions/metric'
+        wallTimeDelta:
+          $ref: '#/definitions/metric'
   metric:
     type: object
     properties:
@@ -176,21 +217,27 @@ parameters:
     name: limit
     in: query
     description: Limit of items to return. Example '1'
+    required: false
+    default: 1
     type: integer
   offset:
     name: offset
     in: query
     description: Offset of items to return. Example '0'
+    required: false
+    default: 0
     type: integer
   sort:
     name: sort
     in: query
     description: Sort string. Comma separated list of fields prefixed with '+' for ascending or '-' for descending. Example '?s=+a,-b' Fields use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    required: false
     type: string
   query:
     name: query
     in: query
     description: Query string. Comma separated list of key, comparator, value pairs. Comparator supports '==', '<=', '>=', '<', '>', '!='. Example '?q=a==b,c!=d'. Keys are fields in documents and use dot notation for embedded documents. Example 'outer.inner' refers to field inner contained in field outer.
+    required: false
     type: string
   include:
     name: include
@@ -214,6 +261,18 @@ parameters:
       precedence over 'include' parameter
     type: string
     required: false
+  before:
+    name: b
+    in: query
+    description: Before timeStamp. A long that specifies to return documents before the timeStamp.
+    type: integer
+    format: int64
+  after:
+    name: a
+    in: query
+    description: After timeStamp. A long that specifies to return documents after the timeStamp.
+    type: integer
+    format: int64
   metadata:
     name: metadata
     type: boolean

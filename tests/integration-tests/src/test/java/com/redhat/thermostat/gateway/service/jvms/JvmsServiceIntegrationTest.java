@@ -36,26 +36,28 @@
 
 package com.redhat.thermostat.gateway.service.jvms;
 
-import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Array;
-import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Map;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import com.redhat.thermostat.gateway.tests.utils.ContentWrapper;
-import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
-import com.redhat.thermostat.gateway.tests.utils.ResponseSetWrapper;
 import org.eclipse.jetty.client.api.ContentResponse;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpMethod;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.tests.integration.MongoIntegrationTest;
+import com.redhat.thermostat.gateway.tests.utils.ContentWrapper;
+import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Array;
+import com.redhat.thermostat.gateway.tests.utils.ContentWrapper.Map;
+import com.redhat.thermostat.gateway.tests.utils.HttpTestUtil;
+import com.redhat.thermostat.gateway.tests.utils.ResponseSetWrapper;
 
 public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
-    private static final String jvmsUrl = baseUrl + "/jvms/0.0.1";
+    private static final String serviceName = "jvms";
+    private static final String serviceVersion = "0.0.1";
+    private static final String jvmsUrl = baseUrl + "/" + serviceName + "/" + serviceVersion;
 
     private static final ContentWrapper postDataWrapper = new ContentWrapper().addToResponse(
          Map.of("agentId", "aid",
@@ -160,6 +162,16 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         super(jvmsUrl, "jvm-info");
     }
 
+    @Override
+    public String getServiceVersion() {
+        return serviceVersion;
+    }
+
+    @Override
+    public String getServiceName() {
+        return serviceName;
+    }
+
     @Test
     public void testGetEmpty() throws InterruptedException, TimeoutException, ExecutionException {
         String url = jvmsUrl + "/systems/1";
@@ -185,14 +197,14 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 Map.of("jvmName", "vm",
                         "agentId", "aid",
                         "javaCommandLine", "j cl",
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "javaVersion", "1.8.0_131",
                         "jvmId", "jid2",
                         "isAlive", false,
                         "systemId", "1",
                         "jvmPid", 2,
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
-                        "stopTime", 1495727607482L,
+                        "stopTime", Map.ofNumberLong(1495727607482L),
                         "vmArguments", "-Djline.log.jul=true",
                         "jvmInfo", "mixed mode",
                         "jvmVersion", "25.131-b12",
@@ -229,7 +241,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                                         "value", "truecolor"),
                                 Map.of("key", "_",
                                         "value", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java")),
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "uid", 1000));
         expectedContentWrapper.matchJsonOrThrow(getResponse.getContentAsString());
     }
@@ -320,7 +332,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                 Map.of("javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "mainClass", "mc",
                         "jvmId", "jid1",
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "javaCommandLine", "j cl",
                         "vmArguments", "-Djline.log.jul=true",
                         "isAlive", true,
@@ -358,13 +370,13 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                                                    "value", "truecolor"),
                                            Map.of("key", "_",
                                                    "value", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java")),
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "jvmName", "vm",
                         "jvmInfo", "mixed mode",
                         "agentId", "aid",
                         "systemId", "1",
                         "javaVersion", "1.8.0_131",
-                        "stopTime", -9223372036854775808L,
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
                         "jvmPid", 1)
         );
 
@@ -384,15 +396,15 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
 
         ContentWrapper expectedContentWrapper = new ContentWrapper().addToResponse(
                 Map.of("jvmName", "vm",
-                        "lastUpdated", 333,
-                        "stopTime", -9223372036854775808L,
+                        "lastUpdated", Map.ofNumberLong(333),
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
                         "mainClass", "mc",
                         "vmArguments", "-Djline.log.jul=true",
                         "jvmPid", 1,
                         "uid", 1000,
                         "jvmVersion", "25.131-b12",
                         "javaVersion", "1.8.0_131",
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "javaCommandLine", "j cl",
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "username", "user",
@@ -456,9 +468,9 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         ContentWrapper expectedContentWrapper = new ContentWrapper().addToResponse(
                 Map.of("username", "user",
                         "vmArguments", "-Djline.log.jul=true",
-                        "stopTime", -9223372036854775808L,
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
                         "jvmName", "vm",
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "systemId", "1",
                         "isAlive", true,
@@ -466,7 +478,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "javaVersion", "1.8.0_131",
                         "javaCommandLine", "j cl",
                         "jvmInfo", "mixed mode",
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "mainClass", "mc",
                         "jvmVersion", "25.131-b12",
                         "agentId", "aid",
@@ -527,7 +539,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "vmArguments", "-Djline.log.jul=true",
                         "jvmVersion", "25.131-b12",
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "uid", 1000,
                         "environment", Array.of(
                                            Map.of("key", "PATH",
@@ -565,8 +577,8 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "jvmPid", 1,
                         "jvmName", "vm",
                         "jvmInfo", "mixed mode",
-                        "stopTime", -9223372036854775808L,
-                        "startTime", 1495727607481L),
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
+                        "startTime", Map.ofNumberLong(1495727607481L)),
                 Map.of("mainClass", "mc",
                         "username", "user",
                         "systemId", "1",
@@ -576,7 +588,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "vmArguments", "-Djline.log.jul=true",
                         "jvmVersion", "25.131-b12",
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "uid", 1000,
                         "environment", Array.of(
                                            Map.of("key", "PATH",
@@ -614,8 +626,8 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "jvmPid", 2,
                         "jvmName", "vm",
                         "jvmInfo", "mixed mode",
-                        "stopTime", 1495727607482L,
-                        "startTime", 1495727607481L)
+                        "stopTime", Map.ofNumberLong(1495727607482L),
+                        "startTime", Map.ofNumberLong(1495727607481L))
 
         );
         expectedContentWrapper.matchJsonOrThrow(getResponse.getContentAsString());
@@ -669,16 +681,16 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "jvmName", "vm",
                         "mainClass", "mc",
                         "jvmPid", 2,
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "jvmInfo", "mixed mode",
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "vmArguments", "-Djline.log.jul=true",
                         "uid", 1000,
                         "jvmId", "jid2",
                         "agentId", "aid",
                         "systemId", "1",
-                        "stopTime", 1495727607482L,
+                        "stopTime", Map.ofNumberLong(1495727607482L),
                         "isAlive", false,
                         "javaVersion", "1.8.0_131",
                         "username", "user",
@@ -702,12 +714,12 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         assertEquals(200, getResponse.getStatus());
 
         ContentWrapper expectedContentWrapper = new ContentWrapper().addToResponse(
-                Map.of("startTime", 1495727607481L,
+                Map.of("startTime", Map.ofNumberLong(1495727607481L),
                         "jvmPid", 2,
                         "javaCommandLine", "j cl",
                         "jvmName", "vm",
-                        "lastUpdated", 333,
-                        "stopTime", 1495727607482L,
+                        "lastUpdated", Map.ofNumberLong(333),
+                        "stopTime", Map.ofNumberLong(1495727607482L),
                         "mainClass", "mc",
                         "javaVersion", "1.8.0_131",
                         "jvmVersion", "25.131-b12",
@@ -771,7 +783,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         ContentWrapper expectedContentWrapper = new ContentWrapper().addToResponse(
                 Map.of("javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "agentId", "aid",
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "mainClass", "mc",
                         "vmArguments", "-Djline.log.jul=true",
                         "javaVersion", "1.8.0_131",
@@ -815,8 +827,8 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "jvmVersion", "25.131-b12",
                         "jvmPid", 2,
                         "username", "user",
-                        "stopTime", 1495727607482L,
-                        "lastUpdated", 333,
+                        "stopTime", Map.ofNumberLong(1495727607482L),
+                        "lastUpdated", Map.ofNumberLong(333),
                         "uid", 1000)
         );
 
@@ -892,14 +904,14 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "systemId", "1",
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
                         "jvmVersion", "25.131-b12",
-                        "stopTime", -9223372036854775808L,
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
                         "jvmId", "jid1",
                         "jvmName", "vm",
                         "jvmInfo", "mixed mode",
                         "vmArguments", "-Djline.log.jul=true",
                         "mainClass", "mc",
-                        "startTime", 1495727607481L,
-                        "lastUpdated", 333,
+                        "startTime", Map.ofNumberLong(1495727607481L),
+                        "lastUpdated", Map.ofNumberLong(333),
                         "username", "user",
                         "javaCommandLine", "j cl")
         );
@@ -983,11 +995,11 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "mainClass", "hello",
                         "uid", 1000,
                         "systemId", "1",
-                        "stopTime", -9223372036854775808L,
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
                         "jvmInfo", "mixed mode",
                         "jvmVersion", "25.131-b12",
-                        "lastUpdated", 333,
-                        "startTime", 1495727607481L,
+                        "lastUpdated", Map.ofNumberLong(333),
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "jvmPid", 1,
                         "vmArguments", "-Djline.log.jul=true",
                         "javaVersion", "1.7.0",
@@ -1055,8 +1067,8 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                                                    "key", "COLORTERM"),
                                            Map.of("value", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre/../bin/java",
                                                    "key", "_")),
-                        "stopTime", -9223372036854775808L,
-                        "lastUpdated", 333,
+                        "stopTime", Map.ofNumberLong(-9223372036854775808L),
+                        "lastUpdated", Map.ofNumberLong(333),
                         "systemId", "1",
                         "uid", 1000,
                         "username", "user",
@@ -1070,7 +1082,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "javaVersion", "1.8.0_131",
                         "jvmInfo", "mixed mode",
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "agentId", "aid")
         );
 
@@ -1129,14 +1141,14 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
                         "username", "user",
                         "javaCommandLine", "j cl",
                         "isAlive", false,
-                        "startTime", 1495727607481L,
+                        "startTime", Map.ofNumberLong(1495727607481L),
                         "javaHome", "/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.131-1.b12.fc24.x86_64/jre",
-                        "stopTime", 1495727607482L,
+                        "stopTime", Map.ofNumberLong(1495727607482L),
                         "mainClass", "mc",
                         "jvmId", "jid2",
                         "agentId", "aid",
                         "javaVersion", "1.8.0_131",
-                        "lastUpdated", 333,
+                        "lastUpdated", Map.ofNumberLong(333),
                         "jvmPid", 2,
                         "jvmName", "vm",
                         "vmArguments", "-Djline.log.jul=true",
@@ -1165,7 +1177,7 @@ public class JvmsServiceIntegrationTest extends MongoIntegrationTest {
         assertEquals(200, response.getStatus());
 
         ContentWrapper expectedContentWrapper = new ContentWrapper().addToResponse(
-                Map.of("lastUpdated", 2000, "isAlive", true));
+                Map.of("lastUpdated", Map.ofNumberLong(2000), "isAlive", true));
         expectedContentWrapper.matchJsonOrThrow(response.getContentAsString());
     }
 

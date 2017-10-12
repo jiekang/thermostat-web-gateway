@@ -42,7 +42,7 @@ public class OffsetParameter {
 
     private final Integer offset;
 
-    private OffsetParameter(Integer offset) {
+    public OffsetParameter(Integer offset) {
         this.offset = offset;
     }
 

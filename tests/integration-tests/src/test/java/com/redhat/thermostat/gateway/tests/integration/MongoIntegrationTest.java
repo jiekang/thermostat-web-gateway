@@ -42,12 +42,13 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Objects;
 
-import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-public class MongoIntegrationTest extends IntegrationTest {
+import com.redhat.thermostat.gateway.tests.utils.MongodTestUtil;
+
+public abstract class MongoIntegrationTest extends ServiceIntegrationTest {
 
     protected static final MongodTestUtil mongodTestUtil = new MongodTestUtil();
 

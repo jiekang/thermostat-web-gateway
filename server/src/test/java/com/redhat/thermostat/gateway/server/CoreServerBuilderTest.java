@@ -60,6 +60,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.junit.Test;
 
 import com.redhat.thermostat.gateway.common.core.config.Configuration;
+import com.redhat.thermostat.gateway.common.core.config.GatewayHomeRetriever;
 import com.redhat.thermostat.gateway.common.core.config.GlobalConfiguration;
 import com.redhat.thermostat.gateway.server.apidoc.SwaggerUiHandler;
 import com.redhat.thermostat.gateway.server.services.CoreService;
@@ -175,10 +176,11 @@ public class CoreServerBuilderTest {
         configMap.put(GlobalConfiguration.ConfigurationKey.WITH_TLS.name(), Boolean.TRUE.toString());
         configMap.put(GlobalConfiguration.ConfigurationKey.KEYSTORE_FILE.name(), "test_me.jks");
         Configuration configuration = getMockConfiguration(configMap);
-        CoreServerBuilder builder = new CoreServerBuilder();
+        GatewayHomeRetriever homeRetriever = mock(GatewayHomeRetriever.class);
+        when(homeRetriever.getGatewayHome()).thenReturn(getTestRoot("/test_gw_home"));
+        CoreServerBuilder builder = new CoreServerBuilder(new SwaggerUiHandler(), new StaticAssetsHandler(), homeRetriever);
         builder.setServerConfiguration(configuration);
         builder.setServiceBuilder(serviceBuilder);
-        builder.setGatewayHome(getTestRoot("/test_gw_home"));
 
         Server server = builder.build();
         Connector[] connectors = server.getConnectors();

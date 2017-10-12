@@ -36,7 +36,10 @@
 
 package com.redhat.thermostat.gateway.service.system.network.http;
 
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
+import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
+import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 
 import javax.servlet.ServletContext;
@@ -64,16 +67,16 @@ public class SystemNetworkHttpHandler {
     @Consumes({ "application/json" })
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response get(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                        @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") Integer limit,
-                        @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") Integer offset,
+                        @QueryParam(RequestParameters.LIMIT) @DefaultValue("1") LimitParameter limit,
+                        @QueryParam(RequestParameters.OFFSET) @DefaultValue("0") OffsetParameter offset,
                         @QueryParam(RequestParameters.SORT) String sort,
                         @QueryParam(RequestParameters.QUERY) String queries,
                         @QueryParam(RequestParameters.INCLUDE) String includes,
                         @QueryParam(RequestParameters.EXCLUDE) String excludes,
-                        @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                        @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                         @Context ServletContext context,
                         @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, limit, offset, sort, queries, includes, excludes, metadata);
+        return serviceHelper.handleGetWithSystemID(httpServletRequest, context, systemId, new CommonQueryParams(limit, offset, sort, queries, includes, excludes, metadata));
     }
 
     @PUT
@@ -83,7 +86,7 @@ public class SystemNetworkHttpHandler {
     public Response put(String body,
                         @PathParam(RequestParameters.SYSTEM_ID) String systemId,
                         @QueryParam(RequestParameters.QUERY) String queries,
-                        @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                        @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                         @Context ServletContext context,
                         @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePutWithSystemId(httpServletRequest, context, systemId, queries, metadata, body);
@@ -95,7 +98,7 @@ public class SystemNetworkHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response post(String body,
                          @PathParam(RequestParameters.SYSTEM_ID) String systemId,
-                         @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                         @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                          @Context ServletContext context,
                          @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handlePostWithSystemID(httpServletRequest, context, systemId, metadata, body);
@@ -107,7 +110,7 @@ public class SystemNetworkHttpHandler {
     @Produces({ "application/json", "text/html; charset=utf-8" })
     public Response delete(@PathParam(RequestParameters.SYSTEM_ID) String systemId,
                            @QueryParam(RequestParameters.QUERY) String queries,
-                           @QueryParam(RequestParameters.METADATA) @DefaultValue("false") String metadata,
+                           @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                            @Context ServletContext context,
                            @Context HttpServletRequest httpServletRequest) {
         return serviceHelper.handleDeleteWithSystemID(httpServletRequest, context, systemId, queries, metadata);

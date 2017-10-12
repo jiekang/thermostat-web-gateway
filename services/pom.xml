@@ -52,11 +52,14 @@
 
     <modules>
         <module>commands</module>
-        <module>jvm-gc</module>
         <module>jvms</module>
-        <module>jvm-memory</module>
+        <module>jcmd</module>
+        <module>jvm-byteman</module>
         <module>jvm-cpu</module>
+        <module>jvm-gc</module>
+        <module>jvm-memory</module>
         <module>jvm-io</module>
+        <module>jvm-compiler</module>
         <module>systems</module>
         <module>system-cpu</module>
         <module>system-memory</module>

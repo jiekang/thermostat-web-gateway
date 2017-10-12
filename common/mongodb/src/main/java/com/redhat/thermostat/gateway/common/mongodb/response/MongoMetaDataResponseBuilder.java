@@ -36,11 +36,11 @@
 
 package com.redhat.thermostat.gateway.common.mongodb.response;
 
-import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
 
 /*
  *  Builds the appropriate metadata for the response after executing the request's MongoDB Query.
@@ -122,7 +122,7 @@ public class MongoMetaDataResponseBuilder {
             return new MongoMetaDataResponseBuilder(this);
         }
 
-        public String getQueryArgumentsNoOffsetLimit(LinkedHashMap<String, String> requestParamArguments) {
+        public String getQueryArgumentsNoOffsetLimit(Map<String, String> requestParamArguments) {
             StringBuilder queryString = new StringBuilder();
             String sep = "";
             for (String param : requestParamArguments.keySet()) {
