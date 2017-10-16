@@ -71,6 +71,13 @@
   </build>
 
   <dependencies>
+    <!-- Prometheus Dependencies -->
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient</artifactId>
+      <version>0.0.26</version>
+    </dependency>
+    
     <!-- Thermostat Web Gateway Dependencies -->
     <dependency>
       <groupId>com.redhat.thermostat</groupId>

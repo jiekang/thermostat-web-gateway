@@ -36,6 +36,9 @@
 
 package com.redhat.thermostat.gateway.service.jvm.cpu;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -50,15 +53,21 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.mongodb.DBObject;
 import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
 import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
-import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
+import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
+import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
+import io.prometheus.client.Gauge;
 
 @Path("/")
 public class JvmCpuHttpHandler {
 
+
+    private static final Map<String, Gauge> cpuGaugeMap = new HashMap<>();
     private static final String collectionName = "jvm-cpu";
     private final MongoHttpHandlerHelper serviceHelper = new MongoHttpHandlerHelper(collectionName);
 
@@ -107,7 +116,22 @@ public class JvmCpuHttpHandler {
                                @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                                @Context ServletContext context,
                                @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
+        ArgumentRunnable<DBObject> runnable = new ArgumentRunnable<DBObject>() {
+            @Override
+            public void run(DBObject arg) {
+                String jvmId = arg.get(ThermostatFields.JVM_ID).toString().replace("-","_");
+                Double cpu = Double.parseDouble(arg.get("cpuLoad").toString());
+                if (cpuGaugeMap.containsKey(jvmId)) {
+                    cpuGaugeMap.get(jvmId).set(cpu);
+                } else {
+                    Gauge gauge = Gauge.build().name("tms_jvm_cpu_" + jvmId + "_cpuLoad").help("CPU load for " + jvmId).register();
+                    gauge.set(cpu);
+
+                    cpuGaugeMap.put(jvmId, gauge);
+                }
+            }
+        };
+        return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body, runnable);
     }
 
     @DELETE

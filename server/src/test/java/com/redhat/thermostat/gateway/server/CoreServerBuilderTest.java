@@ -97,7 +97,7 @@ public class CoreServerBuilderTest {
 
         ContextHandlerCollection handler = (ContextHandlerCollection) server.getHandler();
         // Expects 1 handlers, 1 service mocked. Others disabled by config
-        assertEquals(1, handler.getHandlers().length);
+        assertEquals(2, handler.getHandlers().length);
 
         ServerConnector connector = (ServerConnector) server.getConnectors()[0];
         assertEquals(connector.getPort(), Integer.parseInt(port));
@@ -134,7 +134,7 @@ public class CoreServerBuilderTest {
 
         ContextHandlerCollection handler = (ContextHandlerCollection) server.getHandler();
         // Expects 3 handlers, 1 service mocked above, 1 swagger ui handler, 1 static resource handler
-        assertEquals(3, handler.getHandlers().length);
+        assertEquals(4, handler.getHandlers().length);
     }
 
     @Test

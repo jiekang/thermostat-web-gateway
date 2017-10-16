@@ -92,7 +92,7 @@ public class JvmGcServiceIntegrationTest extends MongoIntegrationTest {
                     "   \"jvmId\" : " + JVMID_TOKEN + ",\n" +
                     "   \"collectorName\" : \"some-collection\",\n" +
                     "   \"runCount\" : \"22\",\n" +
-                    "   \"wallTimeInMicros\" : \"333333\"\n" +
+                    "   \"wallTimeInMicros\" : {\"$numberLong\":\"333333\"}\n" +
                     "}\n";
 
     private static final String QUERY_PREFIX = "query";

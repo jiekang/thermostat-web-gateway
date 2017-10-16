@@ -97,6 +97,13 @@
             <artifactId>keycloak-core</artifactId>
             <version>${keycloak.version}</version>
         </dependency>
+        <!-- Prometheus Dependencies -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_servlet</artifactId>
+            <version>0.0.26</version>
+        </dependency>
+
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>

@@ -55,6 +55,7 @@ public class JvmCpuServiceIntegrationTest extends MongoIntegrationTest {
     private static final String simpleUrl = baseUrl + "/" + SERVICE_NAME + "/" + VERSION_NUMBER;
     private static final String serviceUrl = simpleUrl + "/systems/" + SYSTEM_ID + "/jvms/" + JVM_ID;
     private static final String jvmsServiceUrl = simpleUrl + "/jvms/" + JVM_ID;
+    private static final String cpuContent = "[{\"cpuLoad\":10}]";
 
     public JvmCpuServiceIntegrationTest() {
         super(SERVICE_NAME + "/" + VERSION_NUMBER + "/systems/" + SYSTEM_ID + "/jvms/" + JVM_ID, SERVICE_NAME);
@@ -82,24 +83,24 @@ public class JvmCpuServiceIntegrationTest extends MongoIntegrationTest {
 
     @Test
     public void testPost() throws InterruptedException, TimeoutException, ExecutionException {
-        String expected = "{\"response\":[{\"a\":\"b\",\"systemId\":\"" + SYSTEM_ID + "\",\"jvmId\":\"" + JVM_ID + "\"}]}";
-        HttpTestUtil.addRecords(client, serviceUrl, "[{\"a\":\"b\"}]");
+        String expected = "{\"response\":[{\"cpuLoad\":10,\"systemId\":\"" + SYSTEM_ID + "\",\"jvmId\":\"" + JVM_ID + "\"}]}";
+        HttpTestUtil.addRecords(client, serviceUrl, cpuContent);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, serviceUrl, 200, expected);
     }
 
     @Test
     public void testPut() throws InterruptedException, TimeoutException, ExecutionException {
         String putContent = "{\"set\": {\"a\":\"c\"}}";
-        HttpTestUtil.addRecords(client, serviceUrl, "[{\"a\":\"b\"}]");
+        HttpTestUtil.addRecords(client, serviceUrl, cpuContent);
         HttpTestUtil.testContentResponse(client, HttpMethod.PUT, serviceUrl, putContent, 405);
     }
 
     @Test
     public void testDelete() throws InterruptedException, TimeoutException, ExecutionException {
-        String expectedBefore = "{\"response\":[{\"a\":\"b\",\"systemId\":\"" + SYSTEM_ID + "\",\"jvmId\":\"" + JVM_ID + "\"}]}";
-        HttpTestUtil.addRecords(client, serviceUrl, "[{\"a\":\"b\"}]");
+        String expectedBefore = "{\"response\":[{\"cpuLoad\":10,\"systemId\":\"" + SYSTEM_ID + "\",\"jvmId\":\"" + JVM_ID + "\"}]}";
+        HttpTestUtil.addRecords(client, serviceUrl, cpuContent);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, serviceUrl, 200, expectedBefore);
-        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, serviceUrl + "?q=a==b", 200);
+        HttpTestUtil.testContentlessResponse(client, HttpMethod.DELETE, serviceUrl + "?q=cpuLoad==10", 200);
         HttpTestUtil.testContentlessResponse(client, HttpMethod.GET, serviceUrl, 200, HttpTestUtil.EMPTY_RESPONSE);
     }
 }

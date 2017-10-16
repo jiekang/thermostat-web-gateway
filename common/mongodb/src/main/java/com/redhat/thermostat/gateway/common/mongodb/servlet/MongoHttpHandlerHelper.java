@@ -59,6 +59,7 @@ import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoDataResultContainer;
 import com.redhat.thermostat.gateway.common.mongodb.executor.MongoExecutor;
+import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataGenerator;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoMetaDataResponseBuilder;
 import com.redhat.thermostat.gateway.common.mongodb.response.MongoResponseBuilder;
@@ -186,25 +187,25 @@ public class MongoHttpHandlerHelper {
      */
 
     public Response handlePostWithSystemID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, boolean returnMetadata, String body) {
-        return handlePost(httpServletRequest, context, systemId, null, returnMetadata, body);
+        return handlePost(httpServletRequest, context, systemId, null, returnMetadata, body, null);
     }
 
     public Response handlePostWithJvmID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, boolean returnMetadata, String body) {
-        return handlePost(httpServletRequest, context, systemId, jvmId, returnMetadata, body);
+        return handlePost(httpServletRequest, context, systemId, jvmId, returnMetadata, body, null);
     }
 
-    public Response handlePost(HttpServletRequest httpServletRequest, ServletContext context, boolean returnMetadata, String body) {
-        return handlePost(httpServletRequest, context, null, null, returnMetadata, body);
+    public Response handlePostWithJvmID(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, boolean returnMetadata, String body, ArgumentRunnable<DBObject> runnable) {
+        return handlePost(httpServletRequest, context, systemId, jvmId, returnMetadata, body, runnable);
     }
 
-    public Response handlePost(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, boolean returnMetadata, String body) {
+    public Response handlePost(HttpServletRequest httpServletRequest, ServletContext context, String systemId, String jvmId, boolean returnMetadata, String body, ArgumentRunnable<DBObject> runnable) {
         try {
             RealmAuthorizer realmAuthorizer = (RealmAuthorizer) httpServletRequest.getAttribute(RealmAuthorizer.class.getName());
 
             if (realmAuthorizer.writable()) {
                 ThermostatMongoStorage storage = (ThermostatMongoStorage) context.getAttribute(ServletContextConstants.MONGODB_CLIENT_ATTRIBUTE);
 
-                MongoDataResultContainer execResult = mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, realmAuthorizer.getWritableRealms(), systemId, jvmId);
+                MongoDataResultContainer execResult = mongoExecutor.execPostRequest(storage.getDatabase().getCollection(collectionName, DBObject.class), body, realmAuthorizer.getWritableRealms(), systemId, jvmId, runnable);
                 MongoResponseBuilder.Builder response = new MongoResponseBuilder.Builder();
 
                 if (returnMetadata) {
@@ -219,6 +220,7 @@ public class MongoHttpHandlerHelper {
                 return Response.status(Response.Status.FORBIDDEN).build();
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return exceptionHandler.generateResponseForException(e);
         }
     }

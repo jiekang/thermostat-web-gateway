@@ -68,6 +68,7 @@ import com.redhat.thermostat.gateway.server.auth.basic.BasicUserStore;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfiguration;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakConfigurationFactory;
 import com.redhat.thermostat.gateway.server.auth.keycloak.KeycloakRequestFilter;
+import io.prometheus.client.CollectorRegistry;
 
 class WebArchiveCoreService implements CoreService {
 
@@ -94,6 +95,7 @@ class WebArchiveCoreService implements CoreService {
         webAppContext.setAttribute(GlobalConstants.SERVICE_CONFIG_KEY, serviceConfig);
         webAppContext.addSystemClass(Configuration.class.getName());
         webAppContext.addSystemClass(RealmAuthorizer.class.getName());
+        webAppContext.addSystemClass("io.prometheus.client.");
 
 
         initializeWebSockets(server, webAppContext);

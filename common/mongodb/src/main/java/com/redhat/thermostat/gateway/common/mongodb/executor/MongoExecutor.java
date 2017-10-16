@@ -64,6 +64,7 @@ import com.mongodb.util.JSON;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoRequestFilters;
 import com.redhat.thermostat.gateway.common.mongodb.filters.MongoSortFilters;
 import com.redhat.thermostat.gateway.common.mongodb.keycloak.KeycloakFields;
+import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
 
 public class MongoExecutor {
     public MongoDataResultContainer execGetRequest(MongoCollection<Document> collection, String queries,
@@ -140,7 +141,7 @@ public class MongoExecutor {
     }
 
     public MongoDataResultContainer execPostRequest(MongoCollection<DBObject> collection, String body,
-                                                    Set<String> realms, String systemId, String jvmId) {
+                                                    Set<String> realms, String systemId, String jvmId, ArgumentRunnable<DBObject> runnable) {
         MongoDataResultContainer metaDataContainer = new MongoDataResultContainer();
         if (body.length() > 0) {
             List<DBObject> inputList = (List<DBObject>) JSON.parse(body);
@@ -155,6 +156,10 @@ public class MongoExecutor {
                 }
                 if (jvmId != null && !jvmId.isEmpty()) {
                     object.put(ThermostatFields.JVM_ID, jvmId);
+                }
+
+                if (runnable != null) {
+                    runnable.run(object);
                 }
             }
 

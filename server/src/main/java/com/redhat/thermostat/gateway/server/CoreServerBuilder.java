@@ -54,6 +54,7 @@ import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.jsr356.server.deploy.WebSocketServerContainerInitializer;
 
@@ -65,6 +66,7 @@ import com.redhat.thermostat.gateway.server.apidoc.SwaggerUiHandler;
 import com.redhat.thermostat.gateway.server.services.CoreService;
 import com.redhat.thermostat.gateway.server.services.CoreServiceBuilder;
 import com.redhat.thermostat.gateway.server.webclient.StaticAssetsHandler;
+import io.prometheus.client.exporter.MetricsServlet;
 
 public class CoreServerBuilder {
 
@@ -143,6 +145,13 @@ public class CoreServerBuilder {
             ContextHandler webClientHandler = staticAssetsHandler.create();
             contextHandlerCollection.addHandler(webClientHandler);
         }
+
+        // Add prometheus servlet
+        ServletContextHandler context = new ServletContextHandler();
+        context.setContextPath("/");
+        context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
+
+        contextHandlerCollection.addHandler(context);
 
         server.setHandler(contextHandlerCollection);
     }

@@ -36,6 +36,10 @@
 
 package com.redhat.thermostat.gateway.service.jvm.gc.http;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.management.monitor.GaugeMonitor;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -51,19 +55,25 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.mongodb.DBObject;
 import com.redhat.thermostat.gateway.common.core.auth.RealmAuthorizer;
 import com.redhat.thermostat.gateway.common.core.model.LimitParameter;
 import com.redhat.thermostat.gateway.common.core.model.OffsetParameter;
 import com.redhat.thermostat.gateway.common.core.servlet.CommonQueryParams;
+import com.redhat.thermostat.gateway.common.mongodb.ThermostatFields;
 import com.redhat.thermostat.gateway.common.mongodb.ThermostatMongoStorage;
 import com.redhat.thermostat.gateway.common.core.servlet.RequestParameters;
+import com.redhat.thermostat.gateway.common.mongodb.response.ArgumentRunnable;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.MongoHttpHandlerHelper;
 import com.redhat.thermostat.gateway.common.mongodb.servlet.ServletContextConstants;
 import com.redhat.thermostat.gateway.service.jvm.gc.mongo.JvmGcMongoStorageHandler;
+import io.prometheus.client.Gauge;
 
 @Path("/")
 public class JvmGcHttpHandler {
 
+    private static final Map<String, Gauge> gcGaugeMap = new HashMap<>();
+    private static final Map<String, Double> prevWallTimeMap = new HashMap<>();
 
     private static final String collectionName = "jvm-gc";
     private final JvmGcMongoStorageHandler mongoStorageHandler = new JvmGcMongoStorageHandler();
@@ -129,7 +139,26 @@ public class JvmGcHttpHandler {
                               @QueryParam(RequestParameters.METADATA) @DefaultValue("false") Boolean metadata,
                               @Context ServletContext context,
                               @Context HttpServletRequest httpServletRequest) {
-        return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body);
+        ArgumentRunnable<DBObject> runnable = new ArgumentRunnable<DBObject>() {
+            @Override
+            public void run(DBObject arg) {
+                String jvmId = arg.get(ThermostatFields.JVM_ID).toString().replace("-","_");
+                String collectorName = arg.get("collectorName").toString();
+
+                Double wallTime = Double.parseDouble(arg.get("wallTimeInMicros").toString());
+
+                if (gcGaugeMap.containsKey(jvmId)) {
+                    gcGaugeMap.get(jvmId).labels(collectorName).set(wallTime);
+                } else {
+                    Gauge gauge = Gauge.build().name("tms_jvm_gc_" + jvmId + "_wallTime").help("GC Wall Time for " + jvmId).labelNames("collector_name").register();
+                    gauge.labels(collectorName).set(wallTime);
+
+                    gcGaugeMap.put(jvmId, gauge);
+                }
+
+            }
+        };
+        return serviceHelper.handlePostWithJvmID(httpServletRequest, context, systemId, jvmId, metadata, body, runnable);
     }
 
     @DELETE
